@@ -8,13 +8,15 @@
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
             <a href="{{ route('dashboard') }}" class="mr-5 flex items-center space-x-2" wire:navigate>
-                <x-app-logo />
+                {{-- <x-app-logo /> --}}
+                <img src="{{ asset('storage/images/logo.png') }}" alt="Recaller" class="h-12" />
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
+                <flux:navlist.group :heading="__('Features')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')" wire:navigate>{{ __('Contacts') }}</flux:navlist.item>
+                    <flux:navlist.item icon="contact" :href="route('contacts.index')" :current="request()->routeIs('contacts.*')" wire:navigate>{{ __('Contacts') }}</flux:navlist.item>
+                    <flux:navlist.item icon="notebook" :href="route('journal.index')" :current="request()->routeIs('journal.*')" wire:navigate>{{ __('Journal') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 

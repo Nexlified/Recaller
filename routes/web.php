@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
-use App\Livewire\Contacts\Index;
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,9 +18,13 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 
+    Volt::route('contacts', 'contacts.index')->name('contacts.index');
+    Volt::route('contacts/create', 'contacts.create')->name('contacts.create');
+    Volt::route('contacts/{contact}/edit', 'contacts.edit')->name('contacts.edit');
+    Volt::route('contacts/{contact}/delete', 'contacts.delete')->name('contacts.delete');
+    Volt::route('contacts/{contact}/show', 'contacts.show')->name('contacts.show');
 
+    Volt::route('journal', 'journal.index')->name('journal.index');
 });
-
-
 
 require __DIR__.'/auth.php';
