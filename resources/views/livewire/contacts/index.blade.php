@@ -33,8 +33,8 @@ new class extends Component {
 ?>
 <div>
     <flux:button href="{{ route('contacts.create') }}" variant="primary" class="mb-4">{{ __('Create') }}</flux:button>
-    
-    
+
+
     <livewire:contacts.quick-create />
     <table class="mt-5 table-auto w-full border-collapse">
         <thead class="text-left">
@@ -45,7 +45,7 @@ new class extends Component {
                 <th>
                     <button wire:click="sort('last_name')">Last Name</button>
                 </th>
-                <th>
+                <th class="hidden sm:table-cell">
                     <button wire:click="sort('email')">Email</button>
                 </th>
                 <th>
@@ -59,12 +59,14 @@ new class extends Component {
             <tr>
                 <td class="px-3 border m-1 border-accent-content">{{ $contact->first_name }}</td>
                 <td class="px-3 border m-1 border-accent-content">{{ $contact->last_name }}</td>
-                <td class="px-3 border m-1 border-accent-content">{{ $contact->email }}</td>
+                <td class="hidden sm:table-cell px-3 border m-1 border-accent-content">
+                    {{ $contact->email }}
+                </td>
                 <td class="px-3 border m-1 border-accent-content">
                 <flux:button.group>
-                    <flux:button size="xs" variant="primary" icon="user-pen" href="{{ route('contacts.edit', $contact) }}" class="mb-4"></flux:button>
-                    <flux:button size="xs" href="{{ route('contacts.show', $contact) }}" variant="primary" class="mb-4">{{ __('Show') }}</flux:button>
-                    <flux:button size="xs" variant="danger" icon="user-x" wire:click="deleteContact({{ $contact->id }})" class="mb-4"></flux:button>
+                    <flux:button size="xs" variant="primary" icon="user-pen" href="{{ route('contacts.edit', $contact) }}" class="mb-4 mt-4"></flux:button>
+                    <flux:button size="xs" href="{{ route('contacts.show', $contact) }}" variant="primary" class="mb-4 mt-4">{{ __('Show') }}</flux:button>
+                    <flux:button size="xs" variant="danger" icon="user-x" wire:click="deleteContact({{ $contact->id }})" class="mb-4 mt-4"></flux:button>
                 </flux:button.group>
             </td>
             </tr>
