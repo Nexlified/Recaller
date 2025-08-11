@@ -16,7 +16,8 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade():    
+    # Create users table with tenant relationship
     op.create_table(
         'users',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -27,10 +28,14 @@ def upgrade():
         sa.Column('is_superuser', sa.Boolean(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('tenant_id', sa.Integer(), nullable=False, server_default='1'),
+        sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id'], name=op.f('fk_users_tenant_id_tenants')),
+        sa.UniqueConstraint('email', name=op.f('uq_users_email')),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
+    op.create_index(op.f('ix_users_tenant_id'), 'users', ['tenant_id'], unique=False)
 
 
 def downgrade():

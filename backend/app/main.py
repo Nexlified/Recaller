@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from app.api.v1.api import api_router
 from app.core.config import settings
+from app.db.session import SessionLocal
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -18,6 +20,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add DB session middleware
+@app.middleware("http")
+async def db_session_middleware(request: Request, call_next):
+    request.state.db = SessionLocal()
+    # Set default tenant for all requests (preparing for future multi-tenant support)
+    request.state.tenant_id = 1
+    response = await call_next(request)
+    request.state.db.close()
+    return response
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

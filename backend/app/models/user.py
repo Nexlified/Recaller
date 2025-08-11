@@ -1,6 +1,9 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
+
+DEFAULT_TENANT_ID = 1  # Default tenant ID for single-tenant mode
 
 class User(Base):
     __tablename__ = "users"
@@ -13,3 +16,7 @@ class User(Base):
     is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Tenant relationship - using default tenant for now, but structure is ready for multi-tenant
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
+    tenant = relationship("Tenant", backref="users")
