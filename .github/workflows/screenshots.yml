@@ -1,0 +1,149 @@
+name: 📸 Screenshots for PR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - '.github/workflows/screenshots.yml'
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: recaller
+          POSTGRES_PASSWORD: recaller
+          POSTGRES_DB: recaller
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: 📦 Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: 🚀 Start backend server
+        run: |
+          cd backend
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          # Wait for backend to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:8000 > /dev/null; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 2
+          done
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: recaller
+          POSTGRES_PASSWORD: recaller
+          POSTGRES_DB: recaller
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: 🎭 Install Playwright
+        run: |
+          cd frontend
+          npx playwright install --with-deps chromium
+
+      - name: 🚀 Start frontend server
+        run: |
+          cd frontend
+          npm start &
+          # Wait for frontend to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Frontend is ready"
+              break
+            fi
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+
+      - name: 📸 Take screenshots
+        run: |
+          cd frontend
+          node scripts/take-screenshots.js
+
+      - name: 📎 Upload screenshots as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: frontend/screenshots/
+          retention-days: 30
+
+      - name: 💬 Comment on PR with screenshots
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Get PR number
+            const prNumber = context.payload.pull_request.number;
+            
+            // Check if screenshots exist
+            const screenshotsDir = 'frontend/screenshots';
+            if (!fs.existsSync(screenshotsDir)) {
+              console.log('Screenshots directory not found');
+              return;
+            }
+            
+            const screenshots = fs.readdirSync(screenshotsDir)
+              .filter(file => file.endsWith('.png'));
+            
+            if (screenshots.length === 0) {
+              console.log('No screenshots found');
+              return;
+            }
+            
+            // Create comment body
+            let commentBody = `## 📸 Screenshots\n\n`;
+            commentBody += `Updated screenshots for this PR:\n\n`;
+            
+            for (const screenshot of screenshots) {
+              const name = screenshot.replace('.png', '').replace('-', ' ');
+              commentBody += `### ${name.charAt(0).toUpperCase() + name.slice(1)}\n`;
+              commentBody += `![${name}](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/${screenshotsDir}/${screenshot}?raw=true)\n\n`;
+            }
+            
+            commentBody += `---\n*Screenshots generated automatically by Playwright* 🎭`;
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });

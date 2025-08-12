@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-server-playwright"],
+      "env": {
+        "PLAYWRIGHT_BROWSERS_PATH": "./node_modules/playwright/.local-browsers"
+      }
+    }
+  }
+}
