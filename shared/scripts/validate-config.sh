@@ -9,15 +9,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 CONFIG_DIR="$PROJECT_ROOT/shared/config"
 SCHEMA_DIR="$CONFIG_DIR/validation/schemas"
-BACKEND_DIR="$PROJECT_ROOT/backend"
+SHARED_DIR="$PROJECT_ROOT/shared"
 
 echo "🔍 Validating YAML configuration files..."
 echo "Config directory: $CONFIG_DIR"
 echo "Schema directory: $SCHEMA_DIR"
 
 # Check if Python validation module exists
-if [ ! -f "$BACKEND_DIR/app/core/config_validator.py" ]; then
-    echo "❌ Error: Python validation module not found at $BACKEND_DIR/app/core/config_validator.py"
+if [ ! -f "$SHARED_DIR/validation/config_validator.py" ]; then
+    echo "❌ Error: Python validation module not found at $SHARED_DIR/validation/config_validator.py"
     exit 1
 fi
 
@@ -28,12 +28,12 @@ if [ ! -f "$SCHEMA_DIR/reference-data.schema.yml" ]; then
 fi
 
 # Run Python validation
-cd "$BACKEND_DIR"
+cd "$SHARED_DIR"
 python3 -c "
 import sys
 sys.path.append('.')
 from pathlib import Path
-from app.core.config_validator import validate_all_configs
+from validation.config_validator import validate_all_configs
 
 config_dir = Path('$CONFIG_DIR/reference-data')
 schema_dir = Path('$SCHEMA_DIR')

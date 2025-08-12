@@ -1,0 +1,127 @@
+---
+version: "1.0.0"
+category: "core"
+type: "timezones"
+name: "Timezones"
+description: "Standard timezone identifiers and display names"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "utc"
+    display_name: "UTC"
+    description: "Coordinated Universal Time"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "+00:00"
+      iana_name: "UTC"
+      abbreviation: "UTC"
+    tags: ["timezone", "utc", "standard"]
+
+  - key: "america_new_york"
+    display_name: "Eastern Time (US & Canada)"
+    description: "Eastern Standard Time / Eastern Daylight Time"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "-05:00"
+      dst_offset: "-04:00"
+      iana_name: "America/New_York"
+      abbreviation: "EST/EDT"
+    tags: ["timezone", "usa", "eastern"]
+
+  - key: "america_chicago"
+    display_name: "Central Time (US & Canada)"
+    description: "Central Standard Time / Central Daylight Time"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "-06:00"
+      dst_offset: "-05:00"
+      iana_name: "America/Chicago"
+      abbreviation: "CST/CDT"
+    tags: ["timezone", "usa", "central"]
+
+  - key: "america_denver"
+    display_name: "Mountain Time (US & Canada)"
+    description: "Mountain Standard Time / Mountain Daylight Time"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "-07:00"
+      dst_offset: "-06:00"
+      iana_name: "America/Denver"
+      abbreviation: "MST/MDT"
+    tags: ["timezone", "usa", "mountain"]
+
+  - key: "america_los_angeles"
+    display_name: "Pacific Time (US & Canada)"
+    description: "Pacific Standard Time / Pacific Daylight Time"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "-08:00"
+      dst_offset: "-07:00"
+      iana_name: "America/Los_Angeles"
+      abbreviation: "PST/PDT"
+    tags: ["timezone", "usa", "pacific"]
+
+  - key: "europe_london"
+    display_name: "Greenwich Mean Time"
+    description: "Greenwich Mean Time / British Summer Time"
+    sort_order: 5
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "+00:00"
+      dst_offset: "+01:00"
+      iana_name: "Europe/London"
+      abbreviation: "GMT/BST"
+    tags: ["timezone", "europe", "london"]
+
+  - key: "europe_paris"
+    display_name: "Central European Time"
+    description: "Central European Time / Central European Summer Time"
+    sort_order: 6
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "+01:00"
+      dst_offset: "+02:00"
+      iana_name: "Europe/Paris"
+      abbreviation: "CET/CEST"
+    tags: ["timezone", "europe", "central"]
+
+  - key: "asia_tokyo"
+    display_name: "Japan Standard Time"
+    description: "Japan Standard Time"
+    sort_order: 7
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "+09:00"
+      iana_name: "Asia/Tokyo"
+      abbreviation: "JST"
+    tags: ["timezone", "asia", "japan"]
+
+  - key: "australia_sydney"
+    display_name: "Australian Eastern Time"
+    description: "Australian Eastern Standard Time / Australian Eastern Daylight Time"
+    sort_order: 8
+    is_system: true
+    is_active: true
+    metadata:
+      offset: "+10:00"
+      dst_offset: "+11:00"
+      iana_name: "Australia/Sydney"
+      abbreviation: "AEST/AEDT"
+    tags: ["timezone", "australia", "eastern"]

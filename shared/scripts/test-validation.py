@@ -7,16 +7,11 @@ import sys
 import os
 from pathlib import Path
 
-# Add the backend directory to Python path
-backend_dir = Path(__file__).parent.parent / "backend"
-sys.path.insert(0, str(backend_dir))
+# Add the shared directory to Python path
+shared_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(shared_dir))
 
-try:
-    from app.core.config_validator import ConfigValidator, validate_all_configs
-except ImportError:
-    # Alternative import for direct execution
-    sys.path.insert(0, str(backend_dir / "app"))
-    from core.config_validator import ConfigValidator, validate_all_configs
+from validation.config_validator import ConfigValidator, validate_all_configs
 
 def main():
     """Test the validation system with sample configuration files."""
@@ -40,6 +35,8 @@ def main():
     test_files = [
         config_dir / "core" / "genders.yml",
         config_dir / "core" / "countries.yml",
+        config_dir / "core" / "timezones.yml",
+        config_dir / "core" / "currencies.yml",
         config_dir / "professional" / "industries.yml",
         config_dir / "social" / "activities.yml",
         config_dir / "contact" / "interaction-types.yml"

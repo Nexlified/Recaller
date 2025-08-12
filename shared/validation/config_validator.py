@@ -1,4 +1,4 @@
-# backend/app/core/config_validator.py
+# shared/validation/config_validator.py
 import yaml
 import jsonschema
 from pathlib import Path
