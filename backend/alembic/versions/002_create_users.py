@@ -1,8 +1,8 @@
-"""create users table
+"""Create users table
 
-Revision ID: 001
-Revises: 
-Create Date: 2025-08-11 12:00:00.000000
+Revision ID: 002_create_users
+Revises: 001_create_tenants
+Create Date: 2025-08-12 14:00:00.000000
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '001'
-down_revision = None
+revision = '002_create_users'
+down_revision = '001_create_tenants'
 branch_labels = None
 depends_on = None
 
@@ -21,24 +21,25 @@ def upgrade():
     op.create_table(
         'users',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('email', sa.String(), nullable=False),
-        sa.Column('hashed_password', sa.String(), nullable=False),
-        sa.Column('full_name', sa.String(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), nullable=True),
-        sa.Column('is_superuser', sa.Boolean(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('email', sa.String(255), nullable=False),
+        sa.Column('hashed_password', sa.String(255), nullable=False),
+        sa.Column('full_name', sa.String(255), nullable=True),
+        sa.Column('is_active', sa.Boolean(), nullable=True, server_default='true'),
+        sa.Column('is_superuser', sa.Boolean(), nullable=True, server_default='false'),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('tenant_id', sa.Integer(), nullable=False, server_default='1'),
         sa.ForeignKeyConstraint(['tenant_id'], ['tenants.id'], name=op.f('fk_users_tenant_id_tenants')),
-        sa.UniqueConstraint('email', name=op.f('uq_users_email')),
+        sa.UniqueConstraint('email', 'tenant_id', name=op.f('uq_users_email_tenant')),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=False)
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
     op.create_index(op.f('ix_users_tenant_id'), 'users', ['tenant_id'], unique=False)
 
 
 def downgrade():
+    op.drop_index(op.f('ix_users_tenant_id'), table_name='users')
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
