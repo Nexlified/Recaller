@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from datetime import date
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
@@ -558,6 +558,501 @@ def generate_insights(
     db.commit()
     
     return insights
+
+# Follow-up & Engagement Analytics
+@router.get("/follow-ups/performance", response_model=Dict[str, Any])
+def get_follow_up_performance(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get follow-up completion rates"""
+    tenant_id = get_tenant_id(request)
+    
+    # Mock implementation - would calculate from actual follow-up data
+    return {
+        "completion_rate": 0.78,
+        "avg_response_time": "2.3 days",
+        "overdue_count": 12,
+        "completed_last_30_days": 45,
+        "success_rate_by_type": {
+            "email": 0.85,
+            "call": 0.72,
+            "meeting": 0.91
+        }
+    }
+
+@router.get("/follow-ups/overdue", response_model=Dict[str, Any])
+def get_overdue_follow_ups(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get overdue follow-up analysis"""
+    tenant_id = get_tenant_id(request)
+    
+    overdue_contacts = db.query(Contact).filter(
+        and_(
+            Contact.tenant_id == tenant_id,
+            Contact.next_suggested_contact_date < date.today(),
+            Contact.is_active == True
+        )
+    ).all()
+    
+    return {
+        "total_overdue": len(overdue_contacts),
+        "overdue_by_urgency": {
+            "high": sum(1 for c in overdue_contacts if c.follow_up_urgency == 'high'),
+            "medium": sum(1 for c in overdue_contacts if c.follow_up_urgency == 'medium'),
+            "low": sum(1 for c in overdue_contacts if c.follow_up_urgency == 'low')
+        },
+        "avg_days_overdue": 7.5,  # Mock calculation
+        "overdue_contacts": [
+            {
+                "contact_id": c.id,
+                "name": f"{c.first_name} {c.last_name}",
+                "days_overdue": (date.today() - (c.next_suggested_contact_date or date.today())).days,
+                "urgency": c.follow_up_urgency,
+                "connection_strength": float(c.connection_strength or 0)
+            }
+            for c in overdue_contacts[:10]  # Limit to top 10
+        ]
+    }
+
+@router.get("/engagement/patterns", response_model=Dict[str, Any])
+def get_engagement_patterns(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get engagement pattern analysis"""
+    # Mock implementation
+    return {
+        "best_contact_days": ["Tuesday", "Wednesday"],
+        "best_contact_times": ["10:00-11:00", "14:00-15:00"],
+        "response_rate_by_channel": {
+            "email": 0.68,
+            "phone": 0.82,
+            "linkedin": 0.45
+        },
+        "engagement_trends": {
+            "increasing": 34,
+            "stable": 187,
+            "decreasing": 23
+        }
+    }
+
+@router.get("/engagement/effectiveness", response_model=Dict[str, Any])
+def get_engagement_effectiveness(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get engagement effectiveness metrics"""
+    # Mock implementation
+    return {
+        "overall_effectiveness": 7.3,
+        "top_performing_strategies": [
+            {"strategy": "Personal referrals", "success_rate": 0.89},
+            {"strategy": "Industry events", "success_rate": 0.76},
+            {"strategy": "LinkedIn outreach", "success_rate": 0.43}
+        ],
+        "conversion_metrics": {
+            "contact_to_meeting": 0.34,
+            "meeting_to_opportunity": 0.18,
+            "opportunity_to_partnership": 0.07
+        }
+    }
+
+# Predictive Analytics
+@router.get("/predictions/churn", response_model=Dict[str, Any])
+def get_churn_prediction(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get relationship churn prediction"""
+    tenant_id = get_tenant_id(request)
+    
+    # Mock churn prediction based on interaction patterns
+    at_risk_contacts = db.query(Contact).filter(
+        and_(
+            Contact.tenant_id == tenant_id,
+            Contact.is_active == True,
+            Contact.connection_strength < 4
+        )
+    ).all()
+    
+    return {
+        "churn_risk_summary": {
+            "high_risk": len([c for c in at_risk_contacts if c.connection_strength and c.connection_strength < 2]),
+            "medium_risk": len([c for c in at_risk_contacts if c.connection_strength and 2 <= c.connection_strength < 4]),
+            "total_at_risk": len(at_risk_contacts)
+        },
+        "predicted_churn_30_days": len(at_risk_contacts) // 3,
+        "retention_recommendations": [
+            "Schedule check-in calls with high-risk contacts",
+            "Send personalized updates or articles",
+            "Invite to relevant events or meetups"
+        ],
+        "at_risk_contacts": [
+            {
+                "contact_id": c.id,
+                "name": f"{c.first_name} {c.last_name}",
+                "churn_risk": "high" if c.connection_strength and c.connection_strength < 2 else "medium",
+                "connection_strength": float(c.connection_strength or 0),
+                "last_interaction": c.last_meaningful_interaction.isoformat() if c.last_meaningful_interaction else None
+            }
+            for c in at_risk_contacts[:10]
+        ]
+    }
+
+@router.get("/predictions/growth", response_model=Dict[str, Any])
+def get_growth_predictions(
+    request: Request,
+    period_days: int = Query(default=30, ge=7, le=365),
+    db: Session = Depends(get_db)
+):
+    """Get network growth predictions"""
+    tenant_id = get_tenant_id(request)
+    analytics_service = AnalyticsService(db, tenant_id)
+    
+    growth_analytics = analytics_service.get_network_growth_analytics(90)  # Use 90 days for prediction
+    
+    return {
+        "prediction_period_days": period_days,
+        "predicted_new_contacts": growth_analytics["predictions"]["next_30_days"] * (period_days / 30),
+        "confidence": growth_analytics["predictions"]["confidence"],
+        "growth_drivers": [
+            "Historical networking patterns",
+            "Scheduled events and meetings",
+            "Seasonal networking trends"
+        ],
+        "scenarios": {
+            "conservative": growth_analytics["predictions"]["next_30_days"] * 0.7 * (period_days / 30),
+            "expected": growth_analytics["predictions"]["next_30_days"] * (period_days / 30),
+            "optimistic": growth_analytics["predictions"]["next_30_days"] * 1.3 * (period_days / 30)
+        }
+    }
+
+@router.get("/predictions/opportunities", response_model=Dict[str, Any])
+def get_networking_opportunities(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get networking opportunities prediction"""
+    # Mock implementation
+    return {
+        "opportunity_score": 8.2,
+        "top_opportunities": [
+            {
+                "type": "mutual_connection",
+                "description": "3 contacts work at companies where you have strong relationships",
+                "potential_contacts": 3,
+                "confidence": 0.85
+            },
+            {
+                "type": "industry_expansion",
+                "description": "Healthcare industry shows high engagement rates",
+                "potential_contacts": 8,
+                "confidence": 0.72
+            }
+        ],
+        "recommended_actions": [
+            "Ask Sarah Chen for introductions at TechCorp",
+            "Attend the Healthcare Innovation Summit",
+            "Reconnect with dormant contacts in finance sector"
+        ]
+    }
+
+@router.get("/predictions/maintenance", response_model=Dict[str, Any])
+def get_maintenance_predictions(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get relationship maintenance recommendations"""
+    tenant_id = get_tenant_id(request)
+    analytics_service = AnalyticsService(db, tenant_id)
+    
+    health_analytics = analytics_service.get_relationship_health_analytics()
+    
+    return {
+        "maintenance_priority": health_analytics["recommendations"],
+        "optimal_schedule": {
+            "weekly": "5-7 strong relationship contacts",
+            "monthly": "15-20 moderate relationship contacts", 
+            "quarterly": "All weak relationship contacts"
+        },
+        "automated_suggestions": [
+            "Send birthday reminders for key contacts",
+            "Schedule quarterly check-ins with dormant contacts",
+            "Follow up on shared interests and hobbies"
+        ],
+        "success_metrics": {
+            "target_interaction_frequency": "2.5 interactions per contact per month",
+            "relationship_strength_goal": "Move 20% of weak relationships to moderate"
+        }
+    }
+
+# Comparative Analytics
+@router.get("/compare/periods", response_model=Dict[str, Any])
+def compare_periods(
+    request: Request,
+    period1_days: int = Query(default=30, ge=7, le=365),
+    period2_days: int = Query(default=30, ge=7, le=365),
+    db: Session = Depends(get_db)
+):
+    """Compare different time periods"""
+    tenant_id = get_tenant_id(request)
+    
+    # Calculate periods
+    end_date = date.today()
+    period1_start = end_date - timedelta(days=period1_days)
+    period2_start = period1_start - timedelta(days=period2_days)
+    period2_end = period1_start
+    
+    # Get metrics for both periods
+    period1_metrics = db.query(DailyNetworkMetric).filter(
+        and_(
+            DailyNetworkMetric.tenant_id == tenant_id,
+            DailyNetworkMetric.metric_date >= period1_start,
+            DailyNetworkMetric.metric_date <= end_date
+        )
+    ).all()
+    
+    period2_metrics = db.query(DailyNetworkMetric).filter(
+        and_(
+            DailyNetworkMetric.tenant_id == tenant_id,
+            DailyNetworkMetric.metric_date >= period2_start,
+            DailyNetworkMetric.metric_date <= period2_end
+        )
+    ).all()
+    
+    # Calculate averages
+    def calc_averages(metrics):
+        if not metrics:
+            return {"contacts": 0, "interactions": 0, "growth_rate": 0}
+        return {
+            "contacts": sum(m.total_contacts or 0 for m in metrics) / len(metrics),
+            "interactions": sum(m.total_interactions or 0 for m in metrics) / len(metrics),
+            "growth_rate": sum(m.network_growth_rate or 0 for m in metrics) / len(metrics)
+        }
+    
+    period1_avg = calc_averages(period1_metrics)
+    period2_avg = calc_averages(period2_metrics)
+    
+    return {
+        "period1": {
+            "start_date": period1_start.isoformat(),
+            "end_date": end_date.isoformat(),
+            "averages": period1_avg
+        },
+        "period2": {
+            "start_date": period2_start.isoformat(), 
+            "end_date": period2_end.isoformat(),
+            "averages": period2_avg
+        },
+        "comparison": {
+            "contact_growth": period1_avg["contacts"] - period2_avg["contacts"],
+            "interaction_change": period1_avg["interactions"] - period2_avg["interactions"],
+            "growth_rate_change": period1_avg["growth_rate"] - period2_avg["growth_rate"]
+        }
+    }
+
+@router.get("/compare/groups", response_model=Dict[str, Any])
+def compare_groups(
+    request: Request,
+    group_type: str = Query(..., description="Type of groups to compare: contacts, organizations, social_groups"),
+    group_ids: str = Query(..., description="Comma-separated list of group IDs"),
+    db: Session = Depends(get_db)
+):
+    """Compare different contact groups"""
+    tenant_id = get_tenant_id(request)
+    
+    group_id_list = [int(id.strip()) for id in group_ids.split(",")]
+    
+    if group_type == "organizations":
+        analytics = db.query(OrganizationNetworkAnalytics).filter(
+            and_(
+                OrganizationNetworkAnalytics.tenant_id == tenant_id,
+                OrganizationNetworkAnalytics.organization_id.in_(group_id_list)
+            )
+        ).all()
+        
+        return {
+            "group_type": group_type,
+            "comparison": [
+                {
+                    "group_id": a.organization_id,
+                    "group_name": a.organization_name,
+                    "contacts": a.current_contacts + a.alumni_contacts,
+                    "avg_strength": float(a.avg_connection_strength or 0),
+                    "interactions": a.total_interactions
+                }
+                for a in analytics
+            ]
+        }
+    
+    elif group_type == "social_groups":
+        analytics = db.query(SocialGroupAnalytics).filter(
+            and_(
+                SocialGroupAnalytics.tenant_id == tenant_id,
+                SocialGroupAnalytics.group_id.in_(group_id_list)
+            )
+        ).all()
+        
+        return {
+            "group_type": group_type,
+            "comparison": [
+                {
+                    "group_id": a.group_id,
+                    "group_name": a.group_name,
+                    "active_members": a.active_members,
+                    "avg_strength": float(a.avg_member_connection_strength or 0),
+                    "activities": a.total_activities
+                }
+                for a in analytics
+            ]
+        }
+    
+    else:
+        return {"error": f"Unsupported group type: {group_type}"}
+
+@router.get("/benchmarks", response_model=Dict[str, Any])
+def get_analytics_benchmarks(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get industry/usage benchmarks"""
+    # Mock implementation with industry benchmarks
+    return {
+        "industry_benchmarks": {
+            "network_size": {
+                "small_business": {"min": 50, "avg": 150, "max": 300},
+                "mid_market": {"min": 200, "avg": 500, "max": 1000},
+                "enterprise": {"min": 500, "avg": 1500, "max": 5000}
+            },
+            "interaction_frequency": {
+                "quarterly": 0.25,
+                "monthly": 1.0,
+                "weekly": 4.0,
+                "daily": 20.0
+            },
+            "relationship_distribution": {
+                "strong": 0.15,
+                "moderate": 0.45,
+                "weak": 0.40
+            }
+        },
+        "user_percentile": {
+            "network_size": 75,
+            "interaction_frequency": 68,
+            "relationship_quality": 82
+        },
+        "improvement_areas": [
+            "Increase interaction frequency with moderate relationships",
+            "Expand network in underrepresented industries",
+            "Improve follow-up consistency"
+        ]
+    }
+
+# Export & Reporting
+@router.get("/reports/monthly", response_model=Dict[str, Any])
+def get_monthly_report(
+    request: Request,
+    year: int = Query(default=datetime.now().year),
+    month: int = Query(default=datetime.now().month, ge=1, le=12),
+    db: Session = Depends(get_db)
+):
+    """Get monthly analytics report"""
+    from app.services.analytics import AnalyticsExportService
+    
+    tenant_id = get_tenant_id(request)
+    export_service = AnalyticsExportService(db, tenant_id)
+    
+    # Calculate date range for the month
+    start_date = date(year, month, 1)
+    if month == 12:
+        end_date = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end_date = date(year, month + 1, 1) - timedelta(days=1)
+    
+    return export_service.export_custom_report({
+        "report_type": "network_growth",
+        "date_range": {"start": start_date, "end": end_date}
+    })
+
+@router.get("/reports/quarterly", response_model=Dict[str, Any])
+def get_quarterly_report(
+    request: Request,
+    year: int = Query(default=datetime.now().year),
+    quarter: int = Query(default=((datetime.now().month - 1) // 3) + 1, ge=1, le=4),
+    db: Session = Depends(get_db)
+):
+    """Get quarterly analytics report"""
+    from app.services.analytics import AnalyticsExportService
+    
+    tenant_id = get_tenant_id(request)
+    export_service = AnalyticsExportService(db, tenant_id)
+    
+    # Calculate date range for the quarter
+    start_month = (quarter - 1) * 3 + 1
+    start_date = date(year, start_month, 1)
+    
+    if quarter == 4:
+        end_date = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end_month = quarter * 3 + 1
+        end_date = date(year, end_month, 1) - timedelta(days=1)
+    
+    return export_service.export_custom_report({
+        "report_type": "relationship_health",
+        "date_range": {"start": start_date, "end": end_date}
+    })
+
+@router.post("/reports/custom", response_model=Dict[str, Any])
+def generate_custom_report(
+    request: Request,
+    report_request: CustomReportRequest,
+    db: Session = Depends(get_db)
+):
+    """Generate custom report"""
+    from app.services.analytics import AnalyticsExportService
+    
+    tenant_id = get_tenant_id(request)
+    export_service = AnalyticsExportService(db, tenant_id)
+    
+    return export_service.export_custom_report({
+        "report_type": report_request.report_type,
+        "date_range": report_request.date_range,
+        "filters": report_request.filters
+    })
+
+@router.get("/export", response_model=Dict[str, Any])
+def export_analytics_data(
+    request: Request,
+    format: str = Query(default="json", description="Export format: json, csv"),
+    start_date: Optional[date] = Query(default=None),
+    end_date: Optional[date] = Query(default=None),
+    metrics: Optional[str] = Query(default=None, description="Comma-separated list of metrics to export"),
+    db: Session = Depends(get_db)
+):
+    """Export analytics data"""
+    from app.services.analytics import AnalyticsExportService
+    
+    tenant_id = get_tenant_id(request)
+    export_service = AnalyticsExportService(db, tenant_id)
+    
+    # Parse date range
+    date_range = None
+    if start_date and end_date:
+        date_range = {"start": start_date, "end": end_date}
+    
+    # Parse metrics list
+    metrics_list = None
+    if metrics:
+        metrics_list = [m.strip() for m in metrics.split(",")]
+    
+    return export_service.export_analytics_data(
+        export_format=format,
+        date_range=date_range,
+        metrics=metrics_list
+    )
 
 @router.get("/recommendations", response_model=List[Dict[str, Any]])
 def get_actionable_recommendations(
