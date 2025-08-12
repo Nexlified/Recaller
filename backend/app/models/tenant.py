@@ -19,3 +19,4 @@ class Tenant(Base):
     social_groups = relationship("SocialGroup", back_populates="tenant")
     networking_insights = relationship("NetworkingInsight", back_populates="tenant")
     daily_metrics = relationship("DailyNetworkMetric", back_populates="tenant")
+    organizations = relationship("Organization", back_populates="tenant")
