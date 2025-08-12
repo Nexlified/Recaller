@@ -91,6 +91,12 @@
         cd frontend
         npm test
 
+- **Playwright Screenshots:**
+
+        cd frontend
+        npm run validate:playwright
+        npm run screenshots:generate
+
 ---
 
 ## 🐳 Docker Compose Services
@@ -109,6 +115,14 @@
 - `docker-compose up --build` — Build and start all services
 - `docker-compose down` — Stop all services
 - `docker-compose logs -f` — View logs
+
+### Playwright Integration
+
+- `npm run validate:playwright` — Validate Playwright setup
+- `npm run screenshots:generate` — Generate screenshots manually
+- `npm run test:playwright` — Run Playwright tests
+
+For more details, see [PLAYWRIGHT_INTEGRATION.md](PLAYWRIGHT_INTEGRATION.md).
 
 ---
 

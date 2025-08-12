@@ -37,12 +37,12 @@ export default defineConfig({
     {
       command: 'npm start',
       port: 3000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
     },
     {
       command: 'cd ../backend && uvicorn app.main:app --host 0.0.0.0 --port 8000',
       port: 8000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
     }
   ],
 });

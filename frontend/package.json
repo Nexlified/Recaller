@@ -31,7 +31,8 @@
     "screenshots:frontend": "playwright test tests/playwright/frontend-snapshots.spec.ts",
     "screenshots:backend": "playwright test tests/playwright/backend-snapshots.spec.ts",
     "screenshots:all": "npm run screenshots:frontend && npm run screenshots:backend",
-    "screenshots:generate": "node scripts/take-screenshots.js"
+    "screenshots:generate": "node scripts/take-screenshots.js",
+    "validate:playwright": "node scripts/validate-integration.js"
   },
   "eslintConfig": {
     "extends": [
