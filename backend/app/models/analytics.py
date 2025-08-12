@@ -1,8 +1,19 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, ARRAY, Date, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Date, Numeric, JSON
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
+
+# For SQLite compatibility in tests, we'll use JSON type which works with both SQLite and PostgreSQL
+def get_json_type():
+    """Return appropriate JSON type based on database dialect."""
+    try:
+        # Try to import JSONB for PostgreSQL
+        from sqlalchemy.dialects.postgresql import JSONB
+        return JSONB
+    except ImportError:
+        # Fallback to generic JSON for SQLite
+        return JSON
 
 class NetworkingInsight(Base):
     __tablename__ = "networking_insights"
@@ -19,12 +30,12 @@ class NetworkingInsight(Base):
     # Insight Content
     title = Column(String(255), nullable=False)
     description = Column(Text)
-    metrics = Column(JSONB)  # Supporting data and calculations
-    actionable_recommendations = Column(ARRAY(Text), default=list)
+    metrics = Column(JSON)  # Supporting data and calculations
+    actionable_recommendations = Column(JSON, default=list)  # Changed from ARRAY(Text) for SQLite compatibility
     
     # AI/Analytics Metadata
     confidence_score = Column(Numeric(3,2))
-    data_sources = Column(ARRAY(Text), default=list)
+    data_sources = Column(JSON, default=list)  # Changed from ARRAY(Text) for SQLite compatibility
     calculation_method = Column(String(50))
     
     # Lifecycle
@@ -63,7 +74,7 @@ class DailyNetworkMetric(Base):
     total_interactions = Column(Integer)
     new_interactions = Column(Integer)
     avg_interaction_quality = Column(Numeric(3,2))
-    interaction_types = Column(JSONB)  # Breakdown by type
+    interaction_types = Column(JSON)  # Breakdown by type
     
     # Follow-up Metrics
     overdue_follow_ups = Column(Integer)

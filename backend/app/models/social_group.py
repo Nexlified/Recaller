@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Date, Time, DECIMAL, ARRAY
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Date, Time, DECIMAL, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -36,7 +36,7 @@ class SocialGroup(Base):
     # Metadata
     group_image_url = Column(String(500))
     group_color = Column(String(7))  # Hex color for UI
-    tags = Column(ARRAY(String))  # Array of tags for categorization
+    tags = Column(JSON)  # Changed from ARRAY(String) for SQLite compatibility
     
     # Audit
     created_at = Column(DateTime(timezone=True), server_default=func.now())

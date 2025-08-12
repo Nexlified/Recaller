@@ -58,17 +58,47 @@ class OrganizationInDB(OrganizationInDBBase):
     pass
 
 
-class OrganizationAliasCreate(BaseModel):
-    alias: str
-
-
-class OrganizationLocationCreate(BaseModel):
+# Organization Alias schemas
+class OrganizationAliasBase(BaseModel):
     name: str
+    is_primary: Optional[bool] = False
+
+
+class OrganizationAliasCreate(OrganizationAliasBase):
+    pass
+
+
+class OrganizationAliasUpdate(BaseModel):
+    name: Optional[str] = None
+    is_primary: Optional[bool] = None
+
+
+class OrganizationAliasInDBBase(OrganizationAliasBase):
+    id: int
+    organization_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class OrganizationAlias(OrganizationAliasInDBBase):
+    pass
+
+
+# Organization Location schemas
+class OrganizationLocationBase(BaseModel):
+    name: Optional[str] = None
     address_street: Optional[str] = None
     address_city: Optional[str] = None
     address_state: Optional[str] = None
     address_postal_code: Optional[str] = None
     address_country_code: Optional[str] = None
+    is_primary: Optional[bool] = False
+
+
+class OrganizationLocationCreate(OrganizationLocationBase):
+    pass
 
 
 class OrganizationLocationUpdate(BaseModel):
@@ -78,47 +108,32 @@ class OrganizationLocationUpdate(BaseModel):
     address_state: Optional[str] = None
     address_postal_code: Optional[str] = None
     address_country_code: Optional[str] = None
+    is_primary: Optional[bool] = None
 
 
-class OrganizationSearchResult(BaseModel):
+class OrganizationLocationInDBBase(OrganizationLocationBase):
     id: int
-    name: str
-    description: Optional[str] = None
-    website: Optional[str] = None
-    industry: Optional[str] = None
-    
+    organization_id: int
+    created_at: datetime
+
     class Config:
         from_attributes = True
+
+
+class OrganizationLocation(OrganizationLocationInDBBase):
+    pass
+
+
+# Search and Response schemas
+class OrganizationSearchResult(Organization):
+    """Organization search result with additional metadata."""
+    pass
 
 
 class OrganizationListResponse(BaseModel):
-    items: List[Organization]
+    """Response model for organization list with metadata."""
+    organizations: List[Organization]
     total: int
     page: int
-    per_page: int
-    
-    class Config:
-        from_attributes = True
-
-
-class OrganizationAlias(BaseModel):
-    id: int
-    alias: str
-    organization_id: int
-    
-    class Config:
-        from_attributes = True
-
-
-class OrganizationLocation(BaseModel):
-    id: int
-    name: str
-    address_street: Optional[str] = None
-    address_city: Optional[str] = None
-    address_state: Optional[str] = None
-    address_postal_code: Optional[str] = None
-    address_country_code: Optional[str] = None
-    organization_id: int
-    
-    class Config:
-        from_attributes = True
+    page_size: int
+    has_next: bool
