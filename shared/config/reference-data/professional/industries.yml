@@ -1,0 +1,47 @@
+# Professional Reference Data: Industries
+# This file defines industry categories for professional data
+
+metadata:
+  name: "Industries"
+  description: "Professional industry categories"
+  category: "professional"
+  type: "industries"
+  version: "1.0.0"
+  tenant_scope: "global"
+  checksum: ""
+
+data:
+  - id: "technology"
+    name: "Technology"
+    display_name: "Technology"
+    description: "Software, hardware, and IT services"
+    sort_order: 1
+    is_active: true
+    
+  - id: "finance"
+    name: "Finance"
+    display_name: "Finance & Banking"
+    description: "Financial services, banking, and insurance"
+    sort_order: 2
+    is_active: true
+    
+  - id: "healthcare"
+    name: "Healthcare"
+    display_name: "Healthcare & Medical"
+    description: "Medical services, pharmaceuticals, and health tech"
+    sort_order: 3
+    is_active: true
+    
+  - id: "education"
+    name: "Education"
+    display_name: "Education"
+    description: "Educational institutions and services"
+    sort_order: 4
+    is_active: true
+    
+  - id: "manufacturing"
+    name: "Manufacturing"
+    display_name: "Manufacturing"
+    description: "Production and manufacturing industries"
+    sort_order: 5
+    is_active: true

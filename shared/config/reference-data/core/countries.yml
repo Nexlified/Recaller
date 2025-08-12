@@ -1,0 +1,52 @@
+# Core Reference Data: Countries
+# This file defines country options for the Recaller application
+
+metadata:
+  name: "Countries"
+  description: "Country options with ISO codes"
+  category: "core"
+  type: "countries"
+  version: "1.0.0"
+  tenant_scope: "global"
+  checksum: ""
+
+data:
+  - id: "us"
+    name: "United States"
+    display_name: "United States"
+    code: "US"
+    iso_code: "USA"
+    sort_order: 1
+    is_active: true
+    
+  - id: "ca"
+    name: "Canada"
+    display_name: "Canada"
+    code: "CA"
+    iso_code: "CAN"
+    sort_order: 2
+    is_active: true
+    
+  - id: "uk"
+    name: "United Kingdom"
+    display_name: "United Kingdom"
+    code: "GB"
+    iso_code: "GBR"
+    sort_order: 3
+    is_active: true
+    
+  - id: "de"
+    name: "Germany"
+    display_name: "Germany"
+    code: "DE"
+    iso_code: "DEU"
+    sort_order: 4
+    is_active: true
+    
+  - id: "fr"
+    name: "France"
+    display_name: "France"
+    code: "FR"
+    iso_code: "FRA"
+    sort_order: 5
+    is_active: true

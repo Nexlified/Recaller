@@ -1,0 +1,42 @@
+# Core Reference Data: Genders
+# This file defines gender options for the Recaller application
+
+metadata:
+  name: "Genders"
+  description: "Gender identity options"
+  category: "core"
+  type: "genders"
+  version: "1.0.0"
+  tenant_scope: "global"  # Available to all tenants
+  checksum: ""  # Auto-calculated during sync
+
+data:
+  - id: "male"
+    name: "Male"
+    display_name: "Male"
+    sort_order: 1
+    is_active: true
+    
+  - id: "female"
+    name: "Female"  
+    display_name: "Female"
+    sort_order: 2
+    is_active: true
+    
+  - id: "non_binary"
+    name: "Non-Binary"
+    display_name: "Non-Binary"
+    sort_order: 3
+    is_active: true
+    
+  - id: "prefer_not_to_say"
+    name: "Prefer Not to Say"
+    display_name: "Prefer Not to Say"
+    sort_order: 4
+    is_active: true
+    
+  - id: "other"
+    name: "Other"
+    display_name: "Other"
+    sort_order: 5
+    is_active: true
