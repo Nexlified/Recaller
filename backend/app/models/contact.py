@@ -8,10 +8,11 @@ class Contact(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
     # Basic Information
-    first_name = Column(String(100), nullable=False)
-    last_name = Column(String(100), nullable=False)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
     email = Column(String(255), index=True)
     phone = Column(String(50))
     
@@ -49,6 +50,7 @@ class Contact(Base):
     
     # Relationships
     tenant = relationship("Tenant", back_populates="contacts")
+    created_by = relationship("User", back_populates="contacts")
     current_organization = relationship("Organization", foreign_keys=[current_organization_id], back_populates="current_employees")
     alma_mater = relationship("Organization", foreign_keys=[alma_mater_id], back_populates="alumni")
     interactions = relationship("ContactInteraction", back_populates="contact", cascade="all, delete-orphan")
@@ -86,21 +88,3 @@ class ContactInteraction(Base):
     
     # Relationships
     contact = relationship("Contact", back_populates="interactions")
-
-class ContactSocialGroupMembership(Base):
-    __tablename__ = "contact_social_group_memberships"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=False, index=True)
-    social_group_id = Column(Integer, ForeignKey("social_groups.id"), nullable=False, index=True)
-    
-    membership_status = Column(String(20), default='active')  # active, inactive, left
-    role = Column(String(50))  # member, organizer, leader
-    joined_date = Column(DateTime(timezone=True))
-    left_date = Column(DateTime(timezone=True))
-    
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
-    # Relationships
-    contact = relationship("Contact", back_populates="group_memberships")
-    social_group = relationship("SocialGroup", back_populates="memberships")
