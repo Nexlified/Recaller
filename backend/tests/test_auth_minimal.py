@@ -15,6 +15,10 @@ from datetime import datetime, timedelta
 from jose import jwt
 import json
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.api.v1.endpoints.auth import router as auth_router
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
@@ -24,7 +28,7 @@ app = FastAPI()
 app.include_router(auth_router, prefix="/api/v1")
 
 # Test database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_auth_minimal.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./tests/test_auth_minimal.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

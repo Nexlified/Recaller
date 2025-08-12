@@ -20,13 +20,17 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from jose import jwt
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.main import app
 from app.api.deps import get_db
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
 
 # Test database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_auth.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./tests/test_auth_integration.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

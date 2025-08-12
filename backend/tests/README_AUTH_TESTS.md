@@ -15,14 +15,14 @@ The authentication integration tests validate the `/api/v1/auth/login` and `/api
 
 ## Test Files
 
-### 1. `test_auth_minimal.py`
+### 1. `tests/test_auth_minimal.py`
 Lightweight test suite with essential authentication test cases:
 - Basic login and registration functionality
 - Core error handling scenarios
 - Token security validation
 - Password hashing verification
 
-### 2. `test_auth_comprehensive.py`
+### 2. `tests/test_auth_comprehensive.py`
 Extensive test suite covering all requirements from the issue:
 - Complete parameterized test coverage
 - SQL injection protection tests
@@ -53,34 +53,34 @@ The tests use SQLite for isolated testing and automatically handle:
 ### Quick Test Execution
 ```bash
 # Run minimal test suite (fast validation)
-python test_auth_minimal.py
+python tests/test_auth_minimal.py
 
 # Run minimal tests with pytest
-python -m pytest test_auth_minimal.py -v
+python -m pytest tests/test_auth_minimal.py -v
 ```
 
 ### Comprehensive Test Execution
 ```bash
 # Run all comprehensive tests
-python -m pytest test_auth_comprehensive.py -v
+python -m pytest tests/test_auth_comprehensive.py -v
 
 # Run specific test classes
-python -m pytest test_auth_comprehensive.py::TestAuthenticationLogin -v
-python -m pytest test_auth_comprehensive.py::TestAuthenticationRegistration -v
-python -m pytest test_auth_comprehensive.py::TestAuthenticationSecurity -v
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationLogin -v
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationRegistration -v
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationSecurity -v
 
 # Run tests with shorter traceback for cleaner output
-python -m pytest test_auth_comprehensive.py -v --tb=short
+python -m pytest tests/test_auth_comprehensive.py -v --tb=short
 
 # Run tests with coverage (if pytest-cov is installed)
-python -m pytest test_auth_comprehensive.py --cov=app.api.v1.endpoints.auth --cov-report=html
+python -m pytest tests/test_auth_comprehensive.py --cov=app.api.v1.endpoints.auth --cov-report=html
 ```
 
 ### Test Categories
 
 #### 1. Login Endpoint Tests (`/api/v1/auth/login`)
 ```bash
-python -m pytest test_auth_comprehensive.py::TestAuthenticationLogin -v
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationLogin -v
 ```
 Tests include:
 - Valid credentials authentication
@@ -92,7 +92,7 @@ Tests include:
 
 #### 2. Registration Endpoint Tests (`/api/v1/auth/register`)
 ```bash
-python -m pytest test_auth_comprehensive.py::TestAuthenticationRegistration -v
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationRegistration -v
 ```
 Tests include:
 - Valid user registration
@@ -104,7 +104,7 @@ Tests include:
 
 #### 3. Security Tests
 ```bash
-python -m pytest test_auth_comprehensive.py::TestAuthenticationSecurity -v
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationSecurity -v
 ```
 Tests include:
 - JWT token structure validation
@@ -116,7 +116,7 @@ Tests include:
 
 #### 4. Schema Validation Tests
 ```bash
-python -m pytest test_auth_comprehensive.py::TestResponseSchemaValidation -v
+python -m pytest tests/test_auth_comprehensive.py::TestResponseSchemaValidation -v
 ```
 Tests include:
 - Login response schema compliance
@@ -154,7 +154,7 @@ Tests will fail if:
 - name: Run Authentication Tests
   run: |
     cd backend
-    python -m pytest test_auth_comprehensive.py -v --tb=short
+    python -m pytest tests/test_auth_comprehensive.py -v --tb=short
 ```
 
 ### Docker Testing
@@ -162,7 +162,7 @@ Tests will fail if:
 # Run tests in isolated container
 docker run --rm -v $(pwd):/app -w /app/backend python:3.12 bash -c "
   pip install -r requirements.txt pytest pytest-asyncio httpx &&
-  python -m pytest test_auth_comprehensive.py -v
+  python -m pytest tests/test_auth_comprehensive.py -v
 "
 ```
 
@@ -190,13 +190,13 @@ The tests automatically create and manage test users:
 ### Debugging Commands
 ```bash
 # Run single test with detailed output
-python -m pytest test_auth_comprehensive.py::TestAuthenticationLogin::test_login_valid_credentials_success -v -s
+python -m pytest tests/test_auth_comprehensive.py::TestAuthenticationLogin::test_login_valid_credentials_success -v -s
 
 # Run tests with pdb debugging
-python -m pytest test_auth_comprehensive.py --pdb
+python -m pytest tests/test_auth_comprehensive.py --pdb
 
 # Generate test report
-python -m pytest test_auth_comprehensive.py --html=test_report.html --self-contained-html
+python -m pytest tests/test_auth_comprehensive.py --html=test_report.html --self-contained-html
 ```
 
 ## Coverage Requirements
