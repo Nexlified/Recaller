@@ -97,7 +97,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/home/credevator/workspace/Recaller/frontend",
+    "outputFileTracingRoot": "/home/runner/work/Recaller/Recaller/frontend",
     "experimental": {
       "useSkewCookie": false,
       "nodeMiddleware": false,
@@ -156,7 +156,7 @@
       "middlewarePrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
-      "cpus": 31,
+      "cpus": 3,
       "memoryBasedWorkersCount": false,
       "imgOptConcurrency": null,
       "imgOptTimeoutInSeconds": 7,
@@ -288,10 +288,10 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "/home/credevator/workspace/Recaller/frontend"
+      "root": "/home/runner/work/Recaller/Recaller/frontend"
     }
   },
-  "appDir": "/home/credevator/workspace/Recaller/frontend",
+  "appDir": "/home/runner/work/Recaller/Recaller/frontend",
   "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",

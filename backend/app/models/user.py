@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
 
@@ -19,5 +18,3 @@ class User(Base):
     
     # Tenant relationship - using default tenant for now, but structure is ready for multi-tenant
     tenant_id = Column(Integer, nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
-    # tenant = relationship("Tenant", back_populates="users")
-    # networking_insights = relationship("NetworkingInsight", back_populates="user")
