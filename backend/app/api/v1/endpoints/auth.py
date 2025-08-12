@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=Token)
 def login(
-    request: Request,
+    tenant_id: int = Depends(deps.get_tenant_id),
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
@@ -29,7 +29,6 @@ def login(
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
-    
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(

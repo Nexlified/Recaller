@@ -1,5 +1,5 @@
 from typing import Generator, Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from pydantic import ValidationError
@@ -20,6 +20,10 @@ def get_db() -> Generator:
     finally:
         db.close()
 
+def get_tenant_id(request: Request) -> int:
+    """Get tenant ID from request state"""
+    return getattr(request.state, 'tenant_id', 1)
+
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> User:
@@ -34,7 +38,7 @@ def get_current_user(
     except (JWTError, ValidationError):
         raise credentials_exception
     
-    user = get_user_by_id(db, int(token_data.sub))
+    user = get_user_by_id(db, int(token_data.sub))  # Using default tenant_id=1
     if not user:
         raise credentials_exception
     return user
