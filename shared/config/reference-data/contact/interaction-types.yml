@@ -1,0 +1,72 @@
+---
+version: "1.0.0"
+category: "contact"
+type: "interaction-types"
+name: "Interaction Types"
+description: "Types of interactions for contact management"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "meeting"
+    display_name: "Meeting"
+    description: "In-person or virtual meetings"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "meeting"
+      color: "#2196F3"
+      category: "formal"
+    tags: ["meeting", "formal", "business"]
+
+  - key: "call"
+    display_name: "Phone Call"
+    description: "Voice or video calls"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "phone"
+      color: "#4CAF50"
+      category: "communication"
+    tags: ["call", "phone", "voice"]
+
+  - key: "email"
+    display_name: "Email"
+    description: "Email correspondence"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "email"
+      color: "#FF9800"
+      category: "written"
+    tags: ["email", "written", "digital"]
+
+  - key: "text"
+    display_name: "Text Message"
+    description: "SMS or instant messaging"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "message"
+      color: "#9C27B0"
+      category: "casual"
+    tags: ["text", "sms", "messaging"]
+
+  - key: "social"
+    display_name: "Social Event"
+    description: "Social gatherings and events"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "event"
+      color: "#E91E63"
+      category: "social"
+    tags: ["social", "event", "gathering"]

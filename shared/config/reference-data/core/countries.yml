@@ -1,0 +1,77 @@
+---
+version: "1.0.0"
+category: "core"
+type: "countries"
+name: "Countries"
+description: "ISO standard country codes and names"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "us"
+    display_name: "United States"
+    description: "United States of America"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "US"
+      continent: "North America"
+      icon: "flag"
+      color: "#FF0000"
+    tags: ["country", "north_america"]
+
+  - key: "ca"
+    display_name: "Canada"
+    description: "Canada"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "CA"
+      continent: "North America"
+      icon: "flag"
+      color: "#FF0000"
+    tags: ["country", "north_america"]
+
+  - key: "uk"
+    display_name: "United Kingdom"
+    description: "United Kingdom of Great Britain and Northern Ireland"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "GB"
+      continent: "Europe"
+      icon: "flag"
+      color: "#0000FF"
+    tags: ["country", "europe"]
+
+  - key: "de"
+    display_name: "Germany"
+    description: "Federal Republic of Germany"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "DE"
+      continent: "Europe"
+      icon: "flag"
+      color: "#000000"
+    tags: ["country", "europe"]
+
+  - key: "fr"
+    display_name: "France"
+    description: "French Republic"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "FR"
+      continent: "Europe"
+      icon: "flag"
+      color: "#0055A4"
+    tags: ["country", "europe"]

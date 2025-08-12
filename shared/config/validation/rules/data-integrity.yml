@@ -1,0 +1,47 @@
+---
+# shared/config/validation/rules/data-integrity.yml
+version: "1.0.0"
+name: "Data Integrity Rules"
+description: "Rules for ensuring data consistency and integrity"
+
+rules:
+  key_validation:
+    pattern: "^[a-z][a-z0-9_]*[a-z0-9]$"
+    description: "Keys must start with lowercase letter, contain only lowercase letters, numbers, and underscores, and end with alphanumeric character"
+    severity: "error"
+
+  display_name_validation:
+    min_length: 1
+    max_length: 255
+    description: "Display names must be between 1 and 255 characters"
+    severity: "error"
+
+  description_validation:
+    max_length: 1000
+    description: "Descriptions must not exceed 1000 characters"
+    severity: "warning"
+
+  duplicate_key_check:
+    type: "business_rule"
+    description: "No duplicate keys within the same configuration file"
+    severity: "error"
+
+  hierarchy_consistency:
+    type: "business_rule"
+    description: "Parent-child relationships must be consistent"
+    severity: "error"
+
+  sort_order_gaps:
+    type: "business_rule"
+    description: "Sort order should not have large gaps"
+    severity: "warning"
+
+  color_format:
+    pattern: "^#[0-9A-Fa-f]{6}$"
+    description: "Colors must be valid 6-digit hex codes"
+    severity: "error"
+
+  system_value_protection:
+    type: "business_rule"
+    description: "System values cannot be modified without proper authorization"
+    severity: "error"

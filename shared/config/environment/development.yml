@@ -1,0 +1,28 @@
+---
+# Development environment configuration
+database:
+  host: "localhost"
+  port: 5432
+  name: "recaller_dev"
+  user: "recaller"
+  password: "recaller"
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+
+config_validation:
+  strict_mode: true
+  auto_reload: true
+  schema_validation: true
+  business_rules: true
+
+logging:
+  level: "DEBUG"
+  format: "detailed"
+
+features:
+  config_hot_reload: true
+  validation_warnings: true
+  schema_evolution: true

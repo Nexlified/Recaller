@@ -1,0 +1,161 @@
+---
+# shared/config/validation/schemas/reference-data.schema.yml
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://recaller.app/schemas/reference-data.schema.yml"
+title: "Reference Data Configuration Schema"
+description: "Schema for validating YAML reference data configuration files"
+
+type: object
+required:
+  - version
+  - category
+  - type
+  - name
+  - values
+
+properties:
+  version:
+    type: string
+    pattern: "^\\d+\\.\\d+\\.\\d+$"
+    description: "Semantic version of the configuration file"
+
+  category:
+    type: string
+    enum: ["core", "professional", "social", "contact"]
+    description: "Top-level category for the configuration"
+
+  type:
+    type: string
+    pattern: "^[a-z][a-z0-9_-]*[a-z0-9]$"
+    description: "Unique identifier for this configuration type"
+
+  name:
+    type: string
+    minLength: 1
+    maxLength: 100
+    description: "Human-readable name for this configuration"
+
+  description:
+    type: string
+    maxLength: 500
+    description: "Detailed description of this configuration's purpose"
+
+  metadata:
+    type: object
+    properties:
+      author:
+        type: string
+      last_updated:
+        type: string
+        format: date
+      deprecated:
+        type: boolean
+        default: false
+      replacement:
+        type: string
+        description: "If deprecated, what replaces this configuration"
+    additionalProperties: true
+
+  values:
+    type: array
+    minItems: 1
+    items:
+      $ref: "#/definitions/ConfigValue"
+
+definitions:
+  ConfigValue:
+    type: object
+    required:
+      - key
+      - display_name
+    properties:
+      key:
+        type: string
+        pattern: "^[a-z][a-z0-9_-]*[a-z0-9]$"
+        description: "Unique identifier for this value"
+
+      display_name:
+        type: string
+        minLength: 1
+        maxLength: 255
+        description: "Human-readable name"
+
+      description:
+        type: string
+        maxLength: 1000
+        description: "Detailed description of this value"
+
+      sort_order:
+        type: integer
+        minimum: 0
+        default: 0
+        description: "Sort order for display purposes"
+
+      level:
+        type: integer
+        minimum: 1
+        maximum: 5
+        default: 1
+        description: "Hierarchy level for nested values"
+
+      parent_key:
+        type: string
+        description: "Key of parent value for hierarchical data"
+
+      children:
+        type: array
+        items:
+          $ref: "#/definitions/ConfigValue"
+        description: "Child values for hierarchical structures"
+
+      metadata:
+        type: object
+        properties:
+          icon:
+            type: string
+            description: "Icon identifier for UI display"
+          color:
+            type: string
+            pattern: "^#[0-9A-Fa-f]{6}$"
+            description: "Hex color code for UI theming"
+          category:
+            type: string
+            description: "Sub-category for grouping"
+          aliases:
+            type: array
+            items:
+              type: string
+            description: "Alternative names or identifiers"
+        additionalProperties: true
+
+      tags:
+        type: array
+        items:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+        description: "Tags for flexible categorization"
+
+      is_system:
+        type: boolean
+        default: false
+        description: "System values cannot be deleted"
+
+      is_active:
+        type: boolean
+        default: true
+        description: "Whether this value is currently active"
+
+      translations:
+        type: object
+        patternProperties:
+          "^[a-z]{2}(-[A-Z]{2})?$":
+            type: object
+            properties:
+              display_name:
+                type: string
+              description:
+                type: string
+            required: ["display_name"]
+        description: "Translations for internationalization"
+
+additionalProperties: false
