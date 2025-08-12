@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Date, ForeignKey, DECIMAL
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, DateTime, Date, ForeignKey, DECIMAL, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -19,7 +18,7 @@ class ContactRelationshipScore(Base):
     # Calculation Context
     score_date = Column(Date, nullable=False, index=True)
     calculation_method = Column(String)  # 'manual', 'automatic', 'ai_calculated'
-    factors = Column(JSONB)  # What influenced the score
+    factors = Column(JSON)  # What influenced the score
     
     # Notes
     manual_notes = Column(Text)

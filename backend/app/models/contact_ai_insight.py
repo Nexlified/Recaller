@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Date, ForeignKey, DECIMAL, ARRAY
+from sqlalchemy import Column, Integer, String, Text, DateTime, Date, ForeignKey, DECIMAL, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -22,7 +22,7 @@ class ContactAIInsight(Base):
     # AI Metadata
     confidence_score = Column(DECIMAL(3,2))  # 0.00 to 1.00
     ai_model_version = Column(String)
-    data_sources = Column(ARRAY(Text))  # What data was used to generate insight
+    data_sources = Column(JSON)  # What data was used to generate insight
     
     # Status
     status = Column(String, default='active')  # 'active', 'dismissed', 'acted_upon'

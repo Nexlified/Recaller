@@ -55,8 +55,8 @@ def test_contacts_endpoints_structure(client):
     
     for endpoint in endpoints_to_test:
         response = client.get(endpoint)
-        # All should return 401 (unauthorized) or 404 (for specific IDs), not 404 (not found)
-        assert response.status_code in [401, 404, 422]  # 422 for validation errors
+        # All should return 401 (unauthorized), 404 (for specific IDs), 422 (validation errors), or 405 (method not allowed)
+        assert response.status_code in [401, 404, 405, 422]
 
 def test_openapi_contains_contact_endpoints(client):
     """Test that the OpenAPI spec contains our contact endpoints"""

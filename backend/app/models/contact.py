@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Date, DECIMAL, ARRAY
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Date, DECIMAL, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -24,7 +23,7 @@ class Contact(Base):
     current_organization_id = Column(Integer, ForeignKey("organizations.id"))
     current_position = Column(String)
     career_stage = Column(String)  # 'student', 'entry_level', 'mid_level', 'senior', 'executive', 'retired'
-    industry_experience = Column(ARRAY(Text))  # Array of industries worked in
+    industry_experience = Column(JSON)  # Array of industries worked in
     
     # Social & Personal Context
     primary_social_group_id = Column(Integer, ForeignKey("social_groups.id"))
@@ -37,13 +36,13 @@ class Contact(Base):
     relationship_status = Column(String)  # 'single', 'dating', 'married', 'divorced', 'widowed'
     has_children = Column(Boolean, default=False)
     children_count = Column(Integer, default=0)
-    children_ages = Column(ARRAY(Integer))  # Array of children's ages
+    children_ages = Column(JSON)  # Array of children's ages
     
     # Interests & Preferences
-    hobbies = Column(ARRAY(Text))  # Array of hobbies and interests
-    conversation_topics = Column(ARRAY(Text))  # Topics they enjoy discussing
+    hobbies = Column(JSON)  # Array of hobbies and interests
+    conversation_topics = Column(JSON)  # Topics they enjoy discussing
     languages_spoken = Column(String)  # JSON array of languages and proficiency
-    dietary_restrictions = Column(ARRAY(Text))  # Food allergies, vegetarian, etc.
+    dietary_restrictions = Column(JSON)  # Food allergies, vegetarian, etc.
     preferred_meeting_type = Column(String)  # 'coffee', 'lunch', 'dinner', 'activity', 'video_call'
     
     # Connection Intelligence
@@ -68,8 +67,8 @@ class Contact(Base):
     follow_up_urgency = Column(String, default='normal')  # 'low', 'normal', 'high', 'overdue'
     
     # Special Dates & Reminders
-    important_dates = Column(JSONB)  # Flexible structure for anniversaries, etc.
-    reminder_preferences = Column(JSONB)  # When and how to be reminded
+    important_dates = Column(JSON)  # Flexible structure for anniversaries, etc.
+    reminder_preferences = Column(JSON)  # When and how to be reminded
     
     # Professional Context
     networking_value = Column(String, default='medium')  # 'low', 'medium', 'high' - professional value
@@ -81,7 +80,7 @@ class Contact(Base):
     relationship_notes = Column(Text)  # Private notes about the relationship
     conversation_history_summary = Column(Text)  # Summary of recent conversations
     shared_experiences = Column(Text)  # Memorable shared experiences
-    mutual_interests = Column(ARRAY(Text))  # Things you both enjoy
+    mutual_interests = Column(JSON)  # Things you both enjoy
     
     # AI/ML Enhancement Fields
     contact_score = Column(DECIMAL(5,2), default=5.0)  # Overall relationship health score
@@ -91,7 +90,7 @@ class Contact(Base):
     last_ai_analysis = Column(DateTime(timezone=True))  # When AI last analyzed this contact
     
     # Privacy & Sharing
-    sharing_preferences = Column(JSONB)  # Who can see what information
+    sharing_preferences = Column(JSON)  # Who can see what information
     data_sensitivity = Column(String, default='normal')  # 'low', 'normal', 'high', 'confidential'
     
     # Tenant relationship

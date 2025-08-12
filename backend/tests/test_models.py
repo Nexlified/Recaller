@@ -84,11 +84,13 @@ def test_contact_interaction_creation(db_session):
     db_session.commit()
     
     # Create interaction
+    from datetime import datetime
     interaction = ContactInteraction(
         contact_id=contact.id,
         user_id=1,
         interaction_type="call",
         interaction_method="phone",
+        interaction_date=datetime.utcnow(),
         interaction_quality=8,
         summary="Great conversation about project collaboration"
     )
@@ -113,6 +115,7 @@ def test_contact_ai_insight_creation(db_session):
     db_session.commit()
     
     # Create AI insight
+    from datetime import date
     insight = ContactAIInsight(
         contact_id=contact.id,
         insight_type="follow_up_suggestion",
@@ -120,7 +123,7 @@ def test_contact_ai_insight_creation(db_session):
         description="It's been 30 days since last contact",
         priority="medium",
         confidence_score=0.85,
-        insight_date="2025-01-01"
+        insight_date=date(2025, 1, 1)
     )
     db_session.add(insight)
     db_session.commit()
@@ -129,4 +132,4 @@ def test_contact_ai_insight_creation(db_session):
     assert insight.id is not None
     assert insight.contact_id == contact.id
     assert insight.insight_type == "follow_up_suggestion"
-    assert insight.confidence_score == 0.85
+    assert float(insight.confidence_score) == 0.85

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, ARRAY
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -20,7 +20,7 @@ class ContactInteraction(Base):
     # Context
     initiated_by = Column(String)  # 'me', 'them', 'mutual'
     interaction_quality = Column(Integer)  # 1-10 rating
-    topics_discussed = Column(ARRAY(Text))
+    topics_discussed = Column(JSON)
     mood_assessment = Column(String)  # 'positive', 'neutral', 'negative'
     
     # Content
@@ -35,7 +35,7 @@ class ContactInteraction(Base):
     
     # Metadata
     private_notes = Column(Text)
-    attachments = Column(ARRAY(Text))  # URLs to photos, documents, etc.
+    attachments = Column(JSON)  # URLs to photos, documents, etc.
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
