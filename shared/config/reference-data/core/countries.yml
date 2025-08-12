@@ -1,0 +1,62 @@
+# shared/config/reference-data/core/countries.yml
+version: "1.0.0"
+category: "core"
+type: "countries"
+name: "Countries"
+description: "Standard country codes and names"
+
+values:
+  - key: "us"
+    display_name: "United States"
+    description: "United States of America"
+    sort_order: 1
+    extra_metadata:
+      iso_code: "US"
+      iso3_code: "USA"
+      flag: "🇺🇸"
+      continent: "North America"
+    is_system: true
+    
+  - key: "ca"
+    display_name: "Canada"
+    description: "Canada"
+    sort_order: 2
+    extra_metadata:
+      iso_code: "CA"
+      iso3_code: "CAN"
+      flag: "🇨🇦"
+      continent: "North America"
+    is_system: true
+    
+  - key: "gb"
+    display_name: "United Kingdom"
+    description: "United Kingdom of Great Britain and Northern Ireland"
+    sort_order: 3
+    extra_metadata:
+      iso_code: "GB"
+      iso3_code: "GBR"
+      flag: "🇬🇧"
+      continent: "Europe"
+    is_system: true
+    
+  - key: "de"
+    display_name: "Germany"
+    description: "Federal Republic of Germany"
+    sort_order: 4
+    extra_metadata:
+      iso_code: "DE"
+      iso3_code: "DEU"
+      flag: "🇩🇪"
+      continent: "Europe"
+    is_system: true
+    
+  - key: "fr"
+    display_name: "France"
+    description: "French Republic"
+    sort_order: 5
+    extra_metadata:
+      iso_code: "FR"
+      iso3_code: "FRA"
+      flag: "🇫🇷"
+      continent: "Europe"
+    is_system: true

@@ -1,0 +1,78 @@
+# shared/config/reference-data/professional/industries.yml
+version: "1.0.0"
+category: "professional"
+type: "industries"
+name: "Industry Classifications"
+description: "Hierarchical industry categories for organizations and professionals"
+
+values:
+  # Technology Sector
+  - key: "technology"
+    display_name: "Technology"
+    description: "Technology and software companies"
+    level: 1
+    sort_order: 1
+    extra_metadata:
+      icon: "laptop-code"
+      color: "#3498DB"
+    children:
+      - key: "software_development"
+        display_name: "Software Development"
+        description: "Custom software and application development"
+        level: 2
+        sort_order: 1
+        
+      - key: "saas"
+        display_name: "SaaS"
+        description: "Software as a Service companies"
+        level: 2
+        sort_order: 2
+        
+      - key: "artificial_intelligence"
+        display_name: "Artificial Intelligence"
+        description: "AI and machine learning companies"
+        level: 2
+        sort_order: 3
+        
+  # Finance Sector
+  - key: "finance"
+    display_name: "Finance & Banking"
+    description: "Financial services and banking"
+    level: 1
+    sort_order: 2
+    extra_metadata:
+      icon: "university"
+      color: "#27AE60"
+    children:
+      - key: "investment_banking"
+        display_name: "Investment Banking"
+        level: 2
+        sort_order: 1
+        
+      - key: "fintech"
+        display_name: "FinTech"
+        description: "Financial technology companies"
+        level: 2
+        sort_order: 2
+        
+  # Healthcare Sector
+  - key: "healthcare"
+    display_name: "Healthcare"
+    description: "Healthcare and medical services"
+    level: 1
+    sort_order: 3
+    extra_metadata:
+      icon: "heartbeat"
+      color: "#E74C3C"
+    children:
+      - key: "pharmaceuticals"
+        display_name: "Pharmaceuticals"
+        description: "Pharmaceutical companies and drug development"
+        level: 2
+        sort_order: 1
+        
+      - key: "medical_devices"
+        display_name: "Medical Devices"
+        description: "Medical device manufacturing and development"
+        level: 2
+        sort_order: 2

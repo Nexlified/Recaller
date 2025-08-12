@@ -1,0 +1,67 @@
+# shared/config/reference-data/contact/interaction-types.yml
+version: "1.0.0"
+category: "contact"
+type: "interaction_types"
+name: "Interaction Types"
+description: "Types of interactions with contacts"
+
+values:
+  - key: "email"
+    display_name: "Email"
+    description: "Email communication"
+    sort_order: 1
+    extra_metadata:
+      icon: "envelope"
+      color: "#3498DB"
+      category: "digital"
+    is_system: true
+    
+  - key: "phone_call"
+    display_name: "Phone Call"
+    description: "Telephone conversation"
+    sort_order: 2
+    extra_metadata:
+      icon: "phone"
+      color: "#2ECC71"
+      category: "voice"
+    is_system: true
+    
+  - key: "video_call"
+    display_name: "Video Call"
+    description: "Video conference or call"
+    sort_order: 3
+    extra_metadata:
+      icon: "video"
+      color: "#9B59B6"
+      category: "video"
+    is_system: true
+    
+  - key: "in_person"
+    display_name: "In Person"
+    description: "Face-to-face meeting"
+    sort_order: 4
+    extra_metadata:
+      icon: "handshake"
+      color: "#E67E22"
+      category: "physical"
+    is_system: true
+    
+  - key: "text_message"
+    display_name: "Text Message"
+    description: "SMS or instant messaging"
+    sort_order: 5
+    extra_metadata:
+      icon: "comment"
+      color: "#1ABC9C"
+      category: "digital"
+    is_system: true
+    
+  - key: "social_media"
+    display_name: "Social Media"
+    description: "Social media interaction"
+    sort_order: 6
+    extra_metadata:
+      icon: "share-alt"
+      color: "#E74C3C"
+      category: "social"
+    is_system: true

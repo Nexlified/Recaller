@@ -1,0 +1,43 @@
+# shared/config/reference-data/core/genders.yml
+version: "1.0.0"
+category: "core"
+type: "genders"
+name: "Gender Options"
+description: "Standard gender identity options for user profiles"
+
+values:
+  - key: "male"
+    display_name: "Male"
+    description: "Male gender identity"
+    sort_order: 1
+    extra_metadata:
+      icon: "mars"
+      color: "#4A90E2"
+    is_system: true
+    
+  - key: "female"
+    display_name: "Female"
+    description: "Female gender identity"
+    sort_order: 2
+    extra_metadata:
+      icon: "venus"
+      color: "#E24A90"
+    is_system: true
+    
+  - key: "non_binary"
+    display_name: "Non-binary"
+    description: "Non-binary gender identity"
+    sort_order: 3
+    extra_metadata:
+      icon: "genderless"
+      color: "#9B59B6"
+    is_system: true
+    
+  - key: "prefer_not_to_say"
+    display_name: "Prefer not to say"
+    description: "User prefers not to disclose gender"
+    sort_order: 4
+    extra_metadata:
+      icon: "question"
+      color: "#95A5A6"
+    is_system: true

@@ -1,0 +1,70 @@
+# shared/config/reference-data/social/activities.yml
+version: "1.0.0"
+category: "social"
+type: "activities"
+name: "Social Activities"
+description: "Types of social activities for group events and personal interests"
+
+values:
+  # Professional Networking
+  - key: "professional_networking"
+    display_name: "Professional Networking"
+    description: "Business-focused networking activities"
+    tags: ["professional", "business", "career"]
+    extra_metadata:
+      icon: "handshake"
+      color: "#34495E"
+    children:
+      - key: "conference"
+        display_name: "Conference"
+        description: "Industry conferences and seminars"
+        
+      - key: "meetup"
+        display_name: "Professional Meetup"
+        description: "Professional networking meetups"
+        
+      - key: "workshop"
+        display_name: "Workshop"
+        description: "Professional development workshops"
+        
+  # Social Activities
+  - key: "social_casual"
+    display_name: "Casual Social"
+    description: "Informal social activities"
+    tags: ["social", "casual", "friendship"]
+    extra_metadata:
+      icon: "users"
+      color: "#E74C3C"
+    children:
+      - key: "coffee_chat"
+        display_name: "Coffee Chat"
+        description: "Informal coffee meetings"
+        
+      - key: "dinner_party"
+        display_name: "Dinner Party"
+        description: "Social dinner gatherings"
+        
+      - key: "game_night"
+        display_name: "Game Night"
+        description: "Board games or video game sessions"
+        
+  # Sports & Recreation
+  - key: "sports_recreation"
+    display_name: "Sports & Recreation"
+    description: "Physical activities and sports"
+    tags: ["sports", "fitness", "recreation"]
+    extra_metadata:
+      icon: "running"
+      color: "#2ECC71"
+    children:
+      - key: "team_sports"
+        display_name: "Team Sports"
+        description: "Group sports activities"
+        
+      - key: "fitness"
+        display_name: "Fitness"
+        description: "Gym and fitness activities"
+        
+      - key: "outdoor_activities"
+        display_name: "Outdoor Activities"
+        description: "Hiking, camping, and outdoor adventures"
