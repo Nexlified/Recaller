@@ -34,7 +34,7 @@ def get_current_user(
     except (JWTError, ValidationError):
         raise credentials_exception
     
-    user = get_user_by_id(db, int(token_data.sub))
+    user = get_user_by_id(db, int(token_data.sub), tenant_id=1)  # Using default tenant for now
     if not user:
         raise credentials_exception
     return user

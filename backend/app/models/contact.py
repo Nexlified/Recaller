@@ -9,10 +9,11 @@ class Contact(Base):
     id = Column(Integer, primary_key=True, index=True)
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
     created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
+
     # Basic Information
-    first_name = Column(String(255), nullable=False)
-    last_name = Column(String(255), nullable=False)
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=False)
+    full_name = Column(String(255), nullable=False)
     email = Column(String(255), index=True)
     phone = Column(String(50))
     
