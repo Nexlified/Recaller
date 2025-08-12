@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
 
@@ -10,3 +11,11 @@ class Tenant(Base):
     slug = Column(String, nullable=False, unique=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    # Relationships
+    users = relationship("User", back_populates="tenant")
+    contacts = relationship("Contact", back_populates="tenant")
+    organizations = relationship("Organization", back_populates="tenant")
+    social_groups = relationship("SocialGroup", back_populates="tenant")
+    networking_insights = relationship("NetworkingInsight", back_populates="tenant")
+    daily_metrics = relationship("DailyNetworkMetric", back_populates="tenant")
