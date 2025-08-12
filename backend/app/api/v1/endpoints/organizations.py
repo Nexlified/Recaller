@@ -1,5 +1,5 @@
 from typing import Any, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, Path
 from sqlalchemy.orm import Session
 
 from app.crud import organization as crud_organization
@@ -31,18 +31,176 @@ def get_pagination_meta(page: int, per_page: int, total: int) -> dict:
     }
 
 
-@router.get("/", response_model=OrganizationListResponse)
+@router.get(
+    "/", 
+    response_model=OrganizationListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List Organizations",
+    description="Retrieve a paginated list of organizations with filtering options",
+    responses={
+        200: {
+            "description": "Organizations retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "data": [
+                            {
+                                "id": 456,
+                                "name": "Technology Corporation Inc.",
+                                "short_name": "TechCorp",
+                                "organization_type": "company",
+                                "industry": "Technology",
+                                "size_category": "large",
+                                "website": "https://www.techcorp.com",
+                                "logo_url": "https://cdn.techcorp.com/logo.png",
+                                "employee_count": 5000,
+                                "address_city": "Palo Alto",
+                                "address_state": "California",
+                                "address_country_code": "US",
+                                "contact_count": 25
+                            }
+                        ],
+                        "pagination": {
+                            "total": 150,
+                            "page": 1,
+                            "per_page": 10,
+                            "total_pages": 15
+                        }
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Not authenticated"}
+                }
+            }
+        },
+        422: {
+            "description": "Invalid query parameters",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "loc": ["query", "page"],
+                                "msg": "ensure this value is greater than 0",
+                                "type": "value_error.number.not_gt"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    tags=["Organization Management"]
+)
 def list_organizations(
     request: Request,
-    page: int = Query(1, ge=1, description="Page number"),
-    per_page: int = Query(10, ge=1, le=100, description="Items per page"),
-    organization_type: Optional[str] = Query(None, description="Filter by organization type"),
-    industry: Optional[str] = Query(None, description="Filter by industry"),
-    search: Optional[str] = Query(None, description="Search in name, description, etc."),
-    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    page: int = Query(
+        1, 
+        ge=1, 
+        description="Page number for pagination (starts from 1)",
+        example=1
+    ),
+    per_page: int = Query(
+        10, 
+        ge=1, 
+        le=100, 
+        description="Number of organizations per page (max 100)",
+        example=10
+    ),
+    organization_type: Optional[str] = Query(
+        None, 
+        description="Filter by organization type (company, school, nonprofit, government, healthcare, religious)",
+        example="company"
+    ),
+    industry: Optional[str] = Query(
+        None, 
+        description="Filter by industry sector",
+        example="Technology"
+    ),
+    search: Optional[str] = Query(
+        None, 
+        description="Search term for organization name, description, or website",
+        example="tech"
+    ),
+    is_active: Optional[bool] = Query(
+        None, 
+        description="Filter by active status (true for active organizations only)",
+        example=True
+    ),
     db: Session = Depends(deps.get_db),
 ) -> Any:
-    """List organizations with pagination and filtering"""
+    """
+    **Retrieve a paginated list of organizations with advanced filtering.**
+    
+    Returns organizations within the current tenant with support for pagination,
+    search, and multiple filter criteria to help users find relevant organizations.
+    
+    **Authentication Required:**
+    - Valid JWT token in Authorization header
+    - Active user account
+    
+    **Filtering Options:**
+    - `organization_type`: Filter by type (company, school, nonprofit, etc.)
+    - `industry`: Filter by industry sector
+    - `search`: Text search across name, description, and website
+    - `is_active`: Show only active organizations
+    
+    **Pagination:**
+    - `page`: Page number (starts from 1)
+    - `per_page`: Items per page (1-100, default 10)
+    - Returns pagination metadata with total count and page info
+    
+    **Multi-tenancy:**
+    - Only shows organizations within the authenticated user's tenant
+    - Automatic tenant isolation enforced
+    
+    **Search Capabilities:**
+    - Full-text search across organization names
+    - Partial matching on descriptions and websites
+    - Case-insensitive search
+    
+    **Response Format:**
+    - `data`: Array of organization summary objects
+    - `pagination`: Metadata with total count, current page, and page info
+    - Optimized for listing with key fields only
+    
+    **Performance:**
+    - Indexed search for fast results
+    - Pagination prevents large result sets
+    - Efficient filtering at database level
+    
+    **Usage Examples:**
+    
+    List first page of all organizations:
+    ```bash
+    curl -X GET "http://localhost:8000/api/v1/organizations?page=1&per_page=10" \
+         -H "Authorization: Bearer <your-token>"
+    ```
+    
+    Search for technology companies:
+    ```bash
+    curl -X GET "http://localhost:8000/api/v1/organizations?search=tech&organization_type=company" \
+         -H "Authorization: Bearer <your-token>"
+    ```
+    
+    Filter by industry and location:
+    ```bash
+    curl -X GET "http://localhost:8000/api/v1/organizations?industry=Technology&is_active=true" \
+         -H "Authorization: Bearer <your-token>"
+    ```
+    
+    **Common Use Cases:**
+    - Browse organizations in CRM systems
+    - Find companies by industry or type
+    - Search for potential business partners
+    - Generate organization directories
+    - Export organization lists for analysis
+    """
     tenant_id = request.state.tenant.id
     skip = (page - 1) * per_page
     
