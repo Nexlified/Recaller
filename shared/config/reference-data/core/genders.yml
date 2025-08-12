@@ -1,0 +1,56 @@
+---
+version: "1.0.0"
+category: "core"
+type: "genders"
+name: "Gender Options"
+description: "Standard gender options for user profiles and forms"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "male"
+    display_name: "Male"
+    description: "Male gender identity"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "person"
+      color: "#2196F3"
+    tags: ["gender", "identity"]
+
+  - key: "female"
+    display_name: "Female"
+    description: "Female gender identity"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "person"
+      color: "#E91E63"
+    tags: ["gender", "identity"]
+
+  - key: "non_binary"
+    display_name: "Non-Binary"
+    description: "Non-binary gender identity"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "person"
+      color: "#9C27B0"
+    tags: ["gender", "identity", "inclusive"]
+
+  - key: "prefer_not_to_say"
+    display_name: "Prefer not to say"
+    description: "Option for users who prefer not to specify gender"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "help"
+      color: "#757575"
+    tags: ["privacy", "option"]

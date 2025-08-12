@@ -1,0 +1,86 @@
+---
+version: "1.0.0"
+category: "professional"
+type: "industries"
+name: "Industry Types"
+description: "Standard industry classifications for professional profiles"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "technology"
+    display_name: "Technology"
+    description: "Software, hardware, and technology services"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      naics_code: "54"
+      icon: "computer"
+      color: "#4CAF50"
+      category: "tech"
+    tags: ["technology", "software", "innovation"]
+    children:
+      - key: "software_development"
+        display_name: "Software Development"
+        description: "Custom computer programming services"
+        level: 2
+        parent_key: "technology"
+        sort_order: 0
+        metadata:
+          naics_code: "541511"
+          icon: "code"
+        tags: ["programming", "development"]
+
+      - key: "web_development"
+        display_name: "Web Development"
+        description: "Web application and website development"
+        level: 2
+        parent_key: "technology"
+        sort_order: 1
+        metadata:
+          naics_code: "541511"
+          icon: "web"
+        tags: ["web", "frontend", "backend"]
+
+  - key: "healthcare"
+    display_name: "Healthcare"
+    description: "Medical and healthcare services"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      naics_code: "62"
+      icon: "medical"
+      color: "#F44336"
+      category: "health"
+    tags: ["healthcare", "medical", "wellness"]
+
+  - key: "finance"
+    display_name: "Finance"
+    description: "Financial and insurance services"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      naics_code: "52"
+      icon: "money"
+      color: "#FF9800"
+      category: "finance"
+    tags: ["finance", "banking", "investment"]
+
+  - key: "education"
+    display_name: "Education"
+    description: "Educational services and institutions"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      naics_code: "61"
+      icon: "school"
+      color: "#2196F3"
+      category: "education"
+    tags: ["education", "teaching", "learning"]

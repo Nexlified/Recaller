@@ -1,0 +1,152 @@
+---
+version: "1.0.0"
+category: "core"
+type: "currencies"
+name: "Currencies"
+description: "ISO 4217 currency codes and symbols"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "usd"
+    display_name: "US Dollar"
+    description: "United States Dollar"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "USD"
+      symbol: "$"
+      numeric_code: "840"
+      decimal_places: 2
+      countries: ["US"]
+    tags: ["currency", "major", "north_america"]
+
+  - key: "eur"
+    display_name: "Euro"
+    description: "European Union Euro"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "EUR"
+      symbol: "€"
+      numeric_code: "978"
+      decimal_places: 2
+      countries: ["DE", "FR", "IT", "ES", "NL", "AT", "BE", "FI", "GR", "IE", "LU", "PT"]
+    tags: ["currency", "major", "europe"]
+
+  - key: "gbp"
+    display_name: "British Pound"
+    description: "British Pound Sterling"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "GBP"
+      symbol: "£"
+      numeric_code: "826"
+      decimal_places: 2
+      countries: ["GB"]
+    tags: ["currency", "major", "europe"]
+
+  - key: "jpy"
+    display_name: "Japanese Yen"
+    description: "Japanese Yen"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "JPY"
+      symbol: "¥"
+      numeric_code: "392"
+      decimal_places: 0
+      countries: ["JP"]
+    tags: ["currency", "major", "asia"]
+
+  - key: "cad"
+    display_name: "Canadian Dollar"
+    description: "Canadian Dollar"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "CAD"
+      symbol: "C$"
+      numeric_code: "124"
+      decimal_places: 2
+      countries: ["CA"]
+    tags: ["currency", "major", "north_america"]
+
+  - key: "aud"
+    display_name: "Australian Dollar"
+    description: "Australian Dollar"
+    sort_order: 5
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "AUD"
+      symbol: "A$"
+      numeric_code: "036"
+      decimal_places: 2
+      countries: ["AU"]
+    tags: ["currency", "major", "oceania"]
+
+  - key: "chf"
+    display_name: "Swiss Franc"
+    description: "Swiss Franc"
+    sort_order: 6
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "CHF"
+      symbol: "Fr"
+      numeric_code: "756"
+      decimal_places: 2
+      countries: ["CH"]
+    tags: ["currency", "major", "europe"]
+
+  - key: "cny"
+    display_name: "Chinese Yuan"
+    description: "Chinese Yuan Renminbi"
+    sort_order: 7
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "CNY"
+      symbol: "¥"
+      numeric_code: "156"
+      decimal_places: 2
+      countries: ["CN"]
+    tags: ["currency", "major", "asia"]
+
+  - key: "inr"
+    display_name: "Indian Rupee"
+    description: "Indian Rupee"
+    sort_order: 8
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "INR"
+      symbol: "₹"
+      numeric_code: "356"
+      decimal_places: 2
+      countries: ["IN"]
+    tags: ["currency", "major", "asia"]
+
+  - key: "krw"
+    display_name: "South Korean Won"
+    description: "South Korean Won"
+    sort_order: 9
+    is_system: true
+    is_active: true
+    metadata:
+      iso_code: "KRW"
+      symbol: "₩"
+      numeric_code: "410"
+      decimal_places: 0
+      countries: ["KR"]
+    tags: ["currency", "asia"]
