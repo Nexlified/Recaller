@@ -11,7 +11,8 @@ from app.models.analytics import (
     DailyNetworkMetric
 )
 from app.models.contact import Contact, ContactInteraction
-from app.models.organization import Organization, SocialGroup
+from app.models.organization import Organization
+from app.models.social_group import SocialGroup
 import json
 
 class AnalyticsService:

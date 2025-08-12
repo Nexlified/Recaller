@@ -208,7 +208,7 @@ class ConfigurationValidationResult(BaseModel):
 
 
 class ConfigurationHealth(BaseModel):
-    status: str = Field(..., regex="^(healthy|warning|error)$")
+    status: str = Field(..., pattern="^(healthy|warning|error)$")
     total_categories: int
     total_types: int
     total_values: int

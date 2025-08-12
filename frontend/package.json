@@ -25,7 +25,14 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:playwright": "playwright test",
+    "test:screenshots": "playwright test --project=chromium tests/playwright/",
+    "screenshots:frontend": "playwright test tests/playwright/frontend-snapshots.spec.ts",
+    "screenshots:backend": "playwright test tests/playwright/backend-snapshots.spec.ts",
+    "screenshots:all": "npm run screenshots:frontend && npm run screenshots:backend",
+    "screenshots:generate": "node scripts/take-screenshots.js",
+    "validate:playwright": "node scripts/validate-integration.js"
   },
   "eslintConfig": {
     "extends": [
@@ -48,9 +55,11 @@
   "devDependencies": {
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
+    "@playwright/test": "^1.54.2",
     "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.21",
     "axios": "^1.11.0",
+    "playwright": "^1.54.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11"
   }
