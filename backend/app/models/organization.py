@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, BigInteger
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, ARRAY, BigInteger
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -48,6 +48,8 @@ class Organization(Base):
     
     # Relationships
     tenant = relationship("Tenant", back_populates="organizations")
+    current_employees = relationship("Contact", foreign_keys="Contact.current_organization_id", back_populates="current_organization")
+    alumni = relationship("Contact", foreign_keys="Contact.alma_mater_id", back_populates="alma_mater")
     created_by = relationship("User")
     aliases = relationship("OrganizationAlias", back_populates="organization", cascade="all, delete-orphan")
     locations = relationship("OrganizationLocation", back_populates="organization", cascade="all, delete-orphan")
