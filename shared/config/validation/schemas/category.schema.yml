@@ -1,0 +1,81 @@
+---
+# shared/config/validation/schemas/category.schema.yml
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://recaller.app/schemas/category.schema.yml"
+title: "Configuration Category Schema"
+description: "Schema for validating category-specific constraints"
+
+definitions:
+  CoreCategory:
+    allOf:
+      - properties:
+          category:
+            const: "core"
+          type:
+            enum: ["genders", "countries", "timezones", "languages",
+                   "currencies"]
+      - if:
+          properties:
+            type:
+              const: "countries"
+        then:
+          properties:
+            values:
+              items:
+                properties:
+                  metadata:
+                    required: ["iso_code", "continent"]
+                    properties:
+                      iso_code:
+                        type: string
+                        pattern: "^[A-Z]{2}$"
+                      continent:
+                        type: string
+                        enum: ["Africa", "Asia", "Europe", "North America",
+                               "South America", "Oceania", "Antarctica"]
+
+  ProfessionalCategory:
+    allOf:
+      - properties:
+          category:
+            const: "professional"
+          type:
+            enum: ["industries", "job-levels", "organization-types",
+                   "skills", "certifications"]
+      - if:
+          properties:
+            type:
+              const: "industries"
+        then:
+          properties:
+            values:
+              items:
+                properties:
+                  metadata:
+                    properties:
+                      naics_code:
+                        type: string
+                        pattern: "^[0-9]{2,6}$"
+
+  SocialCategory:
+    properties:
+      category:
+        const: "social"
+      type:
+        enum: ["activities", "interests", "relationship-types",
+               "event-types", "group-types"]
+
+  ContactCategory:
+    properties:
+      category:
+        const: "contact"
+      type:
+        enum: ["interaction-types", "communication-preferences",
+               "networking-values", "follow-up-priorities",
+               "contact-sources"]
+
+oneOf:
+  - $ref: "#/definitions/CoreCategory"
+  - $ref: "#/definitions/ProfessionalCategory"
+  - $ref: "#/definitions/SocialCategory"
+  - $ref: "#/definitions/ContactCategory"

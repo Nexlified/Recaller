@@ -1,0 +1,80 @@
+---
+version: "1.0.0"
+category: "social"
+type: "activities"
+name: "Social Activities"
+description: "Common social activities for tracking personal interests"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+values:
+  - key: "sports"
+    display_name: "Sports"
+    description: "Physical sports and athletic activities"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "sports"
+      color: "#FF5722"
+      category: "physical"
+    tags: ["sports", "fitness", "outdoor"]
+    children:
+      - key: "running"
+        display_name: "Running"
+        description: "Jogging and running activities"
+        level: 2
+        parent_key: "sports"
+        sort_order: 0
+        metadata:
+          icon: "run"
+        tags: ["cardio", "endurance"]
+
+      - key: "swimming"
+        display_name: "Swimming"
+        description: "Swimming and water sports"
+        level: 2
+        parent_key: "sports"
+        sort_order: 1
+        metadata:
+          icon: "pool"
+        tags: ["water", "cardio"]
+
+  - key: "arts"
+    display_name: "Arts & Culture"
+    description: "Creative and cultural activities"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "palette"
+      color: "#9C27B0"
+      category: "creative"
+    tags: ["arts", "culture", "creative"]
+
+  - key: "gaming"
+    display_name: "Gaming"
+    description: "Video games and board games"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "games"
+      color: "#607D8B"
+      category: "entertainment"
+    tags: ["gaming", "entertainment", "digital"]
+
+  - key: "reading"
+    display_name: "Reading"
+    description: "Books, articles, and literature"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "book"
+      color: "#795548"
+      category: "intellectual"
+    tags: ["reading", "books", "learning"]
