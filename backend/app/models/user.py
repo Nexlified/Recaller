@@ -18,6 +18,6 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Tenant relationship - using default tenant for now, but structure is ready for multi-tenant
-    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
-    tenant = relationship("Tenant", back_populates="users")
-    networking_insights = relationship("NetworkingInsight", back_populates="user")
+    tenant_id = Column(Integer, nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
+    # tenant = relationship("Tenant", back_populates="users")
+    # networking_insights = relationship("NetworkingInsight", back_populates="user")
