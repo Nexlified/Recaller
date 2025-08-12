@@ -23,6 +23,6 @@ class Organization(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
-    contacts = relationship("Contact", back_populates="current_organization")
-    alumni_contacts = relationship("Contact", back_populates="alma_mater")
+    # Relationships - removed back_populates to avoid ambiguity
+    # contacts = relationship("Contact", back_populates="current_organization")
+    # alumni_contacts = relationship("Contact", back_populates="alma_mater")

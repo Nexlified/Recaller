@@ -103,8 +103,8 @@ class Contact(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    current_organization = relationship("Organization", foreign_keys=[current_organization_id], back_populates="contacts")
-    alma_mater = relationship("Organization", foreign_keys=[alma_mater_id], back_populates="alumni_contacts")
+    current_organization = relationship("Organization", foreign_keys=[current_organization_id])
+    alma_mater = relationship("Organization", foreign_keys=[alma_mater_id])
     primary_social_group = relationship("SocialGroup", back_populates="primary_contacts")
     
     # Interaction relationships
