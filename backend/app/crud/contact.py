@@ -20,15 +20,23 @@ def get_contacts(
     db: Session, 
     skip: int = 0, 
     limit: int = 100, 
-    tenant_id: int = 1,
-    is_active: Optional[bool] = None
+    tenant_id: int = 1
 ) -> List[Contact]:
-    query = db.query(Contact).filter(Contact.tenant_id == tenant_id)
-    
-    if is_active is not None:
-        query = query.filter(Contact.is_active == is_active)
-    
-    return query.offset(skip).limit(limit).all()
+    return db.query(Contact).filter(
+        Contact.tenant_id == tenant_id
+    ).offset(skip).limit(limit).all()
+
+
+def get_contacts_by_email(
+    db: Session, 
+    email: str, 
+    tenant_id: int
+) -> List[Contact]:
+    return db.query(Contact).filter(
+        Contact.email == email,
+        Contact.tenant_id == tenant_id
+    ).all()
+
 
 def create_contact(
     db: Session, 
@@ -64,9 +72,25 @@ def update_contact(
     db.refresh(db_obj)
     return db_obj
 
-def delete_contact(db: Session, contact_id: int, tenant_id: int = 1) -> Optional[Contact]:
+
+def delete_contact(db: Session, contact_id: int, tenant_id: int) -> Optional[Contact]:
     contact = get_contact(db, contact_id=contact_id, tenant_id=tenant_id)
     if contact:
         db.delete(contact)
         db.commit()
     return contact
+
+
+def search_contacts(
+    db: Session,
+    query: str,
+    tenant_id: int,
+    skip: int = 0,
+    limit: int = 100
+) -> List[Contact]:
+    return db.query(Contact).filter(
+        Contact.tenant_id == tenant_id,
+        Contact.full_name.ilike(f"%{query}%") |
+        Contact.email.ilike(f"%{query}%") |
+        Contact.company.ilike(f"%{query}%")
+    ).offset(skip).limit(limit).all()
