@@ -43,7 +43,7 @@ def list_organizations(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """List organizations with pagination and filtering"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     skip = (page - 1) * per_page
     
     organizations = crud_organization.get_organizations(
@@ -102,7 +102,7 @@ def search_organizations(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Search organizations by name, industry, location"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     organizations = crud_organization.search_organizations(
         db=db,
@@ -141,7 +141,7 @@ def get_organization_suggestions(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Get organization suggestions for autocomplete"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     organizations = crud_organization.get_organization_suggestions(
         db=db,
@@ -178,7 +178,7 @@ def get_organization(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Get organization by ID with optional related data"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     include_aliases = False
     include_locations = False
@@ -211,7 +211,7 @@ def create_organization(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Create new organization"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     organization = crud_organization.create_organization(
         db=db,
@@ -233,7 +233,7 @@ def update_organization(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Update organization"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     organization = crud_organization.get_organization_by_id(
         db=db, organization_id=organization_id, tenant_id=tenant_id
@@ -258,7 +258,7 @@ def delete_organization(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Delete organization"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     organization = crud_organization.delete_organization(
         db=db, organization_id=organization_id, tenant_id=tenant_id
@@ -279,7 +279,7 @@ def get_organizations_by_type(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Get organizations by type (school, company, etc.)"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     skip = (page - 1) * per_page
     
     organizations = crud_organization.get_organizations_by_type(
@@ -319,7 +319,7 @@ def get_organizations_by_industry(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Get organizations by industry"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     skip = (page - 1) * per_page
     
     organizations = crud_organization.get_organizations_by_industry(
@@ -361,7 +361,7 @@ def add_organization_alias(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Add alias to organization"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     alias = crud_organization.create_organization_alias(
         db=db,
@@ -386,7 +386,7 @@ def remove_organization_alias(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Remove alias from organization"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     alias = crud_organization.delete_organization_alias(
         db=db,
@@ -409,7 +409,7 @@ def get_organization_locations(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Get organization locations"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     locations = crud_organization.get_organization_locations(
         db=db,
@@ -430,7 +430,7 @@ def add_organization_location(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Add location to organization"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     location = crud_organization.create_organization_location(
         db=db,
@@ -456,7 +456,7 @@ def update_organization_location(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Update organization location"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     location = crud_organization.update_organization_location(
         db=db,
@@ -482,7 +482,7 @@ def remove_organization_location(
     current_user = Depends(deps.get_current_active_user),
 ) -> Any:
     """Remove organization location"""
-    tenant_id = request.state.tenant_id
+    tenant_id = request.state.tenant.id
     
     location = crud_organization.delete_organization_location(
         db=db,
