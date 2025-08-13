@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
 
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.api.v1.api import api_router
+from app.services.task_scheduler import task_scheduler_service
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -46,6 +48,25 @@ async def db_and_tenant_middleware(request: Request, call_next):
     return response
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start the task scheduler when the application starts."""
+    try:
+        task_scheduler_service.start()
+    except Exception as e:
+        print(f"Warning: Could not start task scheduler: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop the task scheduler when the application shuts down."""
+    try:
+        task_scheduler_service.stop()
+    except Exception as e:
+        print(f"Warning: Could not stop task scheduler: {e}")
+
 
 @app.get("/")
 def read_root():

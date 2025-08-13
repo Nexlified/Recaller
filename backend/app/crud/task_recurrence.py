@@ -235,7 +235,8 @@ def generate_next_task_instance(
         priority=base_task.priority,
         start_date=datetime.combine(next_due_date, datetime.min.time()) if next_due_date else None,
         due_date=datetime.combine(next_due_date, datetime.min.time()) if next_due_date else None,
-        is_recurring=False  # Individual instances are not recurring
+        is_recurring=False,  # Individual instances are not recurring
+        parent_task_id=base_task.id  # Link to the parent recurring task
     )
     
     db.add(new_task)
