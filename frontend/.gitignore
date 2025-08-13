@@ -29,3 +29,5 @@ yarn-error.log*
 
 # Screenshots (uncomment to ignore locally generated screenshots)
 # /screenshots/
+
+/.next
