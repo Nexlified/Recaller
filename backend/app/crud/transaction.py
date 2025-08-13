@@ -195,6 +195,32 @@ def create_transaction(
     db.refresh(db_obj)
     return db_obj
 
+def create(
+    db: Session,
+    *,
+    obj_in: TransactionCreate
+) -> Transaction:
+    """Create a new transaction (alternative method)"""
+    db_obj = Transaction(**obj_in.dict())
+    db.add(db_obj)
+    db.commit() 
+    db.refresh(db_obj)
+    return db_obj
+
+def get_by_recurring_and_date(
+    db: Session,
+    *,
+    recurring_id: int,
+    transaction_date: date
+) -> Optional[Transaction]:
+    """Check if a transaction already exists for this recurring template and date"""
+    return db.query(Transaction).filter(
+        and_(
+            Transaction.recurring_template_id == recurring_id,
+            Transaction.transaction_date == transaction_date
+        )
+    ).first()
+
 def update_transaction(
     db: Session,
     *,

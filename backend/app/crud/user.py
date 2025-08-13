@@ -20,6 +20,14 @@ def get_user_by_id(db: Session, user_id: int, tenant_id: int = 1) -> Optional[Us
 def get_users(db: Session, skip: int = 0, limit: int = 100, tenant_id: int = 1):
     return db.query(User).filter(User.tenant_id == tenant_id).offset(skip).limit(limit).all()
 
+def get_all_active(db: Session, skip: int = 0, limit: int = 1000):
+    """Get all active users across all tenants"""
+    return db.query(User).filter(User.is_active == True).offset(skip).limit(limit).all()
+
+def get(db: Session, id: int) -> Optional[User]:
+    """Get user by ID"""
+    return db.query(User).filter(User.id == id).first()
+
 def create_user(db: Session, obj_in: UserCreate, tenant_id: int = 1) -> User:
     db_obj = User(
         email=obj_in.email,

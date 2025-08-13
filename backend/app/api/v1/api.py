@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, contacts, events, analytics, organizations, social_groups, 
     social_group_activities, configuration, tasks, task_scheduler,
-    transactions_simple
+    transactions_simple, background_tasks
 )
 
 api_router = APIRouter()
@@ -20,3 +20,6 @@ api_router.include_router(task_scheduler.router, prefix="/task-scheduler", tags=
 
 # Financial Management (simplified for testing)
 api_router.include_router(transactions_simple.router, prefix="/transactions", tags=["Transactions"])
+
+# Background Tasks
+api_router.include_router(background_tasks.router, prefix="/background-tasks", tags=["Background Tasks"])
