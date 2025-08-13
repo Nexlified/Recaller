@@ -13,3 +13,10 @@ from app.models.analytics import (
     SocialGroupAnalytics
 )
 from app.models.event import Event, ContactEventAttendance, EventTag, EventFollowUp
+from app.models.task import Task, TaskContact, TaskRecurrence, TaskCategory, TaskCategoryAssignment
+from app.models.financial_account import FinancialAccount
+from app.models.transaction_category import TransactionCategory
+from app.models.transaction_subcategory import TransactionSubcategory
+from app.models.recurring_transaction import RecurringTransaction
+from app.models.transaction import Transaction
+from app.models.budget import Budget
