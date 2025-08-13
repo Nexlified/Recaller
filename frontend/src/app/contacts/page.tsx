@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import authService from '@/services/auth';
 import { ContactForm } from '@/components/contacts/ContactForm';
+import { ConfirmDialog } from '@/components/contacts/ConfirmDialog';
 import contactsService, { Contact } from '@/services/contacts';
 import type { User } from '@/services/auth';
 
@@ -12,7 +13,17 @@ export default function ContactsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [loadingContacts, setLoadingContacts] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    contact: Contact | null;
+    isDeleting: boolean;
+  }>({
+    isOpen: false,
+    contact: null,
+    isDeleting: false,
+  });
 
   useEffect(() => {
     // Check if user is authenticated
@@ -44,10 +55,58 @@ export default function ContactsPage() {
   };
 
   const handleContactCreated = (newContact: Contact) => {
-    setContacts(prev => [newContact, ...prev]);
+    if (editingContact) {
+      // Update existing contact
+      setContacts(prev => prev.map(contact => 
+        contact.id === editingContact.id ? newContact : contact
+      ));
+      setEditingContact(null);
+      alert('Contact updated successfully!');
+    } else {
+      // Add new contact
+      setContacts(prev => [newContact, ...prev]);
+      alert('Contact created successfully!');
+    }
     setShowForm(false);
-    // Show success message (you could add a toast notification here)
-    alert('Contact created successfully!');
+  };
+
+  const handleEditContact = (contact: Contact) => {
+    setEditingContact(contact);
+    setShowForm(true);
+  };
+
+  const handleDeleteContact = (contact: Contact) => {
+    setDeleteDialog({
+      isOpen: true,
+      contact,
+      isDeleting: false,
+    });
+  };
+
+  const confirmDeleteContact = async () => {
+    if (!deleteDialog.contact) return;
+
+    setDeleteDialog(prev => ({ ...prev, isDeleting: true }));
+
+    try {
+      await contactsService.deleteContact(deleteDialog.contact.id);
+      setContacts(prev => prev.filter(contact => contact.id !== deleteDialog.contact!.id));
+      setDeleteDialog({ isOpen: false, contact: null, isDeleting: false });
+      alert('Contact deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      alert('Failed to delete contact. Please try again.');
+      setDeleteDialog(prev => ({ ...prev, isDeleting: false }));
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialog({ isOpen: false, contact: null, isDeleting: false });
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingContact(null);
   };
 
   if (isLoading) {
@@ -114,7 +173,8 @@ export default function ContactsPage() {
           {showForm ? (
             <ContactForm
               onSuccess={handleContactCreated}
-              onCancel={() => setShowForm(false)}
+              onCancel={handleFormCancel}
+              editingContact={editingContact}
             />
           ) : (
             <div>
@@ -168,10 +228,16 @@ export default function ContactsPage() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <button className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                            <button 
+                              onClick={() => handleEditContact(contact)}
+                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                            >
                               Edit
                             </button>
-                            <button className="text-red-600 hover:text-red-900 text-sm font-medium">
+                            <button 
+                              onClick={() => handleDeleteContact(contact)}
+                              className="text-red-600 hover:text-red-900 text-sm font-medium"
+                            >
                               Delete
                             </button>
                           </div>
@@ -216,6 +282,18 @@ export default function ContactsPage() {
           )}
         </div>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title="Delete Contact"
+        message={`Are you sure you want to delete ${deleteDialog.contact?.first_name} ${deleteDialog.contact?.last_name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteContact}
+        onCancel={cancelDelete}
+        isLoading={deleteDialog.isDeleting}
+      />
     </div>
   );
 }

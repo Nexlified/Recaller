@@ -8,6 +8,7 @@ interface ContactFormProps {
   onSuccess?: (contact: Contact) => void;
   onCancel?: () => void;
   demoMode?: boolean;
+  editingContact?: Contact | null;
 }
 
 interface FormErrors {
@@ -18,17 +19,19 @@ interface FormErrors {
   general?: string;
 }
 
-export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, demoMode = false }) => {
+export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, demoMode = false, editingContact = null }) => {
+  const isEditing = !!editingContact;
+  
   const [formData, setFormData] = useState<ContactCreate>({
-    first_name: '',
-    last_name: '',
-    full_name: '',
-    email: '',
-    phone: '',
-    title: '',
-    company: '',
-    notes: '',
-    is_active: true,
+    first_name: editingContact?.first_name || '',
+    last_name: editingContact?.last_name || '',
+    full_name: editingContact?.full_name || '',
+    email: editingContact?.email || '',
+    phone: editingContact?.phone || '',
+    title: editingContact?.title || '',
+    company: editingContact?.company || '',
+    notes: editingContact?.notes || '',
+    is_active: editingContact?.is_active ?? true,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -71,7 +74,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
       } else if (!demoMode) {
         try {
           const emailValidation = await contactsService.validateEmail(formData.email);
-          if (emailValidation.exists) {
+          // When editing, allow the same email if it belongs to the same contact
+          if (emailValidation.exists && (!isEditing || editingContact?.email !== formData.email)) {
             newErrors.email = 'A contact with this email already exists';
           }
         } catch (error) {
@@ -88,7 +92,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
       } else if (!demoMode) {
         try {
           const phoneValidation = await contactsService.validatePhone(formData.phone);
-          if (phoneValidation.exists) {
+          // When editing, allow the same phone if it belongs to the same contact
+          if (phoneValidation.exists && (!isEditing || editingContact?.phone !== formData.phone)) {
             newErrors.phone = 'A contact with this phone number already exists';
           }
         } catch (error) {
@@ -118,11 +123,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
       if (demoMode) {
         // In demo mode, just simulate success
         const mockContact = {
-          id: Date.now(),
-          tenant_id: 1,
-          created_by_user_id: 1,
+          id: isEditing ? editingContact!.id : Date.now(),
+          tenant_id: isEditing ? editingContact!.tenant_id : 1,
+          created_by_user_id: isEditing ? editingContact!.created_by_user_id : 1,
           ...formData,
-          created_at: new Date().toISOString(),
+          created_at: isEditing ? editingContact!.created_at : new Date().toISOString(),
+          updated_at: isEditing ? new Date().toISOString() : undefined,
           is_active: true,
         };
         
@@ -130,25 +136,33 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
           onSuccess(mockContact);
         }
       } else {
-        const newContact = await contactsService.createContact(formData);
+        let updatedContact: Contact;
+        
+        if (isEditing) {
+          updatedContact = await contactsService.updateContact(editingContact!.id, formData);
+        } else {
+          updatedContact = await contactsService.createContact(formData);
+        }
         
         if (onSuccess) {
-          onSuccess(newContact);
+          onSuccess(updatedContact);
         }
       }
       
-      // Reset form
-      setFormData({
-        first_name: '',
-        last_name: '',
-        full_name: '',
-        email: '',
-        phone: '',
-        title: '',
-        company: '',
-        notes: '',
-        is_active: true,
-      });
+      // Reset form only if creating a new contact
+      if (!isEditing) {
+        setFormData({
+          first_name: '',
+          last_name: '',
+          full_name: '',
+          email: '',
+          phone: '',
+          title: '',
+          company: '',
+          notes: '',
+          is_active: true,
+        });
+      }
       setIsExpanded(false);
       
     } catch (error: unknown) {
@@ -158,10 +172,10 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
         if (apiError.response?.data?.detail) {
           setErrors({ general: apiError.response.data.detail });
         } else {
-          setErrors({ general: 'An error occurred while creating the contact. Please try again.' });
+          setErrors({ general: 'An error occurred while saving the contact. Please try again.' });
         }
       } else {
-        setErrors({ general: 'An error occurred while creating the contact. Please try again.' });
+        setErrors({ general: 'An error occurred while saving the contact. Please try again.' });
       }
     } finally {
       setIsSubmitting(false);
@@ -170,7 +184,9 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
 
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Contact</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        {isEditing ? 'Edit Contact' : 'Create New Contact'}
+      </h2>
       
       {errors.general && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -346,7 +362,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
             disabled={isSubmitting}
             className="px-4 py-2 text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Creating...' : 'Create Contact'}
+            {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Contact' : 'Create Contact')}
           </button>
         </div>
       </form>
