@@ -1,6 +1,6 @@
 """add_contact_visibility_scope
 
-Revision ID: 56acbb5a0ee1
+Revision ID: 008_add_contact_visibility
 Revises: 007_create_events
 Create Date: 2025-08-13 09:45:54.315629
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '56acbb5a0ee1'
+revision = '008_add_contact_visibility'
 down_revision = '007_create_events'
 branch_labels = None
 depends_on = None
