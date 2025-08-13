@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, ForeignKey, Text, 
-    Date, Time, DECIMAL, ARRAY
+    Date, Time, DECIMAL, JSON
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -110,7 +110,7 @@ class ContactEventAttendance(Base):
     # Notes and Memories
     personal_notes = Column(Text)
     memorable_moments = Column(Text)
-    photos_with_contact = Column(ARRAY(String))  # URLs or paths to photos
+    photos_with_contact = Column(JSON)  # Changed from ARRAY(String) for SQLite compatibility
     
     # Audit
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

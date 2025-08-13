@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, ARRAY, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -38,7 +38,7 @@ class Contact(Base):
     follow_up_notes = Column(Text)
     
     # Tags and Categories
-    tags = Column(ARRAY(String), default=list)
+    tags = Column(JSON, default=list)  # Changed from ARRAY(String) for SQLite compatibility
     contact_source = Column(String(50))  # event, referral, social, professional
     
     # Status
@@ -83,7 +83,7 @@ class ContactInteraction(Base):
     # Content
     title = Column(String(200))
     description = Column(Text)
-    topics_discussed = Column(ARRAY(String), default=list)
+    topics_discussed = Column(JSON, default=list)  # Changed from ARRAY(String) for SQLite compatibility
     
     # Outcomes
     follow_up_required = Column(Boolean, default=False)
