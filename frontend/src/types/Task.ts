@@ -101,6 +101,17 @@ export interface TaskRecurrenceCreate {
   lead_time_days?: number;
 }
 
+// Task Recurrence update interface
+export interface TaskRecurrenceUpdate {
+  recurrence_type?: RecurrenceType;
+  recurrence_interval?: number;
+  days_of_week?: string;
+  day_of_month?: number;
+  end_date?: string; // ISO string
+  max_occurrences?: number;
+  lead_time_days?: number;
+}
+
 // Task Contact Association
 export interface TaskContactCreate {
   contact_id: number;
@@ -163,3 +174,42 @@ export const RECURRENCE_TYPE_OPTIONS: { value: RecurrenceType; label: string }[]
   { value: 'yearly', label: 'Yearly' },
   { value: 'custom', label: 'Custom' },
 ];
+
+// Analytics and Reports interfaces
+export interface TaskAnalytics {
+  total_tasks: number;
+  completed_tasks: number;
+  pending_tasks: number;
+  in_progress_tasks: number;
+  overdue_tasks: number;
+  completion_rate: number;
+  average_completion_time_days: number;
+}
+
+export interface ProductivityMetrics {
+  tasks_created_today: number;
+  tasks_completed_today: number;
+  tasks_completed_this_week: number;
+  tasks_completed_this_month: number;
+  daily_completion_average: number;
+  peak_productivity_hour: number;
+  most_productive_day: string;
+}
+
+export interface CategoryAnalytics {
+  category_id: number;
+  category_name: string;
+  total_tasks: number;
+  completed_tasks: number;
+  completion_rate: number;
+  average_completion_time_days: number;
+}
+
+export interface CompletionReport {
+  period_start: string; // ISO string
+  period_end: string; // ISO string
+  total_tasks_completed: number;
+  completion_rate: number;
+  categories: CategoryAnalytics[];
+  daily_completions: { date: string; count: number }[];
+}
