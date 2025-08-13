@@ -19,7 +19,7 @@ class RecurringTransactionBase(BaseModel):
     end_date: Optional[date] = None
     reminder_days: int = Field(default=3, ge=0)
     is_active: bool = True
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
     @field_validator('end_date')
     @classmethod
@@ -48,7 +48,7 @@ class RecurringTransactionUpdate(BaseModel):
     end_date: Optional[date] = None
     reminder_days: Optional[int] = Field(None, ge=0)
     is_active: Optional[bool] = None
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 # Recurring Transaction schema with database fields
 class RecurringTransactionInDBBase(RecurringTransactionBase):

@@ -17,7 +17,7 @@ class TransactionBase(BaseModel):
     is_recurring: bool = False
     recurring_template_id: Optional[int] = None
     attachments: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 # Create Transaction schema
 class TransactionCreate(TransactionBase):
@@ -37,7 +37,7 @@ class TransactionUpdate(BaseModel):
     is_recurring: Optional[bool] = None
     recurring_template_id: Optional[int] = None
     attachments: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 # Transaction schema with relationships
 class TransactionInDBBase(TransactionBase):
