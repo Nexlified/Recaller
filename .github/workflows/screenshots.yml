@@ -41,24 +41,47 @@ jobs:
           cd backend
           pip install -r requirements.txt
 
-      - name: 🚀 Start backend server
+      - name: 🗄️ Run database migrations
         run: |
           cd backend
-          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-          # Wait for backend to be ready
-          for i in {1..30}; do
-            if curl -s http://localhost:8000 > /dev/null; then
-              echo "Backend is ready"
-              break
-            fi
-            echo "Waiting for backend..."
-            sleep 2
-          done
+          alembic upgrade head
         env:
           POSTGRES_SERVER: localhost
           POSTGRES_USER: recaller
           POSTGRES_PASSWORD: recaller
           POSTGRES_DB: recaller
+          POSTGRES_PORT: 5432
+
+      - name: 🚀 Start backend server
+        run: |
+          cd backend
+          echo "Starting backend server..."
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          BACKEND_PID=$!
+          echo "Backend PID: $BACKEND_PID"
+          
+          # Wait for backend to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:8000 > /dev/null; then
+              echo "Backend is ready"
+              curl -s http://localhost:8000 | head -5
+              break
+            fi
+            echo "Waiting for backend... (attempt $i/30)"
+            sleep 2
+          done
+          
+          # Check if backend is still running
+          if ! kill -0 $BACKEND_PID 2>/dev/null; then
+            echo "Backend process died!"
+            exit 1
+          fi
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: recaller
+          POSTGRES_PASSWORD: recaller
+          POSTGRES_DB: recaller
+          POSTGRES_PORT: 5432
 
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
@@ -77,19 +100,45 @@ jobs:
           cd frontend
           npx playwright install --with-deps chromium
 
+      - name: 🏗️ Build frontend
+        run: |
+          cd frontend
+          npm run build
+
       - name: 🚀 Start frontend server
         run: |
           cd frontend
+          echo "Starting frontend server..."
           npm start &
+          FRONTEND_PID=$!
+          echo "Frontend PID: $FRONTEND_PID"
+          
           # Wait for frontend to be ready
           for i in {1..30}; do
             if curl -s http://localhost:3000 > /dev/null; then
               echo "Frontend is ready"
+              curl -s http://localhost:3000 | head -5
               break
             fi
-            echo "Waiting for frontend..."
+            echo "Waiting for frontend... (attempt $i/30)"
             sleep 2
           done
+          
+          # Check if frontend is still running
+          if ! kill -0 $FRONTEND_PID 2>/dev/null; then
+            echo "Frontend process died!"
+            exit 1
+          fi
+
+      - name: 🔍 Verify servers are accessible
+        run: |
+          echo "Verifying backend server..."
+          curl -f http://localhost:8000 || (echo "Backend not accessible" && exit 1)
+          
+          echo "Verifying frontend server..."
+          curl -f http://localhost:3000 || (echo "Frontend not accessible" && exit 1)
+          
+          echo "Both servers are accessible!"
 
       - name: 📸 Take screenshots
         run: |
@@ -135,7 +184,7 @@ jobs:
             for (const screenshot of screenshots) {
               const name = screenshot.replace('.png', '').replace('-', ' ');
               commentBody += `### ${name.charAt(0).toUpperCase() + name.slice(1)}\n`;
-              commentBody += `![${name}](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/${screenshotsDir}/${screenshot}?raw=true)\n\n`;
+              commentBody += `![${name}](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/${context.payload.pull_request.head.ref}/${screenshotsDir}/${screenshot}?raw=true)\n\n`;
             }
             
             commentBody += `---\n*Screenshots generated automatically by Playwright* 🎭`;
