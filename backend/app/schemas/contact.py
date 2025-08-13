@@ -1,6 +1,12 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from enum import Enum
+
+
+class ContactVisibility(str, Enum):
+    PRIVATE = "private"
+    PUBLIC = "public"
 
 
 class ContactBase(BaseModel):
@@ -11,6 +17,7 @@ class ContactBase(BaseModel):
     job_title: Optional[str] = None
     organization_id: Optional[int] = None
     notes: Optional[str] = None
+    visibility: Optional[ContactVisibility] = ContactVisibility.PRIVATE
     is_active: Optional[bool] = True
 
 
@@ -26,6 +33,7 @@ class ContactUpdate(BaseModel):
     job_title: Optional[str] = None
     organization_id: Optional[int] = None
     notes: Optional[str] = None
+    visibility: Optional[ContactVisibility] = None
     is_active: Optional[bool] = None
 
 

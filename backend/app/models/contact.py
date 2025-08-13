@@ -1,7 +1,14 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Numeric, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
+import enum
+
+import enum
+
+class ContactVisibility(enum.Enum):
+    PRIVATE = "private"
+    PUBLIC = "public"
 
 class Contact(Base):
     __tablename__ = "contacts"
@@ -22,6 +29,9 @@ class Contact(Base):
     
     # Notes
     notes = Column(Text)
+    
+    # Visibility scope
+    visibility = Column(String(10), nullable=False, default=ContactVisibility.PRIVATE.value, index=True)
     
     # Status
     is_active = Column(Boolean, default=True)
