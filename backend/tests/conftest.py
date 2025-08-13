@@ -122,6 +122,61 @@ class TestSocialGroupActivityAttendance(TestBase):
     attendance_notes = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+# Task models for testing
+class TestTask(TestBase):
+    __tablename__ = "tasks"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text)
+    status = Column(String(20), nullable=False, default='pending', index=True)
+    priority = Column(String(10), nullable=False, default='medium', index=True)
+    start_date = Column(DateTime(timezone=True))
+    due_date = Column(DateTime(timezone=True), index=True)
+    completed_at = Column(DateTime(timezone=True))
+    is_recurring = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class TestTaskContact(TestBase):
+    __tablename__ = "task_contacts"
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id", ondelete="CASCADE"), nullable=False, index=True)
+    relationship_context = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class TestTaskRecurrence(TestBase):
+    __tablename__ = "task_recurrence"
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    recurrence_type = Column(String(20), nullable=False)
+    recurrence_interval = Column(Integer, nullable=False, default=1)
+    days_of_week = Column(String(7))
+    day_of_month = Column(Integer)
+    end_date = Column(Date)
+    max_occurrences = Column(Integer)
+    lead_time_days = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class TestTaskCategory(TestBase):
+    __tablename__ = "task_categories"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    color = Column(String(7))
+    description = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class TestTaskCategoryAssignment(TestBase):
+    __tablename__ = "task_category_assignments"
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    category_id = Column(Integer, ForeignKey("task_categories.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
 # Test database configuration
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_simple.db"
 

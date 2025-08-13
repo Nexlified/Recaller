@@ -20,13 +20,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add DB session middleware
+# Combined DB session and tenant middleware
 @app.middleware("http")
-async def db_session_middleware(request: Request, call_next):
+async def db_and_tenant_middleware(request: Request, call_next):
+    # First set up DB session
     request.state.db = SessionLocal()
-    # Set default tenant for all requests (preparing for future multi-tenant support)
-    request.state.tenant_id = 1
+    
+    # Then set up tenant
+    tenant_slug = request.headers.get("X-Tenant-ID", "default")
+    
+    # Get tenant using the database session
+    from app.crud.tenant import get_tenant_by_slug
+    tenant = get_tenant_by_slug(request.state.db, tenant_slug)
+    if not tenant:
+        tenant = get_tenant_by_slug(request.state.db, "default")
+    
+    # Store tenant in request state
+    request.state.tenant = tenant
+    
+    # Process request
     response = await call_next(request)
+    
+    # Clean up DB session
     request.state.db.close()
     return response
 
