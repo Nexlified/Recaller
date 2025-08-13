@@ -9,9 +9,6 @@ class ContactBase(BaseModel):
     full_name: str
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    title: Optional[str] = None
-    company: Optional[str] = None
-    notes: Optional[str] = None
     is_active: Optional[bool] = True
 
 
@@ -25,9 +22,6 @@ class ContactUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    title: Optional[str] = None
-    company: Optional[str] = None
-    notes: Optional[str] = None
     is_active: Optional[bool] = None
 
 

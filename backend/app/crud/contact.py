@@ -91,6 +91,5 @@ def search_contacts(
     return db.query(Contact).filter(
         Contact.tenant_id == tenant_id,
         Contact.full_name.ilike(f"%{query}%") |
-        Contact.email.ilike(f"%{query}%") |
-        Contact.company.ilike(f"%{query}%")
+        Contact.email.ilike(f"%{query}%")
     ).offset(skip).limit(limit).all()
