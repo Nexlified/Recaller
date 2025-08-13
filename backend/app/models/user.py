@@ -24,8 +24,11 @@ class User(Base):
     tenant = relationship(lambda: Tenant, back_populates="users")
     contacts = relationship(lambda: Contact, back_populates="created_by")
     networking_insights = relationship(lambda: NetworkingInsight, back_populates="user")
+    tasks = relationship(lambda: Task, back_populates="user")
+    task_categories = relationship(lambda: TaskCategory, back_populates="user")
 
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant
 from app.models.contact import Contact
 from app.models.analytics import NetworkingInsight
+from app.models.task import Task, TaskCategory
