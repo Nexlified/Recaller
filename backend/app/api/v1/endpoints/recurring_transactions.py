@@ -1,6 +1,6 @@
 from typing import Any, List
 from datetime import date, timedelta
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -15,10 +15,10 @@ def create_recurring_transaction(
     db: Session = Depends(deps.get_db),
     recurring_in: schemas.RecurringTransactionCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Create new recurring transaction."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     recurring_data = recurring_in.dict()
     recurring_data["user_id"] = current_user.id
     recurring_data["tenant_id"] = tenant_id
@@ -44,10 +44,10 @@ def create_recurring_transaction(
 def read_recurring_transactions(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Retrieve recurring transactions with next occurrence info."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     recurring_transactions = crud.recurring_transaction.get_by_user(
         db, user_id=current_user.id, tenant_id=tenant_id
     )
@@ -69,10 +69,10 @@ def get_due_reminders(
     db: Session = Depends(deps.get_db),
     days_ahead: int = 7,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get recurring transactions due for reminders."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     reminder_date = date.today() + timedelta(days=days_ahead)
     
     due_reminders = crud.recurring_transaction.get_due_reminders(
@@ -87,10 +87,10 @@ def generate_transaction_from_recurring(
     id: int,
     background_tasks: BackgroundTasks,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Generate transaction from recurring template."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     recurring = crud.recurring_transaction.get_recurring_transaction_by_user(
         db=db, recurring_id=id, user_id=current_user.id, tenant_id=tenant_id
     )
@@ -128,10 +128,10 @@ def process_all_due_recurring(
     db: Session = Depends(deps.get_db),
     background_tasks: BackgroundTasks,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Process all due recurring transactions for the user."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = RecurringTransactionService(db)
     
     background_tasks.add_task(

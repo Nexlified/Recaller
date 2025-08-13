@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from datetime import date, datetime, timedelta
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -14,10 +14,10 @@ def get_dashboard_summary(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get financial dashboard summary."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = FinancialAnalyticsService(db)
     
     summary = service.get_dashboard_summary(user_id=current_user.id, tenant_id=tenant_id)
@@ -29,10 +29,10 @@ def get_cash_flow_analysis(
     db: Session = Depends(deps.get_db),
     months: int = Query(default=6, le=24),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get cash flow analysis for specified months."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = FinancialAnalyticsService(db)
     
     cash_flow = service.get_cash_flow_analysis(
@@ -49,10 +49,10 @@ def get_spending_trends(
     period: str = Query(default="monthly", regex="^(weekly|monthly|quarterly)$"),
     months: int = Query(default=12, le=24),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get spending trends analysis."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = FinancialAnalyticsService(db)
     
     trends = service.get_spending_trends(
@@ -68,10 +68,10 @@ def get_net_worth_tracking(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get net worth tracking data."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = FinancialAnalyticsService(db)
     
     net_worth = service.calculate_net_worth(user_id=current_user.id, tenant_id=tenant_id)
@@ -84,10 +84,10 @@ def get_category_analysis(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get detailed category spending analysis."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = FinancialAnalyticsService(db)
     
     if not date_from:

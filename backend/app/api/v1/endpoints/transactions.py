@@ -1,31 +1,32 @@
 from typing import Any, List, Optional
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, models
+from app.schemas import transaction as transaction_schemas
+from app.schemas import financial_account as financial_account_schemas
 from app.api import deps
 from app.core.config import settings
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.Transaction)
+@router.post("/", response_model=transaction_schemas.Transaction)
 def create_transaction(
     *,
     db: Session = Depends(deps.get_db),
-    transaction_in: schemas.TransactionCreate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    transaction_in: transaction_transaction_schemas.TransactionCreate,
+    current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """Create new transaction."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     transaction_data = transaction_in.dict()
     transaction_data["user_id"] = current_user.id
     transaction_data["tenant_id"] = tenant_id
     
     transaction = crud.transaction.create_transaction(
         db=db, 
-        obj_in=schemas.TransactionCreate(**transaction_data),
+        obj_in=transaction_transaction_schemas.TransactionCreate(**transaction_data),
         user_id=current_user.id,
         tenant_id=tenant_id
     )
@@ -44,7 +45,7 @@ def create_transaction(
     
     return transaction
 
-@router.get("/", response_model=List[schemas.Transaction])
+@router.get("/", response_model=List[transaction_schemas.Transaction])
 def read_transactions(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -55,11 +56,10 @@ def read_transactions(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     search: Optional[str] = Query(None),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """Retrieve transactions with filtering."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     
     filters = {}
     if type:
@@ -85,16 +85,16 @@ def read_transactions(
     )
     return transactions
 
-@router.get("/{id}", response_model=schemas.TransactionWithDetails)
+@router.get("/{id}", response_model=transaction_transaction_schemas.TransactionWithDetails)
 def read_transaction(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get transaction by ID."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     transaction = crud.transaction.get_transaction_by_user(
         db=db, transaction_id=id, user_id=current_user.id, tenant_id=tenant_id
     )
@@ -102,17 +102,17 @@ def read_transaction(
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
 
-@router.put("/{id}", response_model=schemas.Transaction)
+@router.put("/{id}", response_model=transaction_schemas.Transaction)
 def update_transaction(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    transaction_in: schemas.TransactionUpdate,
+    transaction_in: transaction_transaction_schemas.TransactionUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Update transaction."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     transaction = crud.transaction.get_transaction_by_user(
         db=db, transaction_id=id, user_id=current_user.id, tenant_id=tenant_id
     )
@@ -156,10 +156,10 @@ def delete_transaction(
     db: Session = Depends(deps.get_db),
     id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Delete transaction."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     transaction = crud.transaction.get_transaction_by_user(
         db=db, transaction_id=id, user_id=current_user.id, tenant_id=tenant_id
     )
@@ -188,10 +188,10 @@ def get_monthly_summary(
     year: int = Query(...),
     month: int = Query(...),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get monthly transaction summary."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     summary = crud.transaction.get_monthly_summary(
         db, user_id=current_user.id, tenant_id=tenant_id, year=year, month=month
     )
@@ -204,10 +204,10 @@ def get_category_breakdown(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get spending breakdown by category."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     breakdown = crud.transaction.get_category_breakdown(
         db, user_id=current_user.id, tenant_id=tenant_id, date_from=date_from, date_to=date_to
     )
@@ -217,12 +217,12 @@ def get_category_breakdown(
 def bulk_create_transactions(
     *,
     db: Session = Depends(deps.get_db),
-    transactions_in: List[schemas.TransactionCreate],
+    transactions_in: List[transaction_transaction_schemas.TransactionCreate],
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Bulk create transactions (for import)."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     created_transactions = []
     failed_transactions = []
     
@@ -234,7 +234,7 @@ def bulk_create_transactions(
             
             transaction = crud.transaction.create_transaction(
                 db=db, 
-                obj_in=schemas.TransactionCreate(**transaction_dict),
+                obj_in=transaction_transaction_schemas.TransactionCreate(**transaction_dict),
                 user_id=current_user.id,
                 tenant_id=tenant_id
             )

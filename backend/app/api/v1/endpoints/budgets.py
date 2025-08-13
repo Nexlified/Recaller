@@ -1,6 +1,6 @@
 from typing import Any, List
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -15,10 +15,10 @@ def create_budget(
     db: Session = Depends(deps.get_db),
     budget_in: schemas.BudgetCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Create new budget."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     budget_data = budget_in.dict()
     budget_data["user_id"] = current_user.id
     budget_data["tenant_id"] = tenant_id
@@ -35,10 +35,10 @@ def create_budget(
 def read_budgets(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Retrieve budgets with spending summaries."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     budgets = crud.budget.get_by_user(db, user_id=current_user.id, tenant_id=tenant_id)
     
     # Add spending summaries
@@ -57,10 +57,10 @@ def get_budget_alerts(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    request: Request
+    
 ) -> Any:
     """Get budget alerts for overspending."""
-    tenant_id = request.state.tenant.id
+    tenant_id = current_user.tenant_id
     service = BudgetService(db)
     alerts = service.get_budget_alerts(user_id=current_user.id, tenant_id=tenant_id)
     return alerts

@@ -9,7 +9,7 @@ class BudgetBase(BaseModel):
     category_id: Optional[int] = None
     subcategory_id: Optional[int] = None
     budget_amount: Decimal = Field(..., gt=0, decimal_places=2)
-    period: str = Field(..., regex="^(monthly|quarterly|yearly)$")
+    period: str = Field(..., pattern="^(monthly|quarterly|yearly)$")
     start_date: date
     end_date: Optional[date] = None
     alert_percentage: int = Field(default=80, ge=0, le=100)
@@ -32,7 +32,7 @@ class BudgetUpdate(BaseModel):
     category_id: Optional[int] = None
     subcategory_id: Optional[int] = None
     budget_amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2)
-    period: Optional[str] = Field(None, regex="^(monthly|quarterly|yearly)$")
+    period: Optional[str] = Field(None, pattern="^(monthly|quarterly|yearly)$")
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     alert_percentage: Optional[int] = Field(None, ge=0, le=100)
