@@ -139,6 +139,44 @@ def get_category_breakdown(
     
     return query.group_by(Transaction.category_id).all()
 
+def get_account_summary(
+    db: Session,
+    *,
+    account_id: int,
+    user_id: int
+) -> Dict[str, Any]:
+    """Get transaction summary for a specific account"""
+    query = db.query(Transaction).filter(
+        and_(
+            Transaction.account_id == account_id,
+            Transaction.user_id == user_id
+        )
+    )
+    
+    total_credits = query.filter(Transaction.type == 'credit').with_entities(
+        func.sum(Transaction.amount)
+    ).scalar() or 0
+    
+    total_debits = query.filter(Transaction.type == 'debit').with_entities(
+        func.sum(Transaction.amount)
+    ).scalar() or 0
+    
+    transaction_count = query.count()
+    
+    last_transaction = query.order_by(desc(Transaction.transaction_date)).first()
+    last_transaction_date = last_transaction.transaction_date if last_transaction else None
+    
+    return {
+        'transaction_count': transaction_count,
+        'total_credits': total_credits,
+        'total_debits': total_debits,
+        'last_transaction_date': last_transaction_date
+    }
+
+def count_by_account(db: Session, account_id: int) -> int:
+    """Count transactions for a specific account"""
+    return db.query(Transaction).filter(Transaction.account_id == account_id).count()
+
 def create_transaction(
     db: Session,
     *,

@@ -7,6 +7,10 @@ from app.models.budget import Budget
 from app.models.transaction import Transaction
 from app.schemas.budget import BudgetCreate, BudgetUpdate
 
+def get(db: Session, id: int) -> Optional[Budget]:
+    """Get a single budget by ID"""
+    return db.query(Budget).filter(Budget.id == id).first()
+
 def get_budget(
     db: Session,
     budget_id: int,
@@ -35,7 +39,7 @@ def get_budget_by_user(
         )
     ).first()
 
-def get_budgets_by_user(
+def get_by_user(
     db: Session,
     *,
     user_id: int,
@@ -54,6 +58,16 @@ def get_budgets_by_user(
         query = query.filter(Budget.is_active == True)
     
     return query.order_by(Budget.name).all()
+
+def get_budgets_by_user(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    active_only: bool = True
+) -> List[Budget]:
+    """Get budgets for a user"""
+    return get_by_user(db, user_id=user_id, tenant_id=tenant_id, active_only=active_only)
 
 def get_budget_spending_summary(
     db: Session,
@@ -123,7 +137,7 @@ def get_budget_spending_summary(
         'period_end': end_date
     }
 
-def create_budget(
+def create(
     db: Session,
     *,
     obj_in: BudgetCreate,
@@ -141,7 +155,17 @@ def create_budget(
     db.refresh(db_obj)
     return db_obj
 
-def update_budget(
+def create_budget(
+    db: Session,
+    *,
+    obj_in: BudgetCreate,
+    user_id: int,
+    tenant_id: int
+) -> Budget:
+    """Create a new budget"""
+    return create(db, obj_in=obj_in, user_id=user_id, tenant_id=tenant_id)
+
+def update(
     db: Session,
     *,
     db_obj: Budget,
@@ -156,6 +180,23 @@ def update_budget(
     db.commit()
     db.refresh(db_obj)
     return db_obj
+
+def update_budget(
+    db: Session,
+    *,
+    db_obj: Budget,
+    obj_in: BudgetUpdate
+) -> Budget:
+    """Update an existing budget"""
+    return update(db, db_obj=db_obj, obj_in=obj_in)
+
+def remove(db: Session, *, id: int) -> Optional[Budget]:
+    """Delete a budget (hard delete)"""
+    obj = db.query(Budget).get(id)
+    if obj:
+        db.delete(obj)
+        db.commit()
+    return obj
 
 def delete_budget(
     db: Session,

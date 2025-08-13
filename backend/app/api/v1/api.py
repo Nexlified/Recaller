@@ -1,5 +1,9 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, contacts, events, analytics, organizations, social_groups, social_group_activities, configuration, tasks, task_scheduler
+from app.api.v1.endpoints import (
+    auth, users, contacts, events, analytics, organizations, social_groups, 
+    social_group_activities, configuration, tasks, task_scheduler,
+    transactions, financial_accounts, recurring_transactions, budgets, financial_analytics
+)
 
 api_router = APIRouter()
 api_router.include_router(auth.router, tags=["Authentication"])
@@ -13,3 +17,10 @@ api_router.include_router(contacts.router, prefix="/contacts", tags=["Contacts"]
 api_router.include_router(events.router, prefix="/events", tags=["Events"])
 api_router.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 api_router.include_router(task_scheduler.router, prefix="/task-scheduler", tags=["Task Scheduler"])
+
+# Financial Management
+api_router.include_router(transactions.router, prefix="/transactions", tags=["Transactions"])
+api_router.include_router(financial_accounts.router, prefix="/financial-accounts", tags=["Financial Accounts"])
+api_router.include_router(recurring_transactions.router, prefix="/recurring-transactions", tags=["Recurring Transactions"])
+api_router.include_router(budgets.router, prefix="/budgets", tags=["Budgets"])
+api_router.include_router(financial_analytics.router, prefix="/financial-analytics", tags=["Financial Analytics"])

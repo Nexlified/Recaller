@@ -6,6 +6,10 @@ from sqlalchemy import and_, func
 from app.models.recurring_transaction import RecurringTransaction
 from app.schemas.recurring_transaction import RecurringTransactionCreate, RecurringTransactionUpdate
 
+def get(db: Session, id: int) -> Optional[RecurringTransaction]:
+    """Get a single recurring transaction by ID"""
+    return db.query(RecurringTransaction).filter(RecurringTransaction.id == id).first()
+
 def get_recurring_transaction(
     db: Session,
     recurring_id: int,
@@ -34,7 +38,7 @@ def get_recurring_transaction_by_user(
         )
     ).first()
 
-def get_recurring_transactions_by_user(
+def get_by_user(
     db: Session,
     *,
     user_id: int,
@@ -53,6 +57,16 @@ def get_recurring_transactions_by_user(
         query = query.filter(RecurringTransaction.is_active == True)
     
     return query.order_by(RecurringTransaction.next_due_date).all()
+
+def get_recurring_transactions_by_user(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    active_only: bool = True
+) -> List[RecurringTransaction]:
+    """Get recurring transactions for a user"""
+    return get_by_user(db, user_id=user_id, tenant_id=tenant_id, active_only=active_only)
 
 def get_due_reminders(
     db: Session,
@@ -98,7 +112,7 @@ def calculate_next_due_date(recurring_transaction: RecurringTransaction) -> date
     
     return current_date
 
-def create_recurring_transaction(
+def create(
     db: Session,
     *,
     obj_in: RecurringTransactionCreate,
@@ -117,7 +131,17 @@ def create_recurring_transaction(
     db.refresh(db_obj)
     return db_obj
 
-def update_recurring_transaction(
+def create_recurring_transaction(
+    db: Session,
+    *,
+    obj_in: RecurringTransactionCreate,
+    user_id: int,
+    tenant_id: int
+) -> RecurringTransaction:
+    """Create a new recurring transaction"""
+    return create(db, obj_in=obj_in, user_id=user_id, tenant_id=tenant_id)
+
+def update(
     db: Session,
     *,
     db_obj: RecurringTransaction,
@@ -137,6 +161,15 @@ def update_recurring_transaction(
     db.refresh(db_obj)
     return db_obj
 
+def update_recurring_transaction(
+    db: Session,
+    *,
+    db_obj: RecurringTransaction,
+    obj_in: RecurringTransactionUpdate
+) -> RecurringTransaction:
+    """Update an existing recurring transaction"""
+    return update(db, db_obj=db_obj, obj_in=obj_in)
+
 def update_next_due_date(
     db: Session,
     *,
@@ -148,6 +181,14 @@ def update_next_due_date(
     db.commit()
     db.refresh(db_obj)
     return db_obj
+
+def remove(db: Session, *, id: int) -> Optional[RecurringTransaction]:
+    """Delete a recurring transaction (hard delete)"""
+    obj = db.query(RecurringTransaction).get(id)
+    if obj:
+        db.delete(obj)
+        db.commit()
+    return obj
 
 def delete_recurring_transaction(
     db: Session,
