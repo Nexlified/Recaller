@@ -1,0 +1,62 @@
+FROM python:3.13-slim as builder
+
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /code
+
+# Copy and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# This approach requires database to be available during build
+# Use with caution and only when database is guaranteed to be accessible
+# during container build process
+
+# Multi-stage build approach for when you want to run migrations at build time
+FROM builder as migration-runner
+
+# Set environment variables for database connection
+# These should be provided as build args or environment variables
+ARG POSTGRES_SERVER
+ARG POSTGRES_USER
+ARG POSTGRES_PASSWORD
+ARG POSTGRES_DB
+ARG POSTGRES_PORT=5432
+
+ENV POSTGRES_SERVER=${POSTGRES_SERVER}
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ENV POSTGRES_DB=${POSTGRES_DB}
+ENV POSTGRES_PORT=${POSTGRES_PORT}
+
+# Wait for database and run migrations
+# NOTE: This only works if database is accessible during build
+RUN if [ -n "$POSTGRES_SERVER" ]; then \
+        echo "Waiting for database to be ready..." && \
+        timeout 30 bash -c 'until pg_isready -h "$POSTGRES_SERVER" -p "$POSTGRES_PORT" -U "$POSTGRES_USER"; do sleep 1; done' && \
+        echo "Running migrations..." && \
+        alembic upgrade head && \
+        echo "Migrations completed successfully!"; \
+    else \
+        echo "Database connection not configured for build-time migrations"; \
+    fi
+
+# Final stage
+FROM builder as final
+
+# Copy migration state from previous stage (if any)
+COPY --from=migration-runner /code /code
+
+# Copy and make entrypoint script executable
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Set the entrypoint (still useful for startup-time migrations as fallback)
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+# Default command
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
