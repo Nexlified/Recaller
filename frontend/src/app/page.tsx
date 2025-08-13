@@ -96,15 +96,24 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white p-6 rounded-lg shadow">
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Finances</h3>
-                  <p className="text-gray-600 text-sm">Manage your financial information</p>
+                  <p className="text-gray-600 text-sm mb-4">Manage your financial information</p>
+                  <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                    Coming Soon
+                  </button>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow">
+                <Link href="/contacts" className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Contacts</h3>
-                  <p className="text-gray-600 text-sm">Keep track of your connections</p>
-                </div>
+                  <p className="text-gray-600 text-sm mb-4">Keep track of your connections</p>
+                  <span className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                    Manage Contacts →
+                  </span>
+                </Link>
                 <div className="bg-white p-6 rounded-lg shadow">
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Activities</h3>
-                  <p className="text-gray-600 text-sm">Plan and track social activities</p>
+                  <p className="text-gray-600 text-sm mb-4">Plan and track social activities</p>
+                  <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                    Coming Soon
+                  </button>
                 </div>
               </div>
             </div>
