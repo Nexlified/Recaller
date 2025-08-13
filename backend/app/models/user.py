@@ -21,4 +21,4 @@ class User(Base):
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
     tenant = relationship("Tenant", back_populates="users")
     # networking_insights = relationship("NetworkingInsight", back_populates="user")
-    contacts = relationship("Contact", back_populates="created_by")
+    # contacts = relationship("Contact", back_populates="created_by")  # Commented out to avoid circular import in minimal setup
