@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
 
@@ -16,5 +17,5 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Tenant relationship - using default tenant for now, but structure is ready for multi-tenant
-    tenant_id = Column(Integer, nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
+    # Tenant relationship - using default tenant for now, but structure is ready for multi-tenant  
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
