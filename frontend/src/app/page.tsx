@@ -78,7 +78,7 @@ export default function Home() {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Your personal assistant dashboard will be available here soon.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Finances</h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Manage your financial information</p>
@@ -91,6 +91,13 @@ export default function Home() {
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Keep track of your connections</p>
                   <span className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
                     Manage Contacts →
+                  </span>
+                </Link>
+                <Link href="/tasks" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Tasks</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Organize and track your tasks</p>
+                  <span className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
+                    Manage Tasks →
                   </span>
                 </Link>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
