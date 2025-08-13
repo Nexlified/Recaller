@@ -11,7 +11,8 @@ import type { User } from '@/services/auth';
 export default function ContactsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [ownContacts, setOwnContacts] = useState<Contact[]>([]);
+  const [publicContacts, setPublicContacts] = useState<Contact[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [loadingContacts, setLoadingContacts] = useState(false);
@@ -35,13 +36,24 @@ export default function ContactsPage() {
     if (currentUser) {
       loadContacts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadContacts = async () => {
     try {
       setLoadingContacts(true);
-      const contactsList = await contactsService.getContacts();
-      setContacts(contactsList);
+      
+      // Load all contacts (owned + public)
+      const allContacts = await contactsService.getContacts();
+      
+      // Separate own contacts from public contacts
+      const own = allContacts.filter(contact => contact.created_by_user_id === user?.id);
+      const otherPublic = allContacts.filter(contact => 
+        contact.created_by_user_id !== user?.id && contact.visibility === ContactVisibility.PUBLIC
+      );
+      
+      setOwnContacts(own);
+      setPublicContacts(otherPublic);
     } catch (error) {
       console.error('Error loading contacts:', error);
     } finally {
@@ -57,14 +69,14 @@ export default function ContactsPage() {
   const handleContactCreated = (newContact: Contact) => {
     if (editingContact) {
       // Update existing contact
-      setContacts(prev => prev.map(contact => 
+      setOwnContacts(prev => prev.map(contact => 
         contact.id === editingContact.id ? newContact : contact
       ));
       setEditingContact(null);
       alert('Contact updated successfully!');
     } else {
-      // Add new contact
-      setContacts(prev => [newContact, ...prev]);
+      // Add new contact to own contacts
+      setOwnContacts(prev => [newContact, ...prev]);
       alert('Contact created successfully!');
     }
     setShowForm(false);
@@ -90,7 +102,7 @@ export default function ContactsPage() {
 
     try {
       await contactsService.deleteContact(deleteDialog.contact.id);
-      setContacts(prev => prev.filter(contact => contact.id !== deleteDialog.contact!.id));
+      setOwnContacts(prev => prev.filter(contact => contact.id !== deleteDialog.contact!.id));
       setDeleteDialog({ isOpen: false, contact: null, isDeleting: false });
       alert('Contact deleted successfully!');
     } catch (error) {
@@ -107,6 +119,117 @@ export default function ContactsPage() {
   const handleFormCancel = () => {
     setShowForm(false);
     setEditingContact(null);
+  };
+
+  const handleVisibilityChange = async (contact: Contact, newVisibility: ContactVisibility) => {
+    try {
+      const updatedContact = await contactsService.updateContactVisibility(contact.id, newVisibility);
+      
+      // Update the contact in the appropriate list
+      setOwnContacts(prev => prev.map(c => 
+        c.id === contact.id ? updatedContact : c
+      ));
+      
+      alert('Contact visibility updated successfully!');
+    } catch (error) {
+      console.error('Error updating contact visibility:', error);
+      alert('Failed to update contact visibility. Please try again.');
+    }
+  };
+
+  const renderContactList = (contacts: Contact[], isOwner: boolean, title: string) => {
+    if (loadingContacts) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-lg text-gray-600">Loading {title.toLowerCase()}...</div>
+        </div>
+      );
+    }
+
+    if (contacts.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-gray-500">No {title.toLowerCase()} found.</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <ul className="divide-y divide-gray-200">
+          {contacts.map((contact) => (
+            <li key={contact.id} className="px-6 py-4 hover:bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-700">
+                        {contact.first_name.charAt(0)}{contact.last_name?.charAt(0) || ''}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm font-medium text-gray-900">
+                      {contact.first_name} {contact.last_name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {contact.email && <span>{contact.email}</span>}
+                      {contact.email && contact.phone && <span> • </span>}
+                      {contact.phone && <span>{contact.phone}</span>}
+                    </div>
+                    {contact.job_title && (
+                      <div className="text-sm text-gray-500">
+                        {contact.job_title}
+                      </div>
+                    )}
+                    {/* Visibility indicator */}
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        contact.visibility === ContactVisibility.PUBLIC 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {contact.visibility === ContactVisibility.PUBLIC ? '🌍 Public' : '🔒 Private'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {isOwner && (
+                    <>
+                      {/* Visibility toggle */}
+                      <select
+                        value={contact.visibility}
+                        onChange={(e) => handleVisibilityChange(contact, e.target.value as ContactVisibility)}
+                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value={ContactVisibility.PRIVATE}>Private</option>
+                        <option value={ContactVisibility.PUBLIC}>Public</option>
+                      </select>
+                      <button 
+                        onClick={() => handleEditContact(contact)}
+                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteContact(contact)}
+                        className="text-red-600 hover:text-red-900 text-sm font-medium"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {!isOwner && (
+                    <span className="text-gray-400 text-sm">View only</span>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -192,61 +315,20 @@ export default function ContactsPage() {
                 </button>
               </div>
 
-              {/* Contacts List */}
-              {loadingContacts ? (
-                <div className="text-center py-8">
-                  <div className="text-lg text-gray-600">Loading contacts...</div>
-                </div>
-              ) : contacts.length > 0 ? (
-                <div className="bg-white shadow rounded-lg overflow-hidden">
-                  <ul className="divide-y divide-gray-200">
-                    {contacts.map((contact) => (
-                      <li key={contact.id} className="px-6 py-4 hover:bg-gray-50">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {contact.first_name.charAt(0)}{contact.last_name?.charAt(0) || ''}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {contact.first_name} {contact.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {contact.email && <span>{contact.email}</span>}
-                                {contact.email && contact.phone && <span> • </span>}
-                                {contact.phone && <span>{contact.phone}</span>}
-                              </div>
-                              {contact.job_title && (
-                                <div className="text-sm text-gray-500">
-                                  {contact.job_title}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <button 
-                              onClick={() => handleEditContact(contact)}
-                              className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteContact(contact)}
-                              className="text-red-600 hover:text-red-900 text-sm font-medium"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
+              {/* Your Contacts Section */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Contacts</h3>
+                {renderContactList(ownContacts, true, "Your Contacts")}
+              </div>
+
+              {/* Public Contacts Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Public Contacts</h3>
+                {renderContactList(publicContacts, false, "Public Contacts")}
+              </div>
+
+              {/* Show empty state only if both lists are empty and not loading */}
+              {!loadingContacts && ownContacts.length === 0 && publicContacts.length === 0 && (
                 <div className="text-center py-12">
                   <svg
                     className="mx-auto h-12 w-12 text-gray-400"

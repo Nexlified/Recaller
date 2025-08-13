@@ -171,9 +171,34 @@ export default function ContactEditDeleteDemo() {
                               {contact.job_title}
                             </div>
                           )}
+                          {/* Visibility indicator */}
+                          <div className="mt-1">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              contact.visibility === ContactVisibility.PUBLIC 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {contact.visibility === ContactVisibility.PUBLIC ? '🌍 Public' : '🔒 Private'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
+                        {/* Visibility toggle for demo */}
+                        <select
+                          value={contact.visibility}
+                          onChange={(e) => {
+                            const newVisibility = e.target.value as ContactVisibility;
+                            setContacts(prev => prev.map(c => 
+                              c.id === contact.id ? { ...c, visibility: newVisibility } : c
+                            ));
+                            alert(`Demo: Contact visibility changed to ${newVisibility}`);
+                          }}
+                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                          <option value={ContactVisibility.PRIVATE}>Private</option>
+                          <option value={ContactVisibility.PUBLIC}>Public</option>
+                        </select>
                         <button 
                           onClick={() => handleEditContact(contact)}
                           className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"

@@ -79,7 +79,7 @@ class ContactsService {
   }
 
   async updateContactVisibility(contactId: number, visibility: ContactVisibility): Promise<Contact> {
-    const response = await api.patch<Contact>(`/contacts/${contactId}/visibility`, visibility);
+    const response = await api.patch<Contact>(`/contacts/${contactId}/visibility?visibility=${visibility}`);
     return response.data;
   }
 
