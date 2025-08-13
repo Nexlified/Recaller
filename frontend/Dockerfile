@@ -1,7 +1,7 @@
-FROM oven/bun:1
+FROM node:22-slim
 WORKDIR /app
-COPY package.json bun.lockb ./
-RUN bun install
+COPY package.json package-lock.json ./
+RUN npm install
 COPY . .
-RUN bun run build
-CMD ["bun", "start"]
+RUN npm run build
+CMD ["npm", "start"]
