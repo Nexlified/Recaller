@@ -72,6 +72,42 @@ def get_contact(
     return contact
 
 
+@router.get("/validate/email/{email}")
+def validate_email(
+    *,
+    db: Session = Depends(deps.get_db),
+    email: str,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Check if contact with email already exists.
+    """
+    contact = contact_crud.get_contact_by_email(
+        db, 
+        email=email, 
+        tenant_id=current_user.tenant_id
+    )
+    return {"exists": contact is not None, "email": email}
+
+
+@router.get("/validate/phone/{phone}")
+def validate_phone(
+    *,
+    db: Session = Depends(deps.get_db),
+    phone: str,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Check if contact with phone already exists.
+    """
+    contact = contact_crud.get_contact_by_phone(
+        db, 
+        phone=phone, 
+        tenant_id=current_user.tenant_id
+    )
+    return {"exists": contact is not None, "phone": phone}
+
+
 @router.post("/", response_model=Contact)
 def create_contact(
     *,
@@ -82,6 +118,32 @@ def create_contact(
     """
     Create new contact.
     """
+    # Check for duplicate email
+    if contact_in.email:
+        existing_email = contact_crud.get_contact_by_email(
+            db, 
+            email=contact_in.email, 
+            tenant_id=current_user.tenant_id
+        )
+        if existing_email:
+            raise HTTPException(
+                status_code=400, 
+                detail="Contact with this email already exists"
+            )
+    
+    # Check for duplicate phone
+    if contact_in.phone:
+        existing_phone = contact_crud.get_contact_by_phone(
+            db, 
+            phone=contact_in.phone, 
+            tenant_id=current_user.tenant_id
+        )
+        if existing_phone:
+            raise HTTPException(
+                status_code=400, 
+                detail="Contact with this phone number already exists"
+            )
+    
     contact = contact_crud.create_contact(
         db, 
         obj_in=contact_in, 

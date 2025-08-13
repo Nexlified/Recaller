@@ -38,6 +38,24 @@ def get_contacts_by_email(
     ).all()
 
 
+def get_contact_by_phone(db: Session, phone: str, tenant_id: int = 1) -> Optional[Contact]:
+    return db.query(Contact).filter(
+        Contact.phone == phone,
+        Contact.tenant_id == tenant_id
+    ).first()
+
+
+def get_contacts_by_phone(
+    db: Session, 
+    phone: str, 
+    tenant_id: int
+) -> List[Contact]:
+    return db.query(Contact).filter(
+        Contact.phone == phone,
+        Contact.tenant_id == tenant_id
+    ).all()
+
+
 def create_contact(
     db: Session, 
     obj_in: ContactCreate, 
