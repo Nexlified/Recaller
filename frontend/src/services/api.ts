@@ -34,6 +34,12 @@ api.interceptors.response.use(
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
+    } else if (error.response?.status === 403) {
+      // Handle tenant access violations
+      if (typeof window !== 'undefined') {
+        // You could show a toast notification here
+        console.error('Access denied for this tenant:', error.response.data?.detail);
+      }
     }
     return Promise.reject(error);
   }
