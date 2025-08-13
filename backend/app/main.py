@@ -1,12 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 
-from app.api.v1.endpoints import auth
 from app.core.config import settings
 from app.db.session import SessionLocal
-# Import minimal models for auth functionality
-from app.db import base_minimal
+from app.api.v1.api import api_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -33,7 +30,7 @@ async def db_session_middleware(request: Request, call_next):
     request.state.db.close()
     return response
 
-app.include_router(auth.router, prefix=settings.API_V1_STR, tags=["authentication"])
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def read_root():
