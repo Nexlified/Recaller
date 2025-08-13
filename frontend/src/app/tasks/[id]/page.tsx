@@ -242,27 +242,27 @@ export default function TaskDetailPage() {
     if (taskId) {
       loadTaskData();
     }
-  }, [taskId, router]); // Remove loadTaskData from dependencies to avoid infinite loop
-
-  const loadTaskData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const [taskData, categoriesData] = await Promise.all([
-        tasksService.getTask(taskId),
-        tasksService.getCategories()
-      ]);
-      
-      setTask(taskData);
-      setCategories(categoriesData);
-    } catch (err) {
-      console.error('Error loading task:', err);
-      setError('Failed to load task details');
-    } finally {
-      setLoading(false);
+    
+    async function loadTaskData() {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [taskData, categoriesData] = await Promise.all([
+          tasksService.getTask(taskId),
+          tasksService.getCategories()
+        ]);
+        
+        setTask(taskData);
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error('Error loading task:', err);
+        setError('Failed to load task details');
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+  }, [taskId, router]);
 
   const handleLogout = async () => {
     await authService.logout();
