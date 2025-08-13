@@ -16,3 +16,4 @@ test_recaller.db
 backend/.env
 backend/test_recaller.db
 backend/app/db/base_minimal.py
+*.db
