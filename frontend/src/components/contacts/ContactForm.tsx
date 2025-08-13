@@ -7,6 +7,7 @@ import contactsService from '../../services/contacts';
 interface ContactFormProps {
   onSuccess?: (contact: Contact) => void;
   onCancel?: () => void;
+  demoMode?: boolean;
 }
 
 interface FormErrors {
@@ -17,7 +18,7 @@ interface FormErrors {
   general?: string;
 }
 
-export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel }) => {
+export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, demoMode = false }) => {
   const [formData, setFormData] = useState<ContactCreate>({
     first_name: '',
     last_name: '',
@@ -67,7 +68,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel })
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         newErrors.email = 'Please enter a valid email address';
-      } else {
+      } else if (!demoMode) {
         try {
           const emailValidation = await contactsService.validateEmail(formData.email);
           if (emailValidation.exists) {
@@ -84,7 +85,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel })
       const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
       if (!phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
         newErrors.phone = 'Please enter a valid phone number';
-      } else {
+      } else if (!demoMode) {
         try {
           const phoneValidation = await contactsService.validatePhone(formData.phone);
           if (phoneValidation.exists) {
@@ -114,10 +115,26 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel })
         return;
       }
 
-      const newContact = await contactsService.createContact(formData);
-      
-      if (onSuccess) {
-        onSuccess(newContact);
+      if (demoMode) {
+        // In demo mode, just simulate success
+        const mockContact = {
+          id: Date.now(),
+          tenant_id: 1,
+          created_by_user_id: 1,
+          ...formData,
+          created_at: new Date().toISOString(),
+          is_active: true,
+        };
+        
+        if (onSuccess) {
+          onSuccess(mockContact);
+        }
+      } else {
+        const newContact = await contactsService.createContact(formData);
+        
+        if (onSuccess) {
+          onSuccess(newContact);
+        }
       }
       
       // Reset form
