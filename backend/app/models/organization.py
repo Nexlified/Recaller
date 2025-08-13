@@ -48,8 +48,7 @@ class Organization(Base):
     
     # Relationships - using lambda to defer resolution
     tenant = relationship(lambda: Tenant, back_populates="organizations")
-    current_employees = relationship(lambda: Contact, foreign_keys="Contact.current_organization_id", back_populates="current_organization")
-    alumni = relationship(lambda: Contact, foreign_keys="Contact.alma_mater_id", back_populates="alma_mater")
+    contacts = relationship(lambda: Contact, foreign_keys="Contact.organization_id", back_populates="organization")
     created_by = relationship(lambda: User)
     aliases = relationship("OrganizationAlias", back_populates="organization", cascade="all, delete-orphan")
     locations = relationship("OrganizationLocation", back_populates="organization", cascade="all, delete-orphan")

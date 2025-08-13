@@ -5,12 +5,11 @@ from datetime import datetime
 
 class ContactBase(BaseModel):
     first_name: str
-    last_name: str
-    full_name: str
+    last_name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    title: Optional[str] = None
-    company: Optional[str] = None
+    job_title: Optional[str] = None
+    organization_id: Optional[int] = None
     notes: Optional[str] = None
     is_active: Optional[bool] = True
 
@@ -22,11 +21,10 @@ class ContactCreate(ContactBase):
 class ContactUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
-    title: Optional[str] = None
-    company: Optional[str] = None
+    job_title: Optional[str] = None
+    organization_id: Optional[int] = None
     notes: Optional[str] = None
     is_active: Optional[bool] = None
 

@@ -153,7 +153,7 @@ export default function ContactsPage() {
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {contact.full_name}
+                                {contact.first_name}
                               </div>
                               <div className="text-sm text-gray-500">
                                 {contact.email && <span>{contact.email}</span>}

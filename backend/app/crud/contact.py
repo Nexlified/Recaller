@@ -108,7 +108,8 @@ def search_contacts(
 ) -> List[Contact]:
     return db.query(Contact).filter(
         Contact.tenant_id == tenant_id,
-        Contact.full_name.ilike(f"%{query}%") |
-        Contact.email.ilike(f"%{query}%") |
-        Contact.company.ilike(f"%{query}%")
+        (Contact.first_name.ilike(f"%{query}%") |
+         Contact.last_name.ilike(f"%{query}%") |
+         Contact.email.ilike(f"%{query}%") |
+         Contact.job_title.ilike(f"%{query}%"))
     ).offset(skip).limit(limit).all()

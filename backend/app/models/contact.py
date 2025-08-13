@@ -10,40 +10,21 @@ class Contact(Base):
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
     created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    # Basic Information
-    first_name = Column(String(100), nullable=False)
-    last_name = Column(String(100), nullable=False)
-    full_name = Column(String(255), nullable=False)
+    # Basic Information - matching database schema
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=True)
     email = Column(String(255), index=True)
     phone = Column(String(50))
     
     # Professional Information
-    job_title = Column(String(200))
-    current_organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)
-    alma_mater_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)
+    job_title = Column(String(255))
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True)
     
-    # Relationship Information
-    connection_strength = Column(Numeric(3,2), default=5.0)  # 1-10 scale
-    networking_value = Column(String(20), default='medium')  # high, medium, low
-    relationship_status = Column(String(50), default='active')  # active, dormant, archived
-    
-    # Interaction Tracking
-    total_interactions = Column(Integer, default=0)
-    last_meaningful_interaction = Column(DateTime(timezone=True))
-    interaction_frequency = Column(String(20))  # daily, weekly, monthly, quarterly, yearly
-    
-    # Follow-up Management
-    next_suggested_contact_date = Column(DateTime(timezone=True))
-    follow_up_urgency = Column(String(20), default='medium')  # high, medium, low
-    follow_up_notes = Column(Text)
-    
-    # Tags and Categories
-    tags = Column(JSON, default=list)  # Changed from ARRAY(String) for SQLite compatibility
-    contact_source = Column(String(50))  # event, referral, social, professional
+    # Notes
+    notes = Column(Text)
     
     # Status
     is_active = Column(Boolean, default=True)
-    is_archived = Column(Boolean, default=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -52,10 +33,8 @@ class Contact(Base):
     # Relationships - using lambda to defer resolution
     tenant = relationship(lambda: Tenant, back_populates="contacts")
     created_by = relationship(lambda: User, back_populates="contacts")
-    current_organization = relationship(lambda: Organization, foreign_keys=[current_organization_id], back_populates="current_employees")
-    alma_mater = relationship(lambda: Organization, foreign_keys=[alma_mater_id], back_populates="alumni")
+    organization = relationship(lambda: Organization, foreign_keys=[organization_id], back_populates="contacts")
     interactions = relationship("ContactInteraction", back_populates="contact", cascade="all, delete-orphan")
-    group_memberships = relationship(lambda: ContactSocialGroupMembership, back_populates="contact", cascade="all, delete-orphan")
 
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant
