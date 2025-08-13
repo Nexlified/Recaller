@@ -5,7 +5,7 @@ import Link from 'next/link';
 import authService from '@/services/auth';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { ConfirmDialog } from '@/components/contacts/ConfirmDialog';
-import contactsService, { Contact } from '@/services/contacts';
+import contactsService, { Contact, ContactVisibility } from '@/services/contacts';
 import type { User } from '@/services/auth';
 
 export default function ContactsPage() {
@@ -207,22 +207,22 @@ export default function ContactsPage() {
                             <div className="flex-shrink-0">
                               <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                                 <span className="text-sm font-medium text-gray-700">
-                                  {contact.first_name.charAt(0)}{contact.last_name.charAt(0)}
+                                  {contact.first_name.charAt(0)}{contact.last_name?.charAt(0) || ''}
                                 </span>
                               </div>
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {contact.first_name}
+                                {contact.first_name} {contact.last_name}
                               </div>
                               <div className="text-sm text-gray-500">
                                 {contact.email && <span>{contact.email}</span>}
                                 {contact.email && contact.phone && <span> • </span>}
                                 {contact.phone && <span>{contact.phone}</span>}
                               </div>
-                              {contact.company && (
+                              {contact.job_title && (
                                 <div className="text-sm text-gray-500">
-                                  {contact.title && `${contact.title} at `}{contact.company}
+                                  {contact.job_title}
                                 </div>
                               )}
                             </div>

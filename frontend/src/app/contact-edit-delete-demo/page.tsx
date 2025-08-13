@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { ConfirmDialog } from '@/components/contacts/ConfirmDialog';
-import { Contact } from '@/services/contacts';
+import { Contact, ContactVisibility } from '@/services/contacts';
 
 export default function ContactEditDeleteDemo() {
   const [contacts, setContacts] = useState<Contact[]>([
@@ -13,12 +13,12 @@ export default function ContactEditDeleteDemo() {
       created_by_user_id: 1,
       first_name: 'John',
       last_name: 'Doe',
-      full_name: 'John Doe',
       email: 'john.doe@example.com',
       phone: '555-1234',
-      title: 'Software Engineer',
-      company: 'Tech Corp',
+      job_title: 'Software Engineer',
+      organization_id: 1,
       notes: 'Met at conference',
+      visibility: ContactVisibility.PRIVATE,
       is_active: true,
       created_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
@@ -29,12 +29,12 @@ export default function ContactEditDeleteDemo() {
       created_by_user_id: 1,
       first_name: 'Jane',
       last_name: 'Smith',
-      full_name: 'Jane Smith',
       email: 'jane.smith@example.com',
       phone: '555-5678',
-      title: 'Product Manager',
-      company: 'Innovation Inc',
+      job_title: 'Product Manager',
+      organization_id: 2,
       notes: 'Potential collaboration',
+      visibility: ContactVisibility.PUBLIC,
       is_active: true,
       created_at: '2024-01-02T00:00:00Z',
       updated_at: '2024-01-02T00:00:00Z',
@@ -153,22 +153,22 @@ export default function ContactEditDeleteDemo() {
                         <div className="flex-shrink-0">
                           <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                             <span className="text-sm font-medium text-gray-700">
-                              {contact.first_name.charAt(0)}{contact.last_name.charAt(0)}
+                              {contact.first_name.charAt(0)}{contact.last_name?.charAt(0) || ''}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {contact.full_name}
+                            {contact.first_name} {contact.last_name}
                           </div>
                           <div className="text-sm text-gray-500">
                             {contact.email && <span>{contact.email}</span>}
                             {contact.email && contact.phone && <span> • </span>}
                             {contact.phone && <span>{contact.phone}</span>}
                           </div>
-                          {contact.company && (
+                          {contact.job_title && (
                             <div className="text-sm text-gray-500">
-                              {contact.title && `${contact.title} at `}{contact.company}
+                              {contact.job_title}
                             </div>
                           )}
                         </div>

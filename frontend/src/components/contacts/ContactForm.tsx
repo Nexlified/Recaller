@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ContactCreate, Contact } from '../../services/contacts';
+import { ContactCreate, Contact, ContactVisibility } from '../../services/contacts';
 import contactsService from '../../services/contacts';
 
 interface ContactFormProps {
@@ -25,12 +25,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
   const [formData, setFormData] = useState<ContactCreate>({
     first_name: editingContact?.first_name || '',
     last_name: editingContact?.last_name || '',
-    full_name: editingContact?.full_name || '',
     email: editingContact?.email || '',
     phone: editingContact?.phone || '',
-    title: editingContact?.title || '',
-    company: editingContact?.company || '',
+    job_title: editingContact?.job_title || '',
+    organization_id: editingContact?.organization_id || undefined,
     notes: editingContact?.notes || '',
+    visibility: editingContact?.visibility || ContactVisibility.PRIVATE,
     is_active: editingContact?.is_active ?? true,
   });
 
@@ -38,14 +38,9 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Update full_name when first_name or last_name changes
-  const updateFormData = (field: keyof ContactCreate, value: string | boolean) => {
+  // Update form data
+  const updateFormData = (field: keyof ContactCreate, value: string | boolean | ContactVisibility | number | undefined) => {
     const newData = { ...formData, [field]: value };
-    
-    if (field === 'first_name' || field === 'last_name') {
-      newData.full_name = `${newData.first_name} ${newData.last_name}`.trim();
-    }
-    
     setFormData(newData);
     
     // Clear field-specific error when user starts typing
@@ -60,10 +55,6 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
     // Required field validation
     if (!formData.first_name.trim()) {
       newErrors.first_name = 'First name is required';
-    }
-    
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Last name is required';
     }
 
     // Email validation
@@ -122,14 +113,21 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
 
       if (demoMode) {
         // In demo mode, just simulate success
-        const mockContact = {
+        const mockContact: Contact = {
           id: isEditing ? editingContact!.id : Date.now(),
           tenant_id: isEditing ? editingContact!.tenant_id : 1,
           created_by_user_id: isEditing ? editingContact!.created_by_user_id : 1,
-          ...formData,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+          phone: formData.phone,
+          job_title: formData.job_title,
+          organization_id: formData.organization_id,
+          notes: formData.notes,
+          visibility: formData.visibility || ContactVisibility.PRIVATE,
+          is_active: formData.is_active ?? true,
           created_at: isEditing ? editingContact!.created_at : new Date().toISOString(),
           updated_at: isEditing ? new Date().toISOString() : undefined,
-          is_active: true,
         };
         
         if (onSuccess) {
@@ -154,12 +152,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
         setFormData({
           first_name: '',
           last_name: '',
-          full_name: '',
           email: '',
           phone: '',
-          title: '',
-          company: '',
+          job_title: '',
+          organization_id: undefined,
           notes: '',
+          visibility: ContactVisibility.PRIVATE,
           is_active: true,
         });
       }
@@ -218,12 +216,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
 
           <div>
             <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name *
+              Last Name
             </label>
             <input
               type="text"
               id="last_name"
-              value={formData.last_name}
+              value={formData.last_name || ''}
               onChange={(e) => updateFormData('last_name', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.last_name ? 'border-red-300' : 'border-gray-300'
@@ -244,7 +242,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
             <input
               type="email"
               id="email"
-              value={formData.email}
+              value={formData.email || ''}
               onChange={(e) => updateFormData('email', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.email ? 'border-red-300' : 'border-gray-300'
@@ -263,7 +261,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
             <input
               type="tel"
               id="phone"
-              value={formData.phone}
+              value={formData.phone || ''}
               onChange={(e) => updateFormData('phone', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.phone ? 'border-red-300' : 'border-gray-300'
@@ -274,6 +272,23 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
               <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
             )}
           </div>
+        </div>
+
+        {/* Visibility Field */}
+        <div>
+          <label htmlFor="visibility" className="block text-sm font-medium text-gray-700 mb-1">
+            Visibility
+          </label>
+          <select
+            id="visibility"
+            value={formData.visibility}
+            onChange={(e) => updateFormData('visibility', e.target.value as ContactVisibility)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isSubmitting}
+          >
+            <option value={ContactVisibility.PRIVATE}>Private (Only you can see this contact)</option>
+            <option value={ContactVisibility.PUBLIC}>Public (Visible to all users in your organization)</option>
+          </select>
         </div>
 
         {/* Expandable Additional Fields */}
@@ -300,28 +315,31 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="job_title" className="block text-sm font-medium text-gray-700 mb-1">
                     Job Title
                   </label>
                   <input
                     type="text"
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => updateFormData('title', e.target.value)}
+                    id="job_title"
+                    value={formData.job_title || ''}
+                    onChange={(e) => updateFormData('job_title', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-                    Company
+                  <label htmlFor="organization_id" className="block text-sm font-medium text-gray-700 mb-1">
+                    Organization ID
                   </label>
                   <input
-                    type="text"
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => updateFormData('company', e.target.value)}
+                    type="number"
+                    id="organization_id"
+                    value={formData.organization_id || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      updateFormData('organization_id', value ? parseInt(value) : undefined);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isSubmitting}
                   />
@@ -335,7 +353,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
                 <textarea
                   id="notes"
                   rows={3}
-                  value={formData.notes}
+                  value={formData.notes || ''}
                   onChange={(e) => updateFormData('notes', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isSubmitting}
