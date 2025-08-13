@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 # Base Transaction schema
 class TransactionBase(BaseModel):
-    type: str = Field(..., regex="^(credit|debit)$")
+    type: str = Field(..., pattern="^(credit|debit)$")
     amount: Decimal = Field(..., gt=0, decimal_places=2)
     currency: str = Field(default="USD", max_length=3)
     description: Optional[str] = None
@@ -25,7 +25,7 @@ class TransactionCreate(TransactionBase):
 
 # Update Transaction schema
 class TransactionUpdate(BaseModel):
-    type: Optional[str] = Field(None, regex="^(credit|debit)$")
+    type: Optional[str] = Field(None, pattern="^(credit|debit)$")
     amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2)
     currency: Optional[str] = Field(None, max_length=3)
     description: Optional[str] = None
@@ -61,7 +61,7 @@ class TransactionWithDetails(Transaction):
     category: Optional['TransactionCategory'] = None
     subcategory: Optional['TransactionSubcategory'] = None
     account: Optional['FinancialAccount'] = None
-    recurring_template: Optional['RecurringTransaction'] = None
+    recurring_template: Optional['RecurringTransactionSchema'] = None
 
 # Update forward references
 from app.schemas.transaction_category import TransactionCategory

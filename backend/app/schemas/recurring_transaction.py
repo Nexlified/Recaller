@@ -6,14 +6,14 @@ from pydantic import BaseModel, Field, field_validator
 # Base Recurring Transaction schema
 class RecurringTransactionBase(BaseModel):
     template_name: str = Field(..., max_length=200)
-    type: str = Field(..., regex="^(credit|debit)$")
+    type: str = Field(..., pattern="^(credit|debit)$")
     amount: Decimal = Field(..., gt=0, decimal_places=2)
     currency: str = Field(default="USD", max_length=3)
     description: Optional[str] = None
     category_id: Optional[int] = None
     subcategory_id: Optional[int] = None
     account_id: Optional[int] = None
-    frequency: str = Field(..., regex="^(daily|weekly|monthly|quarterly|yearly)$")
+    frequency: str = Field(..., pattern="^(daily|weekly|monthly|quarterly|yearly)$")
     interval_count: int = Field(default=1, ge=1)
     start_date: date
     end_date: Optional[date] = None
@@ -35,14 +35,14 @@ class RecurringTransactionCreate(RecurringTransactionBase):
 # Update Recurring Transaction schema
 class RecurringTransactionUpdate(BaseModel):
     template_name: Optional[str] = Field(None, max_length=200)
-    type: Optional[str] = Field(None, regex="^(credit|debit)$")
+    type: Optional[str] = Field(None, pattern="^(credit|debit)$")
     amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2)
     currency: Optional[str] = Field(None, max_length=3)
     description: Optional[str] = None
     category_id: Optional[int] = None
     subcategory_id: Optional[int] = None
     account_id: Optional[int] = None
-    frequency: Optional[str] = Field(None, regex="^(daily|weekly|monthly|quarterly|yearly)$")
+    frequency: Optional[str] = Field(None, pattern="^(daily|weekly|monthly|quarterly|yearly)$")
     interval_count: Optional[int] = Field(None, ge=1)
     start_date: Optional[date] = None
     end_date: Optional[date] = None
