@@ -27,6 +27,3 @@ class FinancialAccount(Base):
     recurring_transactions = relationship("RecurringTransaction", back_populates="account")
 
 
-# Import after class definition to avoid circular imports
-from app.models.tenant import Tenant
-from app.models.user import User

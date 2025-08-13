@@ -54,9 +54,9 @@ class Task(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships - using lambda to defer resolution
-    tenant = relationship(lambda: Tenant, back_populates="tasks")
-    user = relationship(lambda: User, back_populates="tasks")
+    # Relationships 
+    tenant = relationship("Tenant", back_populates="tasks")
+    user = relationship("User", back_populates="tasks")
     task_contacts = relationship("TaskContact", back_populates="task", cascade="all, delete-orphan")
     task_recurrence = relationship("TaskRecurrence", back_populates="task", cascade="all, delete-orphan", uselist=False)
     task_category_assignments = relationship("TaskCategoryAssignment", back_populates="task", cascade="all, delete-orphan")
@@ -77,7 +77,7 @@ class TaskContact(Base):
     
     # Relationships
     task = relationship("Task", back_populates="task_contacts")
-    contact = relationship(lambda: Contact, back_populates="task_contacts")
+    contact = relationship("Contact", back_populates="task_contacts")
     
     # Unique constraint to prevent duplicate task-contact pairs
     __table_args__ = (
@@ -135,9 +135,9 @@ class TaskCategory(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
-    # Relationships - using lambda to defer resolution
-    tenant = relationship(lambda: Tenant, back_populates="task_categories")
-    user = relationship(lambda: User, back_populates="task_categories")
+    # Relationships 
+    tenant = relationship("Tenant", back_populates="task_categories")
+    user = relationship("User", back_populates="task_categories")
     task_category_assignments = relationship("TaskCategoryAssignment", back_populates="category", cascade="all, delete-orphan")
     
     # Unique constraint to prevent duplicate categories per user
@@ -166,7 +166,3 @@ class TaskCategoryAssignment(Base):
     )
 
 
-# Import after class definitions to avoid circular imports
-from app.models.tenant import Tenant
-from app.models.user import User
-from app.models.contact import Contact

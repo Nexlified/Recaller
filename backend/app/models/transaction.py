@@ -36,10 +36,3 @@ class Transaction(Base):
     recurring_template = relationship("RecurringTransaction", back_populates="transactions")
 
 
-# Import after class definition to avoid circular imports
-from app.models.tenant import Tenant
-from app.models.user import User
-from app.models.transaction_category import TransactionCategory
-from app.models.transaction_subcategory import TransactionSubcategory
-from app.models.financial_account import FinancialAccount
-from app.models.recurring_transaction import RecurringTransaction

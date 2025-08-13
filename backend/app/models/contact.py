@@ -40,19 +40,14 @@ class Contact(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships - using lambda to defer resolution
-    tenant = relationship(lambda: Tenant, back_populates="contacts")
-    created_by = relationship(lambda: User, back_populates="contacts")
-    organization = relationship(lambda: Organization, foreign_keys=[organization_id], back_populates="contacts")
+    # Relationships 
+    tenant = relationship("Tenant", back_populates="contacts")
+    created_by = relationship("User", back_populates="contacts")
+    organization = relationship("Organization", foreign_keys=[organization_id], back_populates="contacts")
     interactions = relationship("ContactInteraction", back_populates="contact", cascade="all, delete-orphan")
-    task_contacts = relationship(lambda: TaskContact, back_populates="contact")
+    task_contacts = relationship("TaskContact", back_populates="contact")
 
-# Import after class definition to avoid circular imports
-from app.models.tenant import Tenant
-from app.models.user import User
-from app.models.organization import Organization
-from app.models.social_group import ContactSocialGroupMembership
-from app.models.task import TaskContact
+
 
 class ContactInteraction(Base):
     __tablename__ = "contact_interactions"

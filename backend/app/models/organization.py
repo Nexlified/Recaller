@@ -46,17 +46,14 @@ class Organization(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships - using lambda to defer resolution
-    tenant = relationship(lambda: Tenant, back_populates="organizations")
-    contacts = relationship(lambda: Contact, foreign_keys="Contact.organization_id", back_populates="organization")
-    created_by = relationship(lambda: User)
+    # Relationships 
+    tenant = relationship("Tenant", back_populates="organizations")
+    contacts = relationship("Contact", foreign_keys="Contact.organization_id", back_populates="organization")
+    created_by = relationship("User")
     aliases = relationship("OrganizationAlias", back_populates="organization", cascade="all, delete-orphan")
     locations = relationship("OrganizationLocation", back_populates="organization", cascade="all, delete-orphan")
 
-# Import after class definition to avoid circular imports
-from app.models.tenant import Tenant
-from app.models.contact import Contact
-from app.models.user import User
+
 
 
 class OrganizationAlias(Base):

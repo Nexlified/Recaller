@@ -25,6 +25,3 @@ class TransactionCategory(Base):
     budgets = relationship("Budget", back_populates="category")
 
 
-# Import after class definition to avoid circular imports
-from app.models.tenant import Tenant
-from app.models.user import User
