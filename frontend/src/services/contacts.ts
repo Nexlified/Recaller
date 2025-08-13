@@ -1,17 +1,22 @@
 import api from './api';
 
+export enum ContactVisibility {
+  PRIVATE = "private",
+  PUBLIC = "public"
+}
+
 export interface Contact {
   id: number;
   tenant_id: number;
   created_by_user_id: number;
   first_name: string;
-  last_name: string;
-  full_name: string;
+  last_name?: string;
   email?: string;
   phone?: string;
-  title?: string;
-  company?: string;
+  job_title?: string;
+  organization_id?: number;
   notes?: string;
+  visibility: ContactVisibility;
   is_active: boolean;
   created_at: string;
   updated_at?: string;
@@ -19,25 +24,25 @@ export interface Contact {
 
 export interface ContactCreate {
   first_name: string;
-  last_name: string;
-  full_name: string;
+  last_name?: string;
   email?: string;
   phone?: string;
-  title?: string;
-  company?: string;
+  job_title?: string;
+  organization_id?: number;
   notes?: string;
+  visibility?: ContactVisibility;
   is_active?: boolean;
 }
 
 export interface ContactUpdate {
   first_name?: string;
   last_name?: string;
-  full_name?: string;
   email?: string;
   phone?: string;
-  title?: string;
-  company?: string;
+  job_title?: string;
+  organization_id?: number;
   notes?: string;
+  visibility?: ContactVisibility;
   is_active?: boolean;
 }
 
@@ -53,6 +58,11 @@ class ContactsService {
     return response.data;
   }
 
+  async getPublicContacts(skip: number = 0, limit: number = 100): Promise<Contact[]> {
+    const response = await api.get<Contact[]>(`/contacts/public/?skip=${skip}&limit=${limit}`);
+    return response.data;
+  }
+
   async getContact(contactId: number): Promise<Contact> {
     const response = await api.get<Contact>(`/contacts/${contactId}`);
     return response.data;
@@ -65,6 +75,11 @@ class ContactsService {
 
   async updateContact(contactId: number, contactData: ContactUpdate): Promise<Contact> {
     const response = await api.put<Contact>(`/contacts/${contactId}`, contactData);
+    return response.data;
+  }
+
+  async updateContactVisibility(contactId: number, visibility: ContactVisibility): Promise<Contact> {
+    const response = await api.patch<Contact>(`/contacts/${contactId}/visibility?visibility=${visibility}`);
     return response.data;
   }
 

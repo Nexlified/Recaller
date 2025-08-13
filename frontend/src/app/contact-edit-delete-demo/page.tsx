@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { ConfirmDialog } from '@/components/contacts/ConfirmDialog';
-import { Contact } from '@/services/contacts';
+import { Contact, ContactVisibility } from '@/services/contacts';
 
 export default function ContactEditDeleteDemo() {
   const [contacts, setContacts] = useState<Contact[]>([
@@ -13,12 +13,12 @@ export default function ContactEditDeleteDemo() {
       created_by_user_id: 1,
       first_name: 'John',
       last_name: 'Doe',
-      full_name: 'John Doe',
       email: 'john.doe@example.com',
       phone: '555-1234',
-      title: 'Software Engineer',
-      company: 'Tech Corp',
+      job_title: 'Software Engineer',
+      organization_id: 1,
       notes: 'Met at conference',
+      visibility: ContactVisibility.PRIVATE,
       is_active: true,
       created_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
@@ -29,12 +29,12 @@ export default function ContactEditDeleteDemo() {
       created_by_user_id: 1,
       first_name: 'Jane',
       last_name: 'Smith',
-      full_name: 'Jane Smith',
       email: 'jane.smith@example.com',
       phone: '555-5678',
-      title: 'Product Manager',
-      company: 'Innovation Inc',
+      job_title: 'Product Manager',
+      organization_id: 2,
       notes: 'Potential collaboration',
+      visibility: ContactVisibility.PUBLIC,
       is_active: true,
       created_at: '2024-01-02T00:00:00Z',
       updated_at: '2024-01-02T00:00:00Z',
@@ -153,27 +153,52 @@ export default function ContactEditDeleteDemo() {
                         <div className="flex-shrink-0">
                           <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                             <span className="text-sm font-medium text-gray-700">
-                              {contact.first_name.charAt(0)}{contact.last_name.charAt(0)}
+                              {contact.first_name.charAt(0)}{contact.last_name?.charAt(0) || ''}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {contact.full_name}
+                            {contact.first_name} {contact.last_name}
                           </div>
                           <div className="text-sm text-gray-500">
                             {contact.email && <span>{contact.email}</span>}
                             {contact.email && contact.phone && <span> • </span>}
                             {contact.phone && <span>{contact.phone}</span>}
                           </div>
-                          {contact.company && (
+                          {contact.job_title && (
                             <div className="text-sm text-gray-500">
-                              {contact.title && `${contact.title} at `}{contact.company}
+                              {contact.job_title}
                             </div>
                           )}
+                          {/* Visibility indicator */}
+                          <div className="mt-1">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              contact.visibility === ContactVisibility.PUBLIC 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {contact.visibility === ContactVisibility.PUBLIC ? '🌍 Public' : '🔒 Private'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
+                        {/* Visibility toggle for demo */}
+                        <select
+                          value={contact.visibility}
+                          onChange={(e) => {
+                            const newVisibility = e.target.value as ContactVisibility;
+                            setContacts(prev => prev.map(c => 
+                              c.id === contact.id ? { ...c, visibility: newVisibility } : c
+                            ));
+                            alert(`Demo: Contact visibility changed to ${newVisibility}`);
+                          }}
+                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                          <option value={ContactVisibility.PRIVATE}>Private</option>
+                          <option value={ContactVisibility.PUBLIC}>Public</option>
+                        </select>
                         <button 
                           onClick={() => handleEditContact(contact)}
                           className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
