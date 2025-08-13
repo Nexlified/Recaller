@@ -47,9 +47,13 @@ class NetworkingInsight(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
-    tenant = relationship("Tenant", back_populates="networking_insights")
-    user = relationship("User", back_populates="networking_insights")
+    # Relationships - using lambda to defer resolution
+    tenant = relationship(lambda: Tenant, back_populates="networking_insights")
+    user = relationship(lambda: User, back_populates="networking_insights")
+
+# Import after class definition to avoid circular imports
+from app.models.tenant import Tenant
+from app.models.user import User
 
 class DailyNetworkMetric(Base):
     __tablename__ = "daily_network_metrics"

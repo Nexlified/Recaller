@@ -12,10 +12,15 @@ class Tenant(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
-    # Relationships
-    users = relationship("User", back_populates="tenant")
-    contacts = relationship("Contact", back_populates="tenant")
-    organizations = relationship("Organization", back_populates="tenant")
-    social_groups = relationship("SocialGroup", back_populates="tenant")
-    # networking_insights = relationship("NetworkingInsight", back_populates="tenant")
-    daily_metrics = relationship("DailyNetworkMetric", back_populates="tenant")
+    # Relationships - using lambda to defer resolution
+    contacts = relationship(lambda: Contact, back_populates="tenant")
+    users = relationship(lambda: User, back_populates="tenant")
+    organizations = relationship(lambda: Organization, back_populates="tenant")
+    networking_insights = relationship(lambda: NetworkingInsight, back_populates="tenant")
+    daily_metrics = relationship(lambda: DailyNetworkMetric, back_populates="tenant")
+
+# Import after class definition to avoid circular imports
+from app.models.contact import Contact
+from app.models.user import User
+from app.models.organization import Organization
+from app.models.analytics import NetworkingInsight, DailyNetworkMetric

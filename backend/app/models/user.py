@@ -19,6 +19,13 @@ class User(Base):
     
     # Tenant relationship - using default tenant for now, but structure is ready for multi-tenant  
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True, server_default=str(DEFAULT_TENANT_ID))
-    tenant = relationship("Tenant", back_populates="users")
-    # networking_insights = relationship("NetworkingInsight", back_populates="user")
-    # contacts = relationship("Contact", back_populates="created_by")  # Commented out to avoid circular import in minimal setup
+    
+    # Relationships - using lambda to defer resolution
+    tenant = relationship(lambda: Tenant, back_populates="users")
+    contacts = relationship(lambda: Contact, back_populates="created_by")
+    networking_insights = relationship(lambda: NetworkingInsight, back_populates="user")
+
+# Import after class definition to avoid circular imports
+from app.models.tenant import Tenant
+from app.models.contact import Contact
+from app.models.analytics import NetworkingInsight
