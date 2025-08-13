@@ -48,6 +48,7 @@ class Task(Base):
     
     # Recurrence
     is_recurring = Column(Boolean, nullable=False, default=False)
+    parent_task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)  # For tracking recurring task instances
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -106,6 +107,11 @@ class TaskRecurrence(Base):
     
     # Lead time for creating next task
     lead_time_days = Column(Integer, nullable=False, default=0)
+    
+    # Generation tracking fields
+    last_generated_at = Column(DateTime(timezone=True))
+    next_generation_at = Column(DateTime(timezone=True))
+    generation_count = Column(Integer, nullable=False, default=0)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
