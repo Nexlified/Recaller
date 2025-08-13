@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import authService from '@/services/auth';
+import { Header } from '@/components/layout/Header';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { ConfirmDialog } from '@/components/contacts/ConfirmDialog';
 import contactsService, { Contact, ContactVisibility } from '@/services/contacts';
@@ -141,7 +142,7 @@ export default function ContactsPage() {
     if (loadingContacts) {
       return (
         <div className="text-center py-8">
-          <div className="text-lg text-gray-600">Loading {title.toLowerCase()}...</div>
+          <div className="text-lg text-gray-600 dark:text-gray-400">Loading {title.toLowerCase()}...</div>
         </div>
       );
     }
@@ -149,36 +150,36 @@ export default function ContactsPage() {
     if (contacts.length === 0) {
       return (
         <div className="text-center py-8">
-          <div className="text-gray-500">No {title.toLowerCase()} found.</div>
+          <div className="text-gray-500 dark:text-gray-400">No {title.toLowerCase()} found.</div>
         </div>
       );
     }
 
     return (
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <ul className="divide-y divide-gray-200">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {contacts.map((contact) => (
-            <li key={contact.id} className="px-6 py-4 hover:bg-gray-50">
+            <li key={contact.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-700">
+                    <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {contact.first_name.charAt(0)}{contact.last_name?.charAt(0) || ''}
                       </span>
                     </div>
                   </div>
                   <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {contact.first_name} {contact.last_name}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {contact.email && <span>{contact.email}</span>}
                       {contact.email && contact.phone && <span> • </span>}
                       {contact.phone && <span>{contact.phone}</span>}
                     </div>
                     {contact.job_title && (
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {contact.job_title}
                       </div>
                     )}
@@ -186,8 +187,8 @@ export default function ContactsPage() {
                     <div className="mt-1">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                         contact.visibility === ContactVisibility.PUBLIC 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                       }`}>
                         {contact.visibility === ContactVisibility.PUBLIC ? '🌍 Public' : '🔒 Private'}
                       </span>
@@ -201,27 +202,27 @@ export default function ContactsPage() {
                       <select
                         value={contact.visibility}
                         onChange={(e) => handleVisibilityChange(contact, e.target.value as ContactVisibility)}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       >
                         <option value={ContactVisibility.PRIVATE}>Private</option>
                         <option value={ContactVisibility.PUBLIC}>Public</option>
                       </select>
                       <button 
                         onClick={() => handleEditContact(contact)}
-                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium"
                       >
                         Edit
                       </button>
                       <button 
                         onClick={() => handleDeleteContact(contact)}
-                        className="text-red-600 hover:text-red-900 text-sm font-medium"
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                       >
                         Delete
                       </button>
                     </>
                   )}
                   {!isOwner && (
-                    <span className="text-gray-400 text-sm">View only</span>
+                    <span className="text-gray-400 dark:text-gray-500 text-sm">View only</span>
                   )}
                 </div>
               </div>
@@ -234,8 +235,8 @@ export default function ContactsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     );
   }
@@ -243,13 +244,13 @@ export default function ContactsPage() {
   if (!user) {
     // User not authenticated - redirect to login
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 text-center">
           <div>
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
               Access Denied
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Please sign in to access your contacts
             </p>
           </div>
@@ -265,30 +266,8 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700">
-                Recaller
-              </Link>
-              <span className="text-gray-400">|</span>
-              <h1 className="text-xl font-semibold text-gray-900">Contacts</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user.full_name || user.email}</span>
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header user={user} title="Contacts" onLogout={handleLogout} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -303,7 +282,7 @@ export default function ContactsPage() {
             <div>
               {/* Contacts Header */}
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Your Contacts</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Contacts</h2>
                 <button
                   onClick={() => setShowForm(true)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -317,13 +296,13 @@ export default function ContactsPage() {
 
               {/* Your Contacts Section */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Contacts</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Contacts</h3>
                 {renderContactList(ownContacts, true, "Your Contacts")}
               </div>
 
               {/* Public Contacts Section */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Public Contacts</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Public Contacts</h3>
                 {renderContactList(publicContacts, false, "Public Contacts")}
               </div>
 
@@ -331,7 +310,7 @@ export default function ContactsPage() {
               {!loadingContacts && ownContacts.length === 0 && publicContacts.length === 0 && (
                 <div className="text-center py-12">
                   <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
+                    className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -343,8 +322,8 @@ export default function ContactsPage() {
                       d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                     />
                   </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No contacts</h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No contacts</h3>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Get started by creating a new contact.
                   </p>
                   <div className="mt-6">
