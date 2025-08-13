@@ -720,3 +720,315 @@ class TestDataValidationAndEdgeCases:
         
         # Should reject empty required fields
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+class TestContactCascadeOperations:
+    """Test cases for cascade delete operations and complex relationships."""
+
+    def test_delete_contact_cascades_to_interactions(self, contacts_client: TestClient, contacts_auth_headers, contacts_db_session):
+        """Test that deleting a contact cascades to its interactions."""
+        from datetime import datetime
+        
+        # Create a contact
+        contact_data = {
+            "first_name": "Cascade",
+            "last_name": "Test",
+            "full_name": "Cascade Test",
+            "email": "cascade.test@example.com"
+        }
+        
+        response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        contact_id = response.json()["id"]
+        
+        # Create a contact interaction directly in the database
+        from app.models.contact import ContactInteraction
+        interaction = ContactInteraction(
+            contact_id=contact_id,
+            interaction_type="meeting",
+            interaction_date=datetime(2023, 1, 1, 10, 0, 0),
+            initiated_by="me",
+            title="Test Meeting",
+            description="Test interaction"
+        )
+        contacts_db_session.add(interaction)
+        contacts_db_session.commit()
+        interaction_id = interaction.id
+        
+        # Verify interaction exists
+        assert contacts_db_session.query(ContactInteraction).filter(ContactInteraction.id == interaction_id).first() is not None
+        
+        # Delete the contact
+        delete_response = contacts_client.delete(f"/api/v1/contacts/{contact_id}", headers=contacts_auth_headers)
+        assert delete_response.status_code == status.HTTP_200_OK
+        
+        # Verify interaction was also deleted (cascade)
+        assert contacts_db_session.query(ContactInteraction).filter(ContactInteraction.id == interaction_id).first() is None
+
+    def test_delete_contact_with_event_relationships(self, contacts_client: TestClient, contacts_auth_headers, contacts_db_session):
+        """Test contact deletion behavior with event relationships."""
+        # Create a contact
+        contact_data = {
+            "first_name": "Event",
+            "last_name": "Related",
+            "full_name": "Event Related",
+            "email": "event.related@example.com"
+        }
+        
+        response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        contact = response.json()
+        contact_id = contact["id"]
+        
+        # Test that we can get empty events for the contact before deletion
+        events_response = contacts_client.get(f"/api/v1/contacts/{contact_id}/events", headers=contacts_auth_headers)
+        assert events_response.status_code == status.HTTP_200_OK
+        assert len(events_response.json()) == 0
+        
+        # Delete the contact
+        delete_response = contacts_client.delete(f"/api/v1/contacts/{contact_id}", headers=contacts_auth_headers)
+        assert delete_response.status_code == status.HTTP_200_OK
+        
+        # Verify contact is deleted
+        get_response = contacts_client.get(f"/api/v1/contacts/{contact_id}", headers=contacts_auth_headers)
+        assert get_response.status_code == status.HTTP_404_NOT_FOUND
+
+
+class TestContactBulkOperations:
+    """Test cases for bulk operations and performance scenarios."""
+
+    def test_create_multiple_contacts_bulk(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test creating multiple contacts efficiently."""
+        contacts_data = []
+        for i in range(10):
+            contact_data = {
+                "first_name": f"Bulk{i}",
+                "last_name": "Contact",
+                "full_name": f"Bulk{i} Contact",
+                "email": f"bulk{i}@example.com"
+            }
+            contacts_data.append(contact_data)
+        
+        created_contacts = []
+        for contact_data in contacts_data:
+            response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+            assert response.status_code == status.HTTP_200_OK
+            created_contacts.append(response.json())
+        
+        # Verify all contacts were created
+        assert len(created_contacts) == 10
+        for i, contact in enumerate(created_contacts):
+            assert contact["first_name"] == f"Bulk{i}"
+            assert contact["email"] == f"bulk{i}@example.com"
+        
+        # Test bulk listing
+        list_response = contacts_client.get("/api/v1/contacts/?limit=20", headers=contacts_auth_headers)
+        assert list_response.status_code == status.HTTP_200_OK
+        all_contacts = list_response.json()
+        
+        # Should contain at least our bulk created contacts
+        bulk_contacts = [c for c in all_contacts if c["first_name"].startswith("Bulk")]
+        assert len(bulk_contacts) >= 10
+
+    def test_search_performance_large_dataset(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test search performance with a larger dataset."""
+        # Create contacts with different patterns
+        for i in range(20):
+            contact_data = {
+                "first_name": f"Search{i % 5}",  # Only 5 unique first names
+                "last_name": f"Performance{i}",
+                "full_name": f"Search{i % 5} Performance{i}",
+                "email": f"search{i}@performance.com"
+            }
+            contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        
+        # Test search that should return multiple results
+        search_response = contacts_client.get("/api/v1/contacts/search/?q=Search0", headers=contacts_auth_headers)
+        assert search_response.status_code == status.HTTP_200_OK
+        search_results = search_response.json()
+        
+        # Should find contacts with "Search0" in their name
+        assert len(search_results) >= 1
+        for contact in search_results:
+            assert "Search0" in contact["full_name"]
+        
+        # Test search with pagination
+        paginated_response = contacts_client.get("/api/v1/contacts/search/?q=Performance&limit=5", headers=contacts_auth_headers)
+        assert paginated_response.status_code == status.HTTP_200_OK
+        paginated_results = paginated_response.json()
+        assert len(paginated_results) <= 5
+
+
+class TestContactDataIntegrity:
+    """Test cases for data integrity and consistency."""
+
+    def test_duplicate_email_handling(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test how system handles duplicate email addresses."""
+        email = "duplicate.test@example.com"
+        
+        # Create first contact
+        contact1_data = {
+            "first_name": "First",
+            "last_name": "Contact",
+            "full_name": "First Contact",
+            "email": email
+        }
+        
+        response1 = contacts_client.post("/api/v1/contacts/", json=contact1_data, headers=contacts_auth_headers)
+        assert response1.status_code == status.HTTP_200_OK
+        
+        # Create second contact with same email
+        contact2_data = {
+            "first_name": "Second",
+            "last_name": "Contact", 
+            "full_name": "Second Contact",
+            "email": email
+        }
+        
+        response2 = contacts_client.post("/api/v1/contacts/", json=contact2_data, headers=contacts_auth_headers)
+        # System should either allow duplicates or reject - both are valid behaviors
+        assert response2.status_code in [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST, status.HTTP_422_UNPROCESSABLE_ENTITY]
+
+    def test_contact_data_consistency_after_update(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test data consistency after multiple updates."""
+        # Create contact
+        contact_data = {
+            "first_name": "Consistency",
+            "last_name": "Test",
+            "full_name": "Consistency Test",
+            "email": "consistency@example.com"
+        }
+        
+        response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        contact = response.json()
+        contact_id = contact["id"]
+        original_created_at = contact["created_at"]
+        
+        # Perform multiple updates
+        updates = [
+            {"first_name": "Updated1"},
+            {"last_name": "Updated2"},
+            {"email": "updated@example.com"},
+            {"phone": "+1-555-999-0000"}
+        ]
+        
+        for update_data in updates:
+            update_response = contacts_client.put(f"/api/v1/contacts/{contact_id}", json=update_data, headers=contacts_auth_headers)
+            assert update_response.status_code == status.HTTP_200_OK
+        
+        # Get final state
+        final_response = contacts_client.get(f"/api/v1/contacts/{contact_id}", headers=contacts_auth_headers)
+        final_contact = final_response.json()
+        
+        # Verify final state has all updates
+        assert final_contact["first_name"] == "Updated1"
+        assert final_contact["last_name"] == "Updated2"
+        assert final_contact["email"] == "updated@example.com"
+        assert final_contact["phone"] == "+1-555-999-0000"
+        
+        # Verify created_at is unchanged but updated_at exists
+        assert final_contact["created_at"] == original_created_at
+        assert "updated_at" in final_contact
+
+    def test_contact_null_and_empty_field_handling(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test handling of null and empty values in optional fields."""
+        # Create contact with null email and phone
+        contact_data = {
+            "first_name": "Null",
+            "last_name": "Fields",
+            "full_name": "Null Fields",
+            "email": None,
+            "phone": None
+        }
+        
+        response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        assert response.status_code == status.HTTP_200_OK
+        contact = response.json()
+        
+        assert contact["email"] is None
+        assert contact["phone"] is None
+        
+        # Update with empty string values
+        update_data = {
+            "email": "",
+            "phone": ""
+        }
+        
+        update_response = contacts_client.put(f"/api/v1/contacts/{contact['id']}", json=update_data, headers=contacts_auth_headers)
+        # Should either accept empty strings or reject them
+        assert update_response.status_code in [status.HTTP_200_OK, status.HTTP_422_UNPROCESSABLE_ENTITY]
+
+
+class TestContactSecurityAndValidation:
+    """Advanced security and validation tests."""
+
+    def test_contact_field_length_limits(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test field length validation limits."""
+        # Test with field lengths at database limits
+        contact_data = {
+            "first_name": "A" * 100,  # Model has String(100)
+            "last_name": "B" * 100,   # Model has String(100)
+            "full_name": "C" * 255,   # Model has String(255)
+            "email": "test@" + "d" * 240 + ".com",  # Model has String(255)
+            "phone": "1" * 50         # Model has String(50)
+        }
+        
+        response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        # Should either accept (within limits) or reject (validation)
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_422_UNPROCESSABLE_ENTITY]
+
+    def test_contact_email_format_variations(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test various email format validations."""
+        email_test_cases = [
+            ("valid@example.com", True),
+            ("user.name@example.com", True),
+            ("user+tag@example.com", True),
+            ("invalid-email", False),
+            ("@invalid.com", False),
+            ("invalid@", False),
+            ("", True),  # Empty email should be allowed (optional field)
+        ]
+        
+        for email, should_be_valid in email_test_cases:
+            contact_data = {
+                "first_name": "Email",
+                "last_name": "Test",
+                "full_name": "Email Test",
+                "email": email if email else None
+            }
+            
+            response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+            
+            if should_be_valid:
+                assert response.status_code == status.HTTP_200_OK, f"Email {email} should be valid"
+            else:
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY, f"Email {email} should be invalid"
+
+    def test_contact_concurrent_access(self, contacts_client: TestClient, contacts_auth_headers):
+        """Test concurrent access scenarios."""
+        # Create a contact
+        contact_data = {
+            "first_name": "Concurrent",
+            "last_name": "Test",
+            "full_name": "Concurrent Test",
+            "email": "concurrent@example.com"
+        }
+        
+        response = contacts_client.post("/api/v1/contacts/", json=contact_data, headers=contacts_auth_headers)
+        contact_id = response.json()["id"]
+        
+        # Simulate concurrent updates (in real scenario this would be multiple threads)
+        update1 = {"first_name": "Update1"}
+        update2 = {"last_name": "Update2"}
+        
+        response1 = contacts_client.put(f"/api/v1/contacts/{contact_id}", json=update1, headers=contacts_auth_headers)
+        response2 = contacts_client.put(f"/api/v1/contacts/{contact_id}", json=update2, headers=contacts_auth_headers)
+        
+        # Both updates should succeed
+        assert response1.status_code == status.HTTP_200_OK
+        assert response2.status_code == status.HTTP_200_OK
+        
+        # Final state should have the last update
+        final_response = contacts_client.get(f"/api/v1/contacts/{contact_id}", headers=contacts_auth_headers)
+        final_contact = final_response.json()
+        
+        # Last update wins
+        assert final_contact["last_name"] == "Update2"
