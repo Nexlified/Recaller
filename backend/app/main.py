@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 
 from app.core.config import settings
+from app.core.redis import redis_client
 from app.db.session import SessionLocal
 from app.api.v1.api import api_router
 from app.services.task_scheduler import task_scheduler_service
@@ -52,8 +53,16 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 async def startup_event():
-    """Start the task scheduler when the application starts."""
+    """Start services when the application starts."""
     try:
+        # Initialize Redis connection
+        redis_client.connect()
+        print("Redis connected successfully")
+    except Exception as e:
+        print(f"Warning: Could not connect to Redis: {e}")
+    
+    try:
+        # Start the task scheduler
         task_scheduler_service.start()
     except Exception as e:
         print(f"Warning: Could not start task scheduler: {e}")
@@ -61,8 +70,16 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Stop the task scheduler when the application shuts down."""
+    """Stop services when the application shuts down."""
     try:
+        # Disconnect Redis
+        redis_client.disconnect()
+        print("Redis disconnected")
+    except Exception as e:
+        print(f"Warning: Could not disconnect Redis: {e}")
+        
+    try:
+        # Stop the task scheduler
         task_scheduler_service.stop()
     except Exception as e:
         print(f"Warning: Could not stop task scheduler: {e}")
@@ -75,3 +92,27 @@ def read_root():
         "documentation": f"/docs",
         "openapi": f"{settings.API_V1_STR}/openapi.json"
     }
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint that includes Redis connectivity."""
+    health_status = {
+        "status": "ok",
+        "services": {
+            "api": "healthy"
+        }
+    }
+    
+    # Check Redis connection
+    try:
+        if redis_client.is_connected():
+            health_status["services"]["redis"] = "healthy"
+        else:
+            health_status["services"]["redis"] = "disconnected"
+            health_status["status"] = "degraded"
+    except Exception as e:
+        health_status["services"]["redis"] = f"error: {str(e)}"
+        health_status["status"] = "degraded"
+    
+    return health_status
