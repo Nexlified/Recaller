@@ -7,7 +7,7 @@ of inference requests through the registered model backends.
 
 import logging
 import uuid
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 from ..schemas.mcp_schemas import (

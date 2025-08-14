@@ -45,12 +45,13 @@ class AuthService:
     async def get_backend_client(self) -> httpx.AsyncClient:
         """Get HTTP client for backend communication."""
         if not self._backend_client:
+            headers = {"Content-Type": "application/json"}
+            if mcp_settings.BACKEND_API_KEY:
+                headers["Authorization"] = f"Bearer {mcp_settings.BACKEND_API_KEY}"
+            
             self._backend_client = httpx.AsyncClient(
                 base_url=mcp_settings.BACKEND_API_URL,
-                headers={
-                    "Authorization": f"Bearer {mcp_settings.BACKEND_API_KEY}" if mcp_settings.BACKEND_API_KEY else None,
-                    "Content-Type": "application/json"
-                }
+                headers=headers
             )
         return self._backend_client
     
@@ -81,7 +82,26 @@ class AuthService:
             if user_token:
                 headers["Authorization"] = f"Bearer {user_token}"
             
-            response = await client.get("/api/v1/config/tenant-info", headers=headers)
+            try:
+                response = await client.get("/api/v1/config/tenant-info", headers=headers)
+            except Exception as e:
+                logger.warning(f"Failed to connect to backend for tenant verification: {e}")
+                # In development mode, create a default tenant when backend is unavailable
+                if tenant_id == "default":
+                    tenant_info = TenantInfo(
+                        id="default",
+                        slug="default",
+                        name="Default Tenant",
+                        active=True
+                    )
+                    self._tenant_cache[tenant_id] = tenant_info
+                    self._last_cache_update[tenant_id] = datetime.utcnow()
+                    return tenant_info
+                else:
+                    raise MCPProtocolError(
+                        code=MCPErrorCodes.TENANT_ACCESS_DENIED,
+                        message="Backend unavailable for tenant verification"
+                    )
             
             if response.status_code == 404:
                 # Try default tenant

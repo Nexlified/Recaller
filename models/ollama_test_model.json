@@ -1,0 +1,13 @@
+{
+  "name": "Test Model",
+  "description": "Test model for validation",
+  "backend_type": "ollama",
+  "capabilities": [
+    "completion",
+    "chat"
+  ],
+  "config": {
+    "base_url": "http://localhost:11434",
+    "model_name": "test-model"
+  }
+}

@@ -6,7 +6,8 @@ including model backends, security settings, and integration points.
 """
 
 from typing import List, Optional, Dict, Any
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 from enum import Enum
 
 
@@ -27,7 +28,7 @@ class MCPServerSettings(BaseSettings):
     MCP_PROTOCOL_VERSION: str = Field(default="1.0.0", description="MCP protocol version")
     
     # Security Configuration
-    MCP_SECRET_KEY: str = Field(description="Secret key for MCP server authentication")
+    MCP_SECRET_KEY: str = Field(default="dev-secret-key-change-in-production", description="Secret key for MCP server authentication")
     MCP_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, description="MCP access token expiration")
     MCP_ENABLE_TENANT_ISOLATION: bool = Field(default=True, description="Enable tenant isolation")
     
@@ -37,7 +38,7 @@ class MCPServerSettings(BaseSettings):
     
     # Model Configuration
     DEFAULT_MODEL_BACKEND: ModelBackendType = Field(default=ModelBackendType.OLLAMA)
-    MODEL_REGISTRY_PATH: str = Field(default="/app/models", description="Path to model registry")
+    MODEL_REGISTRY_PATH: str = Field(default="./models", description="Path to model registry")
     MAX_CONCURRENT_REQUESTS: int = Field(default=10, description="Maximum concurrent model requests")
     
     # Resource Limits
