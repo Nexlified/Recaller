@@ -28,3 +28,4 @@ class TransactionCategory(Base):
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant
 from app.models.user import User
+from app.models.budget import Budget
