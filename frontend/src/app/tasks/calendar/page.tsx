@@ -369,7 +369,7 @@ export default function TaskCalendarPage() {
       setError(null);
       
       const [tasksData, categoriesData] = await Promise.all([
-        tasksService.getTasks(0, 1000), // Get all tasks
+        tasksService.getTasks(0, 100), // Get all tasks
         tasksService.getCategories()
       ]);
       
