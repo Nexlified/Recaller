@@ -1,0 +1,17 @@
+# MCP Server Requirements
+# Additional dependencies for the MCP server
+
+# Core MCP dependencies
+mcp>=1.0.0
+websockets>=11.0.0
+httpx>=0.24.0
+
+# Model backend support
+# ollama-python>=0.1.0  # For Ollama backend
+# transformers>=4.35.0  # For HuggingFace backend
+# torch>=2.0.0  # For local PyTorch models
+# sentence-transformers>=2.2.0  # For embedding models
+
+# Development dependencies (optional)
+# pytest-asyncio>=0.21.0
+# pytest-httpx>=0.21.0
