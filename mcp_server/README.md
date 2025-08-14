@@ -27,7 +27,7 @@ The Recaller MCP Server provides a standardized interface for Large Language Mod
 
 2. **Verify MCP server is running**:
    ```bash
-   curl http://localhost:8001/api/v1/health
+   curl http://localhost:8080/api/v1/health
    ```
 
 3. **Set up a model backend** (e.g., Ollama):
@@ -39,7 +39,7 @@ The Recaller MCP Server provides a standardized interface for Large Language Mod
    ollama pull llama3.2:3b
    
    # Register with MCP server
-   curl -X POST http://localhost:8001/api/v1/models/register \
+   curl -X POST http://localhost:8080/api/v1/models/register \
      -H "Content-Type: application/json" \
      -H "X-Tenant-ID: default" \
      -d '{
@@ -55,7 +55,7 @@ The Recaller MCP Server provides a standardized interface for Large Language Mod
 
 4. **Test inference**:
    ```bash
-   curl -X POST http://localhost:8001/api/v1/inference/chat \
+   curl -X POST http://localhost:8080/api/v1/inference/chat \
      -H "Content-Type: application/json" \
      -H "X-Tenant-ID: default" \
      -d '{
@@ -68,8 +68,8 @@ The Recaller MCP Server provides a standardized interface for Large Language Mod
 
 1. **Setup environment**:
    ```bash
-   cd backend/mcp_server
-   python3.11 -m venv venv
+   cd mcp_server
+   python3.13 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    ```
@@ -90,7 +90,7 @@ The Recaller MCP Server provides a standardized interface for Large Language Mod
 ### Directory Structure
 
 ```
-backend/mcp_server/
+mcp_server/
 ├── main.py                     # FastAPI application
 ├── requirements.txt            # Dependencies
 ├── Dockerfile                  # Container configuration
