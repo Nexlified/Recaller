@@ -9,16 +9,28 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import List, Optional, Dict, Any
 import logging
 
-from ..schemas.mcp_schemas import (
-    ModelInfo, ModelRegistrationRequest, InferenceRequest,
-    CompletionRequest, ChatRequest, EmbeddingRequest,
-    CompletionResponse, ChatResponse, EmbeddingResponse,
-    HealthCheckResponse, APIResponse, PaginatedResponse
-)
-from ..models.registry import model_registry
-from ..services.inference import inference_service
-from ..services.auth import get_current_tenant, verify_api_access
-from ..core.protocol import MCPProtocolError
+try:
+    from ..schemas.mcp_schemas import (
+        ModelInfo, ModelRegistrationRequest, InferenceRequest,
+        CompletionRequest, ChatRequest, EmbeddingRequest,
+        CompletionResponse, ChatResponse, EmbeddingResponse,
+        HealthCheckResponse, APIResponse, PaginatedResponse
+    )
+    from ..models.registry import model_registry
+    from ..services.inference import inference_service
+    from ..services.auth import get_current_tenant, verify_api_access
+    from ..core.protocol import MCPProtocolError
+except ImportError:
+    from schemas.mcp_schemas import (
+        ModelInfo, ModelRegistrationRequest, InferenceRequest,
+        CompletionRequest, ChatRequest, EmbeddingRequest,
+        CompletionResponse, ChatResponse, EmbeddingResponse,
+        HealthCheckResponse, APIResponse, PaginatedResponse
+    )
+    from models.registry import model_registry
+    from services.inference import inference_service
+    from services.auth import get_current_tenant, verify_api_access
+    from core.protocol import MCPProtocolError
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +85,10 @@ async def list_models(
         status_filter = None
         if status:
             try:
-                from ..schemas.mcp_schemas import ModelStatus
+                try:
+                    from ..schemas.mcp_schemas import ModelStatus
+                except ImportError:
+                    from schemas.mcp_schemas import ModelStatus
                 status_filter = ModelStatus(status)
             except ValueError:
                 raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
@@ -166,7 +181,10 @@ async def health_check():
         model_health = await model_registry.health_check_all()
         
         # Convert to health status objects
-        from ..schemas.mcp_schemas import ModelHealthStatus, ModelStatus
+        try:
+            from ..schemas.mcp_schemas import ModelHealthStatus, ModelStatus
+        except ImportError:
+            from schemas.mcp_schemas import ModelHealthStatus, ModelStatus
         model_statuses = []
         
         for model_id, is_healthy in model_health.items():
@@ -216,8 +234,13 @@ async def model_health_check(model_id: str):
 @router.get("/info", response_model=APIResponse)
 async def server_info():
     """Get MCP server information."""
-    from ..config.settings import mcp_settings
-    from .. import __version__
+    try:
+        from ..config.settings import mcp_settings
+        from .. import __version__
+    except ImportError:
+        from config.settings import mcp_settings
+        import __init__
+        __version__ = __init__.__version__
     
     return APIResponse(
         success=True,

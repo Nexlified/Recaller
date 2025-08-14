@@ -7,17 +7,27 @@ of inference requests through the registered model backends.
 
 import logging
 import uuid
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
-from ..schemas.mcp_schemas import (
-    CompletionRequest, ChatRequest, EmbeddingRequest,
-    CompletionResponse, ChatResponse, EmbeddingResponse,
-    InferenceType, ChatMessage
-)
-from ..models.registry import model_registry
-from ..core.protocol import MCPProtocolError, MCPErrorCodes
-from ..config.settings import mcp_settings
+try:
+    from ..schemas.mcp_schemas import (
+        CompletionRequest, ChatRequest, EmbeddingRequest,
+        CompletionResponse, ChatResponse, EmbeddingResponse,
+        InferenceType, ChatMessage
+    )
+    from ..models.registry import model_registry
+    from ..core.protocol import MCPProtocolError, MCPErrorCodes
+    from ..config.settings import mcp_settings
+except ImportError:
+    from schemas.mcp_schemas import (
+        CompletionRequest, ChatRequest, EmbeddingRequest,
+        CompletionResponse, ChatResponse, EmbeddingResponse,
+        InferenceType, ChatMessage
+    )
+    from models.registry import model_registry
+    from core.protocol import MCPProtocolError, MCPErrorCodes
+    from config.settings import mcp_settings
 
 
 logger = logging.getLogger(__name__)
