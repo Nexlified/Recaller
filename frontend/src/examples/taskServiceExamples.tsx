@@ -6,7 +6,8 @@
  */
 
 import { tasksService } from '../services/tasks';
-import { useTasks, useCategories, useTaskAnalytics } from '../hooks/useTasks';
+import { useTasks } from '../hooks/useTasks';
+import { useTaskCategories } from '../hooks/useTaskCategories';
 import {
   TaskCreate,
   TaskRecurrenceCreate,
@@ -131,12 +132,10 @@ export const exampleAnalyticsOperations = async () => {
 // Example 5: Using React hooks in a component
 export const ExampleTaskComponent = () => {
   // Use the custom hooks
-  const { tasks, loading, error, createTask, completeTask } = useTasks({
-    status: 'pending' as TaskStatus
-  });
+  const { tasks, loading, error, createTask, toggleTaskComplete } = useTasks();
   
-  const { categories } = useCategories();
-  const { analytics, productivity } = useTaskAnalytics();
+  const { categories } = useTaskCategories();
+  // Note: useTaskAnalytics is not implemented in new system
 
   if (loading) return <div>Loading tasks...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -159,7 +158,7 @@ export const ExampleTaskComponent = () => {
 
   const handleCompleteTask = async (taskId: number) => {
     try {
-      await completeTask(taskId);
+      await toggleTaskComplete(taskId);
       console.log('Task completed successfully!');
     } catch (error) {
       console.error('Failed to complete task:', error);
@@ -170,23 +169,23 @@ export const ExampleTaskComponent = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Task Management</h1>
       
-      {/* Analytics Summary */}
-      {analytics && (
+      {/* Analytics Summary - TODO: Implement with new analytics hooks */}
+      {false && (
         <div className="mb-6 p-4 bg-blue-50 rounded-lg">
           <h2 className="text-lg font-semibold mb-2">Analytics Summary</h2>
-          <p>Total Tasks: {analytics.total_tasks}</p>
-          <p>Completion Rate: {(analytics.completion_rate * 100).toFixed(1)}%</p>
-          <p>Overdue Tasks: {analytics.overdue_tasks}</p>
+          <p>Total Tasks: {/* analytics.total_tasks */}</p>
+          <p>Completion Rate: {/* (analytics.completion_rate * 100).toFixed(1) */}%</p>
+          <p>Overdue Tasks: {/* analytics.overdue_tasks */}</p>
         </div>
       )}
 
-      {/* Productivity Metrics */}
-      {productivity && (
+      {/* Productivity Metrics - TODO: Implement with new analytics hooks */}
+      {false && (
         <div className="mb-6 p-4 bg-green-50 rounded-lg">
           <h2 className="text-lg font-semibold mb-2">Productivity</h2>
-          <p>Tasks Completed Today: {productivity.tasks_completed_today}</p>
-          <p>Tasks Completed This Week: {productivity.tasks_completed_this_week}</p>
-          <p>Most Productive Day: {productivity.most_productive_day}</p>
+          <p>Tasks Completed Today: {/* productivity.tasks_completed_today */}</p>
+          <p>Tasks Completed This Week: {/* productivity.tasks_completed_this_week */}</p>
+          <p>Most Productive Day: {/* productivity.most_productive_day */}</p>
         </div>
       )}
 

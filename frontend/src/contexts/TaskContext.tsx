@@ -9,8 +9,6 @@ import {
   TaskViewMode,
   CreateTaskInput,
   CreateCategoryInput,
-  TaskUpdate,
-  TaskCategoryUpdate,
 } from '../types/Task';
 import { tasksService } from '../services/tasks';
 
@@ -78,15 +76,15 @@ type TaskAction =
 
 // Initial state
 const initialState = {
-  tasks: [],
-  currentTask: null,
+  tasks: [] as Task[],
+  currentTask: null as Task | null,
   loading: false,
-  error: null,
-  categories: [],
+  error: null as string | null,
+  categories: [] as TaskCategory[],
   categoriesLoading: false,
-  filters: {},
+  filters: {} as TaskFilters,
   viewMode: 'list' as TaskViewMode,
-  sortBy: { field: 'created_at' as const, direction: 'desc' as const },
+  sortBy: { field: 'created_at', direction: 'desc' } as TaskSortBy,
 };
 
 // Reducer

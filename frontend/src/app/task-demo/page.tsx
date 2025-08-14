@@ -125,8 +125,8 @@ export default function TaskManagementDemo() {
 
   // Filter tasks based on current filters
   const filteredTasks = tasks.filter(task => {
-    if (filters.status && task.status !== filters.status) return false;
-    if (filters.priority && task.priority !== filters.priority) return false;
+    if (filters.status && filters.status.length > 0 && !filters.status.includes(task.status)) return false;
+    if (filters.priority && filters.priority.length > 0 && !filters.priority.includes(task.priority)) return false;
     if (filters.is_recurring !== undefined && task.is_recurring !== filters.is_recurring) return false;
     if (filters.is_overdue && (!task.due_date || new Date(task.due_date) >= new Date() || task.status === 'completed')) return false;
     if (filters.category_ids && filters.category_ids.length > 0) {

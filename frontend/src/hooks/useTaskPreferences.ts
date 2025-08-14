@@ -62,7 +62,8 @@ export const useTaskPreferences = () => {
   const resetToDefaults = (keys: (keyof TaskPreferences)[]) => {
     const updates: Partial<TaskPreferences> = {};
     keys.forEach(key => {
-      updates[key] = defaultPreferences[key];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (updates as any)[key] = defaultPreferences[key];
     });
     updateMultiplePreferences(updates);
   };

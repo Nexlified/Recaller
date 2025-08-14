@@ -13,12 +13,15 @@ export const useTaskSearch = () => {
   
   // Debounced search function
   const debouncedSearch = useMemo(
-    () => debounce((query: string) => {
-      setIsSearching(true);
-      const results = searchTasks(tasks, query);
-      setSearchResults(results);
-      setIsSearching(false);
-    }, 300),
+    () => {
+      const searchFn = (query: string) => {
+        setIsSearching(true);
+        const results = searchTasks(tasks, query);
+        setSearchResults(results);
+        setIsSearching(false);
+      };
+      return debounce(searchFn, 300);
+    },
     [tasks]
   );
   
@@ -97,24 +100,21 @@ function searchTasks(tasks: Task[], query: string): Task[] {
 }
 
 /**
- * Debounce function
+ * Debounce function with proper typing
  */
-function debounce<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  delay: number
-): T & { cancel: () => void } {
+function debounce(func: (query: string) => void, delay: number) {
   let timeoutId: NodeJS.Timeout;
   
-  const debouncedFunction = (...args: Parameters<T>) => {
+  const debouncedFunction = (query: string) => {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
+    timeoutId = setTimeout(() => func(query), delay);
   };
   
   debouncedFunction.cancel = () => {
     clearTimeout(timeoutId);
   };
   
-  return debouncedFunction as T & { cancel: () => void };
+  return debouncedFunction;
 }
 
 /**

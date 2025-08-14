@@ -25,6 +25,7 @@ export const useTaskForm = (initialTask?: Task) => {
     // Clear validation error for this field
     if (validationErrors[field]) {
       setValidationErrors(prev => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [field]: _, ...rest } = prev;
         return rest;
       });

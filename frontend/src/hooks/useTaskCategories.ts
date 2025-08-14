@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTasks } from './useTasks';
-import { TaskCategory, CreateCategoryInput } from '../types/Task';
+import { TaskCategory } from '../types/Task';
 
 /**
  * Hook for managing task categories

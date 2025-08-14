@@ -13,7 +13,7 @@ interface VirtualizedTasksReturn {
   offsetY: number;
   setContainerHeight: (height: number) => void;
   setScrollTop: (scrollTop: number) => void;
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   scrollToTask: (taskId: number) => void;
   scrollToIndex: (index: number) => void;
 }
@@ -203,7 +203,7 @@ export const useTaskDebounce = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   
   const debouncedCallback = useCallback((...args: Parameters<T>) => {
     if (timeoutRef.current) {
@@ -257,7 +257,7 @@ export const useIntersectionObserver = (
 ) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [entry, setEntry] = useState<IntersectionObserverEntry | null>(null);
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<HTMLElement | null>(null);
   
   useEffect(() => {
     const element = elementRef.current;
