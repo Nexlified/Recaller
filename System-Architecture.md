@@ -10,7 +10,7 @@ Recaller follows a modern, scalable architecture designed for privacy, multi-ten
 ├─────────────────────────────────────────────────────────────────┤
 │  React 19 + TypeScript + Tailwind CSS + Headless UI           │
 │  • Financial Dashboard  • Task Management  • Contact Mgmt      │
-│  • Budget Tracking     • Analytics       • Settings           │
+│  • Budget Tracking     • Analytics       • AI Features        │
 └─────────────────────────┬───────────────────────────────────────┘
                           │ HTTP/REST API
 ┌─────────────────────────▼───────────────────────────────────────┐
@@ -19,7 +19,25 @@ Recaller follows a modern, scalable architecture designed for privacy, multi-ten
 │  FastAPI (Python) + Pydantic + OpenAPI                       │
 │  • Authentication      • Rate Limiting    • CORS             │
 │  • Request Validation  • Error Handling   • Documentation     │
-└─────────────────────────┬───────────────────────────────────────┘
+└─────────────────────────┬───────────────────────┬───────────────┘
+                          │                       │ MCP Protocol
+                          │                       │
+                          │               ┌───────▼───────┐
+                          │               │   MCP Server   │
+                          │               │  (Port 8001)   │
+                          │               │ • Model Mgmt   │
+                          │               │ • Inference    │
+                          │               │ • AI Features  │
+                          │               └───────┬───────┘
+                          │                       │ Backend APIs
+                          │                       │
+                          │               ┌───────▼───────┐
+                          │               │ LLM Backends   │
+                          │               │ • Ollama       │
+                          │               │ • HuggingFace  │
+                          │               │ • OpenAI API   │
+                          │               │ • Local Models │
+                          │               └───────────────┘
                           │ Internal API Calls
 ┌─────────────────────────▼───────────────────────────────────────┐
 │                      Business Logic Layer                      │
@@ -178,6 +196,35 @@ beat_schedule = {
         'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
     },
 }
+```
+
+### AI/LLM Integration Layer (MCP Server)
+
+**Technology Stack:**
+- Model Context Protocol (MCP) v1 implementation
+- FastAPI server with async processing (Port 8001)
+- Multi-backend model support (Ollama, HuggingFace, OpenAI-compatible)
+- Privacy-first on-device processing
+
+**Key Features:**
+- **Model management**: Registration, discovery, and lifecycle management
+- **Inference processing**: Text completion, chat, embeddings
+- **Tenant isolation**: Secure multi-tenant AI processing
+- **Privacy protection**: On-device processing with zero-retention options
+- **Backend abstraction**: Pluggable model backend architecture
+- **Health monitoring**: Model availability and performance tracking
+
+**Service Architecture:**
+```python
+# MCP Server integration
+class AIService:
+    async def get_financial_insights(self, user_context, query):
+        response = await mcp_client.inference.chat(
+            model_id="local_llama",
+            messages=[{"role": "user", "content": query}],
+            tenant_id=user_context.tenant_id
+        )
+        return response.message.content
 ```
 
 ## 🏢 Multi-Tenant Architecture
