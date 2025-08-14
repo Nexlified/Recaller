@@ -7,24 +7,33 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "test": "echo 'Jest tests not configured yet. Use npm run test:playwright for E2E tests.' && exit 1",
+    "test:watch": "echo 'Jest tests not configured yet. Use npm run test:playwright:ui for interactive E2E tests.' && exit 1",
+    "test:coverage": "echo 'Jest coverage not configured yet. Playwright generates HTML reports with: npm run test:playwright -- --reporter=html' && exit 1",
+    "test:playwright": "npx playwright test",
+    "test:playwright:ui": "npx playwright test --ui",
+    "screenshots:generate": "node scripts/take-screenshots.js",
+    "validate:playwright": "node scripts/validate-integration.cjs"
   },
   "dependencies": {
-    "@playwright/test": "^1.54.2",
     "axios": "^1.11.0",
     "next": "15.4.6",
-    "playwright": "^1.54.2",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.54.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
+    "playwright": "^1.54.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
