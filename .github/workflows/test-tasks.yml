@@ -1,0 +1,354 @@
+name: Task Management Tests
+
+on:
+  push:
+    paths:
+      - 'backend/app/**/task*'
+      - 'frontend/src/**/task*'
+      - 'backend/tests/**/*task*'
+      - 'frontend/src/**/__tests__/**'
+      - 'frontend/tests/**'
+      - '.github/workflows/test-tasks.yml'
+  pull_request:
+    paths:
+      - 'backend/app/**/task*'
+      - 'frontend/src/**/task*'
+      - 'backend/tests/**/*task*'
+      - 'frontend/src/**/__tests__/**'
+      - 'frontend/tests/**'
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_recaller
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install Python dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run backend task tests
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_recaller
+          POSTGRES_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+          ACCESS_TOKEN_EXPIRE_MINUTES: 30
+        run: |
+          cd backend
+          pytest tests/ -k "task" -v --cov=app/crud/task --cov=app/api/v1/endpoints/tasks --cov=app/schemas/task --cov-report=xml --cov-report=term
+      
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/coverage.xml
+          flags: backend-tasks
+          name: backend-task-coverage
+  
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run frontend task tests
+        run: |
+          cd frontend
+          npm test -- --testPathPattern=task --coverage --watchAll=false
+      
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: frontend/coverage/lcov.info
+          flags: frontend-tasks
+          name: frontend-task-coverage
+  
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_recaller
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          cd ../frontend
+          npm ci
+      
+      - name: Start backend server
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_recaller
+          POSTGRES_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          echo $! > backend.pid
+          sleep 10
+      
+      - name: Run API integration tests
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_recaller
+          POSTGRES_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          pytest tests/api/test_tasks.py -v
+      
+      - name: Stop backend server
+        run: |
+          if [ -f backend/backend.pid ]; then
+            kill $(cat backend/backend.pid)
+          fi
+  
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_recaller
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          cd ../frontend
+          npm ci
+      
+      - name: Install Playwright
+        run: |
+          cd frontend
+          npx playwright install --with-deps
+      
+      - name: Start backend server
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_recaller
+          POSTGRES_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          echo $! > backend.pid
+          sleep 10
+      
+      - name: Build and start frontend
+        env:
+          REACT_APP_API_URL: http://localhost:8000
+        run: |
+          cd frontend
+          npm run build
+          npm start &
+          echo $! > frontend.pid
+          sleep 15
+      
+      - name: Run E2E tests
+        run: |
+          cd frontend
+          npm run test:e2e -- tests/e2e/task-management.spec.ts
+      
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+      
+      - name: Stop servers
+        run: |
+          if [ -f frontend/frontend.pid ]; then
+            kill $(cat frontend/frontend.pid)
+          fi
+          if [ -f backend/backend.pid ]; then
+            kill $(cat backend/backend.pid)
+          fi
+  
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-tests]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_recaller
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run performance tests
+        env:
+          POSTGRES_SERVER: localhost
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_recaller
+          POSTGRES_PORT: 5432
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          pytest tests/ -k "performance" -v -m "performance"
+  
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, integration-tests, e2e-tests, performance-tests]
+    if: always()
+    
+    steps:
+      - name: Test Summary
+        run: |
+          echo "## Task Management Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Tests | ${{ needs.backend-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Tests | ${{ needs.frontend-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration Tests | ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance Tests | ${{ needs.performance-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.backend-tests.result }}" == "success" && 
+                "${{ needs.frontend-tests.result }}" == "success" && 
+                "${{ needs.integration-tests.result }}" == "success" && 
+                "${{ needs.e2e-tests.result }}" == "success" && 
+                "${{ needs.performance-tests.result }}" == "success" ]]; then
+            echo "✅ All task management tests passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Some task management tests failed. Please check the individual job results." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
