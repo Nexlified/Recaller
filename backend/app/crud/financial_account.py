@@ -100,6 +100,19 @@ def update_account_balance(
     db.refresh(db_obj)
     return db_obj
 
+def update_balance(
+    db: Session,
+    *,
+    db_obj: FinancialAccount,
+    new_balance: float
+) -> FinancialAccount:
+    """Update account balance (alternative method name)"""
+    return update_account_balance(db, db_obj=db_obj, new_balance=new_balance)
+
+def get(db: Session, id: int) -> Optional[FinancialAccount]:
+    """Get financial account by ID"""
+    return db.query(FinancialAccount).filter(FinancialAccount.id == id).first()
+
 def delete_financial_account(
     db: Session,
     *,

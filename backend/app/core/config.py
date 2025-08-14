@@ -32,6 +32,21 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key"  # Change this in production!
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
+    # Redis Configuration
+    REDIS_URL: str = "redis://localhost:6379/0"
+    
+    # Celery Configuration
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
+    
+    # Email Configuration (Optional)
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: Optional[int] = None
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_TLS: bool = True
+    SMTP_FROM_EMAIL: str = "noreply@recaller.com"
+    
     class Config:
         case_sensitive = True
         env_file = ".env"

@@ -85,6 +85,37 @@ def get_due_reminders(
         )
     ).all()
 
+def get_all_due(
+    db: Session,
+    *,
+    reminder_date: date
+) -> List[RecurringTransaction]:
+    """Get all due recurring transactions across all users"""
+    return db.query(RecurringTransaction).filter(
+        and_(
+            RecurringTransaction.is_active == True,
+            RecurringTransaction.next_due_date <= reminder_date
+        )
+    ).all()
+
+def increment_occurrences(
+    db: Session,
+    *,
+    recurring_id: int
+) -> bool:
+    """Increment the occurrence count for a recurring transaction"""
+    db_obj = db.query(RecurringTransaction).filter(
+        RecurringTransaction.id == recurring_id
+    ).first()
+    if db_obj:
+        if not hasattr(db_obj, 'occurrence_count') or db_obj.occurrence_count is None:
+            db_obj.occurrence_count = 0
+        db_obj.occurrence_count += 1
+        db.add(db_obj)
+        db.commit()
+        return True
+    return False
+
 def calculate_next_due_date(recurring_transaction: RecurringTransaction) -> date:
     """Calculate the next due date based on frequency and interval"""
     current_date = recurring_transaction.next_due_date or recurring_transaction.start_date
