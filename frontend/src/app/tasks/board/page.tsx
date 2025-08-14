@@ -298,8 +298,8 @@ export default function TaskBoardPage() {
     // Apply filters to tasks
     let filtered = tasks;
     
-    if (activeFilters.priority) {
-      filtered = filtered.filter(task => task.priority === activeFilters.priority);
+    if (activeFilters.priority && activeFilters.priority.length > 0) {
+      filtered = filtered.filter(task => activeFilters.priority!.includes(task.priority));
     }
     if (activeFilters.category_ids && activeFilters.category_ids.length > 0) {
       filtered = filtered.filter(task => 

@@ -4,6 +4,8 @@ import React from 'react';
 import { 
   TaskFilters, 
   TaskCategory,
+  TaskStatus,
+  TaskPriority,
   TASK_STATUS_OPTIONS,
   TASK_PRIORITY_OPTIONS
 } from '../../types/Task';
@@ -32,6 +34,22 @@ export const TaskFiltersComponent: React.FC<TaskFiltersProps> = ({
       ...filters,
       [key]: value
     });
+  };
+
+  const toggleStatusFilter = (status: string) => {
+    const currentStatus = filters.status || [];
+    const newStatus = currentStatus.includes(status as TaskStatus)
+      ? currentStatus.filter(s => s !== status)
+      : [...currentStatus, status as TaskStatus];
+    updateFilter('status', newStatus.length > 0 ? newStatus : undefined);
+  };
+
+  const togglePriorityFilter = (priority: string) => {
+    const currentPriority = filters.priority || [];
+    const newPriority = currentPriority.includes(priority as TaskPriority)
+      ? currentPriority.filter(p => p !== priority)
+      : [...currentPriority, priority as TaskPriority];
+    updateFilter('priority', newPriority.length > 0 ? newPriority : undefined);
   };
 
   const toggleCategoryFilter = (categoryId: number) => {
@@ -84,7 +102,7 @@ export const TaskFiltersComponent: React.FC<TaskFiltersProps> = ({
             <button
               onClick={() => updateFilter('status', undefined)}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                !filters.status
+                !filters.status || filters.status.length === 0
                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
@@ -94,9 +112,9 @@ export const TaskFiltersComponent: React.FC<TaskFiltersProps> = ({
             {TASK_STATUS_OPTIONS.map(option => (
               <button
                 key={option.value}
-                onClick={() => updateFilter('status', option.value)}
+                onClick={() => toggleStatusFilter(option.value)}
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  filters.status === option.value
+                  filters.status?.includes(option.value)
                     ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                     : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
@@ -116,7 +134,7 @@ export const TaskFiltersComponent: React.FC<TaskFiltersProps> = ({
             <button
               onClick={() => updateFilter('priority', undefined)}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                !filters.priority
+                !filters.priority || filters.priority.length === 0
                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
@@ -126,9 +144,9 @@ export const TaskFiltersComponent: React.FC<TaskFiltersProps> = ({
             {TASK_PRIORITY_OPTIONS.map(option => (
               <button
                 key={option.value}
-                onClick={() => updateFilter('priority', option.value)}
+                onClick={() => togglePriorityFilter(option.value)}
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  filters.priority === option.value
+                  filters.priority?.includes(option.value)
                     ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                     : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}

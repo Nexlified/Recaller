@@ -125,14 +125,15 @@ export interface TaskCategoryAssignmentCreate {
 
 // Filtering interfaces
 export interface TaskFilters {
-  status?: TaskStatus;
-  priority?: TaskPriority;
+  status?: TaskStatus[];
+  priority?: TaskPriority[];
   category_ids?: number[];
   contact_ids?: number[];
   due_date_start?: string; // ISO string
   due_date_end?: string; // ISO string
   is_recurring?: boolean;
   is_overdue?: boolean;
+  search?: string;
 }
 
 // Search interface
@@ -174,6 +175,35 @@ export const RECURRENCE_TYPE_OPTIONS: { value: RecurrenceType; label: string }[]
   { value: 'yearly', label: 'Yearly' },
   { value: 'custom', label: 'Custom' },
 ];
+
+// Additional interfaces for state management
+export interface TaskSortBy {
+  field: 'title' | 'due_date' | 'priority' | 'created_at' | 'updated_at';
+  direction: 'asc' | 'desc';
+}
+
+export interface TaskFormData {
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  start_date: string;
+  due_date: string;
+  category_ids: number[];
+  contact_ids: number[];
+  recurrence?: TaskRecurrenceCreate;
+}
+
+export interface ValidationErrors {
+  [key: string]: string;
+}
+
+export type CreateTaskInput = TaskCreate;
+
+export type CreateCategoryInput = TaskCategoryCreate;
+
+// View mode for task display
+export type TaskViewMode = 'list' | 'board' | 'calendar';
 
 // Analytics and Reports interfaces
 export interface TaskAnalytics {

@@ -285,11 +285,11 @@ export default function TaskListPage() {
     // Apply filters to tasks
     let filtered = tasks;
     
-    if (activeFilters.status) {
-      filtered = filtered.filter(task => task.status === activeFilters.status);
+    if (activeFilters.status && activeFilters.status.length > 0) {
+      filtered = filtered.filter(task => activeFilters.status!.includes(task.status));
     }
-    if (activeFilters.priority) {
-      filtered = filtered.filter(task => task.priority === activeFilters.priority);
+    if (activeFilters.priority && activeFilters.priority.length > 0) {
+      filtered = filtered.filter(task => activeFilters.priority!.includes(task.priority));
     }
     if (activeFilters.category_ids && activeFilters.category_ids.length > 0) {
       filtered = filtered.filter(task => 
