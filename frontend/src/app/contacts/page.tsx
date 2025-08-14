@@ -35,22 +35,29 @@ export default function ContactsPage() {
 
     // Load contacts if user is authenticated
     if (currentUser) {
-      loadContacts();
+      loadContacts(currentUser);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadContacts = async () => {
+  const loadContacts = async (currentUser?: User) => {
     try {
       setLoadingContacts(true);
+      
+      // Use the passed user or the state user
+      const userToUse = currentUser || user;
+      if (!userToUse) {
+        console.error('No user available for loading contacts');
+        return;
+      }
       
       // Load all contacts (owned + public)
       const allContacts = await contactsService.getContacts();
       
       // Separate own contacts from public contacts
-      const own = allContacts.filter(contact => contact.created_by_user_id === user?.id);
+      const own = allContacts.filter(contact => contact.created_by_user_id === userToUse.id);
       const otherPublic = allContacts.filter(contact => 
-        contact.created_by_user_id !== user?.id && contact.visibility === ContactVisibility.PUBLIC
+        contact.created_by_user_id !== userToUse.id && contact.visibility === ContactVisibility.PUBLIC
       );
       
       setOwnContacts(own);
