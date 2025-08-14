@@ -65,7 +65,7 @@ router = APIRouter()
 def read_users(
     db: Session = Depends(deps.get_db),
     skip: int = Query(0, ge=0, description="Number of users to skip for pagination"),
-    limit: int = Query(100, ge=1, le=1000, description="Maximum number of users to return"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum number of users to return"),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
