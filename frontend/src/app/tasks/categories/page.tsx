@@ -220,7 +220,7 @@ export default function CategoriesPage() {
       
       const [categoriesData, tasksData] = await Promise.all([
         tasksService.getCategories(),
-        tasksService.getTasks(0, 1000) // Get all tasks for stats
+        tasksService.getTasks(0, 100) // Get all tasks for stats
       ]);
       
       setCategories(categoriesData);

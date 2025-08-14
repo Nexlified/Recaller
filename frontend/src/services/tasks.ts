@@ -180,37 +180,37 @@ class TasksService {
   }
 
   async getTasksInCategory(categoryId: number): Promise<Task[]> {
-    const response = await api.get<Task[]>(`/task-categories/${categoryId}/tasks`);
+    const response = await api.get<Task[]>(`/tasks/categories/${categoryId}/tasks`);
     return response.data;
   }
 
   // Task Categories CRUD
   async getCategories(skip: number = 0, limit: number = 100): Promise<TaskCategory[]> {
-    const response = await api.get<TaskCategory[]>(`/task-categories/?skip=${skip}&limit=${limit}`);
+    const response = await api.get<TaskCategory[]>(`/tasks/categories/?skip=${skip}&limit=${limit}`);
     return response.data;
   }
 
   async getTaskCategory(categoryId: number): Promise<TaskCategory> {
-    const response = await api.get<TaskCategory>(`/task-categories/${categoryId}`);
+    const response = await api.get<TaskCategory>(`/taskscategories/${categoryId}`);
     return response.data;
   }
 
   async createTaskCategory(categoryData: TaskCategoryCreate): Promise<TaskCategory> {
-    const response = await api.post<TaskCategory>('/task-categories/', categoryData);
+    const response = await api.post<TaskCategory>('/tasks/categories/', categoryData);
     return response.data;
   }
 
   async updateTaskCategory(categoryId: number, categoryData: TaskCategoryUpdate): Promise<TaskCategory> {
-    const response = await api.put<TaskCategory>(`/task-categories/${categoryId}`, categoryData);
+    const response = await api.put<TaskCategory>(`/tasks/categories/${categoryId}`, categoryData);
     return response.data;
   }
 
   async deleteTaskCategory(categoryId: number): Promise<void> {
-    await api.delete(`/task-categories/${categoryId}`);
+    await api.delete(`/tasks/categories/${categoryId}`);
   }
 
   async searchTaskCategories(query: string, skip: number = 0, limit: number = 100): Promise<TaskCategory[]> {
-    const response = await api.get<TaskCategory[]>(`/task-categories/search/?q=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`);
+    const response = await api.get<TaskCategory[]>(`/tasks/categories/search/?q=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`);
     return response.data;
   }
 

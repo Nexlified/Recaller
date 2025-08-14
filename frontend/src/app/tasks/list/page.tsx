@@ -312,7 +312,7 @@ export default function TaskListPage() {
       setError(null);
       
       const [tasksData, categoriesData] = await Promise.all([
-        tasksService.getTasks(0, 1000), // Get all tasks for filtering
+        tasksService.getTasks(0, 100), // Get all tasks for filtering
         tasksService.getCategories()
       ]);
       

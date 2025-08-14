@@ -32,7 +32,7 @@ export default function TasksLayout({ children }: TasksLayoutProps) {
   const loadTaskStatistics = async () => {
     try {
       const [tasks, categories] = await Promise.all([
-        tasksService.getTasks(0, 1000), // Get all tasks for statistics
+        tasksService.getTasks(0, 100), // Get all tasks for statistics
         tasksService.getCategories()
       ]);
 

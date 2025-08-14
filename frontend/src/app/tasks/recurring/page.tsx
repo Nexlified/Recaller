@@ -184,7 +184,7 @@ export default function RecurringTasksPage() {
       setError(null);
       
       const [tasksData] = await Promise.all([
-        tasksService.getTasks(0, 1000), // Get all tasks
+        tasksService.getTasks(0, 100), // Get all tasks
         tasksService.getCategories()
       ]);
       
