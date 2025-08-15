@@ -17,13 +17,13 @@ app = FastAPI(
     docs_url="/docs"
 )
 
-# Set all CORS enabled origins
+# Set CORS enabled origins with secure defaults
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.get_cors_origins(),
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_methods=settings.get_cors_methods(),
+    allow_headers=settings.get_cors_headers(),
 )
 
 # Add request validation middleware (before rate limiting)

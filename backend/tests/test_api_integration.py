@@ -197,10 +197,60 @@ class TestAPISecurity:
     """Test overall API security features."""
     
     def test_cors_headers(self):
-        """Test CORS configuration."""
-        response = client.options("/api/v1/contacts/")
-        # Should have CORS headers
+        """Test CORS configuration with security restrictions."""
+        # Test allowed origin
+        response = client.options("/api/v1/contacts/", headers={"Origin": "http://localhost:3000"})
+        assert response.status_code == 200
+        # Should have CORS headers for allowed origin
         assert "access-control-allow-origin" in response.headers
+        assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+        
+        # Test restricted origin (should not be allowed)
+        response = client.options("/api/v1/contacts/", headers={"Origin": "https://malicious.com"})
+        # Should not have CORS headers for disallowed origin
+        cors_origin = response.headers.get("access-control-allow-origin")
+        assert cors_origin != "https://malicious.com"
+        
+    def test_cors_methods_restricted(self):
+        """Test CORS methods are restricted to allowed methods only."""
+        response = client.options("/api/v1/contacts/", headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "GET"
+        })
+        assert response.status_code == 200
+        
+        # Should have allowed methods header
+        methods_header = response.headers.get("access-control-allow-methods", "")
+        allowed_methods = [method.strip() for method in methods_header.split(",")]
+        
+        # Should include standard methods
+        for method in ["GET", "POST", "PUT", "DELETE", "OPTIONS"]:
+            assert method in allowed_methods, f"Method {method} should be allowed"
+        
+        # Should not include dangerous methods
+        dangerous_methods = ["TRACE", "CONNECT", "PATCH"]
+        for method in dangerous_methods:
+            assert method not in allowed_methods, f"Method {method} should not be allowed"
+    
+    def test_cors_headers_restricted(self):
+        """Test CORS headers are restricted to necessary headers only."""
+        response = client.options("/api/v1/contacts/", headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Headers": "Content-Type,Authorization"
+        })
+        assert response.status_code == 200
+        
+        # Should have allowed headers
+        headers_value = response.headers.get("access-control-allow-headers", "")
+        allowed_headers = [header.strip().lower() for header in headers_value.split(",")]
+        
+        # Should include necessary headers
+        required_headers = ["content-type", "authorization", "x-tenant-id"]
+        for header in required_headers:
+            assert header in allowed_headers, f"Header {header} should be allowed"
+        
+        # Should not include wildcard
+        assert "*" not in allowed_headers, "Wildcard headers should not be allowed"
     
     def test_health_endpoint_accessibility(self):
         """Test that health endpoint is accessible."""

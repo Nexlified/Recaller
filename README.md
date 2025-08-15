@@ -74,8 +74,30 @@
 
 ## ⚙️ Environment Variables
 
-- **Backend:** Set in `docker-compose.yml` or `.env` file (see `backend/.env.example`)
-- **Frontend:** API URL set via `REACT_APP_API_URL` in `.env` or Docker Compose
+### Backend Configuration
+Set in `docker-compose.yml` or `.env` file (see `backend/.env.example`)
+
+### Frontend Configuration  
+API URL set via `REACT_APP_API_URL` in `.env` or Docker Compose
+
+### CORS Security Policy
+
+The backend uses a secure CORS configuration that restricts access to trusted origins only:
+
+- **Development:** Allows `http://localhost:3000` and `http://127.0.0.1:3000` by default
+- **Production:** Must be configured with your actual domain(s)
+
+**CORS Environment Variables:**
+- `CORS_ALLOWED_ORIGINS` - Comma-separated list of allowed origins (e.g., `https://yourdomain.com,https://www.yourdomain.com`)
+- `CORS_ALLOWED_METHODS` - Allowed HTTP methods (default: `GET,POST,PUT,DELETE,OPTIONS`)
+- `CORS_ALLOWED_HEADERS` - Allowed headers (default: `Content-Type,Authorization,X-Tenant-ID`)
+- `CORS_ALLOW_CREDENTIALS` - Allow credentials (default: `true`)
+
+**Security Notes:**
+- Wildcard (`*`) origins are not allowed for security reasons
+- Only standard HTTP methods are permitted
+- Headers are restricted to necessary ones only
+- Configure `CORS_ALLOWED_ORIGINS` to match your frontend URL(s) in production
 
 ---
 
