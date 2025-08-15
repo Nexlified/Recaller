@@ -118,8 +118,8 @@ class ContentSanitizer:
         if re.search(r'[<>"\'/\\&;]', sanitized):
             raise ValueError("Tag names cannot contain special characters")
         
-        # Must be alphanumeric with hyphens, underscores, and spaces
-        if not re.match(r'^[a-zA-Z0-9\s_-]+$', sanitized):
+        # Must be alphanumeric (including Unicode letters), spaces, hyphens, and underscores
+        if not re.match(r'^[\w\s_-]+$', sanitized, re.UNICODE):
             raise ValueError("Tag names must contain only letters, numbers, spaces, hyphens, and underscores")
         
         return sanitized

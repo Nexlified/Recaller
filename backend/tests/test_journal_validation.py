@@ -80,7 +80,7 @@ class TestContentSanitization:
     
     def test_tag_name_sanitization(self):
         """Test tag name sanitization."""
-        valid_tags = ["happy", "work-stuff", "life_events", "family time"]
+        valid_tags = ["happy", "work-stuff", "life_events", "family time", "café_time", "学习"]
         for tag in valid_tags:
             result = ContentSanitizer.sanitize_tag_name(tag)
             assert result == tag
