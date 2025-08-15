@@ -82,6 +82,25 @@ class Settings(BaseSettings):
                 f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
             )
         
+        # Check for predictable patterns (all same character, all numbers, etc.)
+        if len(set(v)) <= 4:  # Too few unique characters
+            raise ValueError(
+                f"SECRET_KEY appears to be too predictable (too few unique characters). "
+                f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+        
+        if v.isdigit():  # All numbers
+            raise ValueError(
+                f"SECRET_KEY cannot be all numbers. "
+                f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+        
+        if v.isalpha():  # All letters
+            raise ValueError(
+                f"SECRET_KEY cannot be all letters. "
+                f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+        
         return v
     
     # Redis Configuration

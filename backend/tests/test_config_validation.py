@@ -124,3 +124,23 @@ def test_helpful_error_message():
     
     error = exc_info.value.errors()[0]
     assert "python -c \"import secrets; print(secrets.token_urlsafe(32))\"" in error["msg"]
+
+def test_secret_key_predictable_patterns():
+    """Test that predictable patterns are rejected."""
+    from app.core.config import Settings
+    
+    predictable_patterns = [
+        "12345678901234567890123456789012",  # All numbers
+        "abcdefghijklmnopqrstuvwxyzabcdef",  # All letters
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",  # All same character
+        "abababababababababababababababab",  # Too few unique chars
+    ]
+    
+    for pattern in predictable_patterns:
+        with pytest.raises(ValidationError) as exc_info:
+            Settings(SECRET_KEY=pattern)
+        
+        error = exc_info.value.errors()[0]
+        assert ("cannot be all numbers" in error["msg"] or 
+                "cannot be all letters" in error["msg"] or
+                "too predictable" in error["msg"])
