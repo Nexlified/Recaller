@@ -46,12 +46,28 @@ class UserCreate(UserBase):
             }
         }
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
     """
     User update model for profile modifications.
     
     All fields are optional for partial updates.
     """
+    email: Optional[EmailStr] = Field(
+        None,
+        description="User's email address, used for login and notifications",
+        example="john.doe@example.com"
+    )
+    full_name: Optional[str] = Field(
+        None,
+        description="User's full display name",
+        example="John Doe",
+        max_length=100
+    )
+    is_active: Optional[bool] = Field(
+        None,
+        description="Whether the user account is active and can log in",
+        example=True
+    )
     password: Optional[str] = Field(
         None,
         description="New password (will be hashed before storage)",
