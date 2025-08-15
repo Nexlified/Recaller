@@ -61,14 +61,21 @@ def mock_inactive_tenant() -> TenantInfo:
 
 
 @pytest.fixture
-async def clean_model_registry():
+def clean_model_registry():
     """Clean model registry before and after tests."""
     # Clear any existing models
-    original_models = model_registry._models.copy()
-    original_backends = model_registry._backends.copy()
+    original_models = getattr(model_registry, '_models', {}).copy()
+    original_backends = getattr(model_registry, '_backends', {}).copy()
     
-    model_registry._models.clear()
-    model_registry._backends.clear()
+    if hasattr(model_registry, '_models'):
+        model_registry._models.clear()
+    else:
+        model_registry._models = {}
+        
+    if hasattr(model_registry, '_backends'):
+        model_registry._backends.clear()
+    else:
+        model_registry._backends = {}
     
     yield model_registry
     
