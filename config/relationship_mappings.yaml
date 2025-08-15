@@ -1,0 +1,339 @@
+# Contact Relationship Mappings
+# This file defines bidirectional relationship types and their reverse mappings
+# Used by both backend and frontend for consistent relationship handling
+
+relationship_types:
+  # Family Relationships
+  family:
+    spouse:
+      reverse: spouse
+      category: family
+      description: "Married partners"
+      mutual: true
+    
+    parent:
+      reverse: child
+      category: family
+      description: "Parent to child relationship"
+      mutual: false
+    
+    child:
+      reverse: parent
+      category: family
+      description: "Child to parent relationship"
+      mutual: false
+    
+    sibling:
+      reverse: sibling
+      category: family
+      description: "Brother or sister"
+      mutual: true
+    
+    brother:
+      reverse: sister
+      category: family
+      description: "Male sibling"
+      mutual: false
+      gender_specific: true
+    
+    sister:
+      reverse: brother
+      category: family
+      description: "Female sibling"
+      mutual: false
+      gender_specific: true
+    
+    grandparent:
+      reverse: grandchild
+      category: family
+      description: "Grandparent to grandchild relationship"
+      mutual: false
+    
+    grandchild:
+      reverse: grandparent
+      category: family
+      description: "Grandchild to grandparent relationship"
+      mutual: false
+    
+    uncle:
+      reverse: nephew
+      category: family
+      description: "Uncle to nephew/niece relationship"
+      mutual: false
+      gender_specific: true
+    
+    aunt:
+      reverse: niece
+      category: family
+      description: "Aunt to nephew/niece relationship"
+      mutual: false
+      gender_specific: true
+    
+    nephew:
+      reverse: uncle
+      category: family
+      description: "Nephew to uncle/aunt relationship"
+      mutual: false
+      gender_specific: true
+    
+    niece:
+      reverse: aunt
+      category: family
+      description: "Niece to uncle/aunt relationship"
+      mutual: false
+      gender_specific: true
+    
+    cousin:
+      reverse: cousin
+      category: family
+      description: "Cousin relationship"
+      mutual: true
+
+  # Professional Relationships
+  professional:
+    manager:
+      reverse: direct_report
+      category: professional
+      description: "Manager to employee relationship"
+      mutual: false
+    
+    direct_report:
+      reverse: manager
+      category: professional
+      description: "Employee to manager relationship"
+      mutual: false
+    
+    colleague:
+      reverse: colleague
+      category: professional
+      description: "Work colleagues"
+      mutual: true
+    
+    mentor:
+      reverse: mentee
+      category: professional
+      description: "Mentor to mentee relationship"
+      mutual: false
+    
+    mentee:
+      reverse: mentor
+      category: professional
+      description: "Mentee to mentor relationship"
+      mutual: false
+    
+    business_partner:
+      reverse: business_partner
+      category: professional
+      description: "Business partnership"
+      mutual: true
+    
+    client:
+      reverse: service_provider
+      category: professional
+      description: "Client relationship"
+      mutual: false
+    
+    service_provider:
+      reverse: client
+      category: professional
+      description: "Service provider relationship"
+      mutual: false
+    
+    vendor:
+      reverse: customer
+      category: professional
+      description: "Vendor relationship"
+      mutual: false
+    
+    customer:
+      reverse: vendor
+      category: professional
+      description: "Customer relationship"
+      mutual: false
+
+  # Social Relationships
+  social:
+    friend:
+      reverse: friend
+      category: social
+      description: "Friendship"
+      mutual: true
+    
+    best_friend:
+      reverse: best_friend
+      category: social
+      description: "Best friendship"
+      mutual: true
+    
+    acquaintance:
+      reverse: acquaintance
+      category: social
+      description: "Casual acquaintance"
+      mutual: true
+    
+    neighbor:
+      reverse: neighbor
+      category: social
+      description: "Neighbor relationship"
+      mutual: true
+    
+    roommate:
+      reverse: roommate
+      category: social
+      description: "Living together"
+      mutual: true
+    
+    dating:
+      reverse: dating
+      category: social
+      description: "Dating relationship"
+      mutual: true
+    
+    ex_partner:
+      reverse: ex_partner
+      category: social
+      description: "Former romantic relationship"
+      mutual: true
+    
+    landlord:
+      reverse: tenant
+      category: social
+      description: "Property owner to renter"
+      mutual: false
+    
+    tenant:
+      reverse: landlord
+      category: social
+      description: "Renter to property owner"
+      mutual: false
+
+  # Educational Relationships
+  educational:
+    teacher:
+      reverse: student
+      category: educational
+      description: "Teacher to student relationship"
+      mutual: false
+    
+    student:
+      reverse: teacher
+      category: educational
+      description: "Student to teacher relationship"
+      mutual: false
+    
+    classmate:
+      reverse: classmate
+      category: educational
+      description: "Fellow students"
+      mutual: true
+    
+    alumni:
+      reverse: alumni
+      category: educational
+      description: "Alumni of same institution"
+      mutual: true
+
+  # Other Relationships
+  other:
+    doctor:
+      reverse: patient
+      category: other
+      description: "Medical professional to patient"
+      mutual: false
+    
+    patient:
+      reverse: doctor
+      category: other
+      description: "Patient to medical professional"
+      mutual: false
+    
+    emergency_contact:
+      reverse: has_as_emergency_contact
+      category: other
+      description: "Emergency contact relationship"
+      mutual: false
+    
+    has_as_emergency_contact:
+      reverse: emergency_contact
+      category: other
+      description: "Has someone as emergency contact"
+      mutual: false
+
+# Relationship categories for grouping and filtering
+categories:
+  family:
+    display_name: "Family"
+    color: "#10B981"
+    icon: "family"
+    
+  professional:
+    display_name: "Professional"
+    color: "#3B82F6"
+    icon: "briefcase"
+    
+  social:
+    display_name: "Social"
+    color: "#8B5CF6"
+    icon: "users"
+    
+  educational:
+    display_name: "Educational"
+    color: "#F59E0B"
+    icon: "academic-cap"
+    
+  other:
+    display_name: "Other"
+    color: "#6B7280"
+    icon: "dots-horizontal"
+
+# Relationship strength levels
+strength_levels:
+  1:
+    label: "Very Weak"
+    description: "Barely know each other"
+    color: "#FEE2E2"
+    
+  2:
+    label: "Weak"
+    description: "Occasional contact"
+    color: "#FECACA"
+    
+  3:
+    label: "Casual"
+    description: "Casual acquaintance"
+    color: "#FCA5A5"
+    
+  4:
+    label: "Regular"
+    description: "Regular contact"
+    color: "#F87171"
+    
+  5:
+    label: "Moderate"
+    description: "Moderate relationship"
+    color: "#EF4444"
+    
+  6:
+    label: "Good"
+    description: "Good relationship"
+    color: "#FCD34D"
+    
+  7:
+    label: "Strong"
+    description: "Strong relationship"
+    color: "#84CC16"
+    
+  8:
+    label: "Very Strong"
+    description: "Very strong relationship"
+    color: "#22C55E"
+    
+  9:
+    label: "Extremely Strong"
+    description: "Extremely close"
+    color: "#10B981"
+    
+  10:
+    label: "Unbreakable"
+    description: "Unbreakable bond"
+    color: "#059669"
