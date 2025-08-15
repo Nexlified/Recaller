@@ -1,6 +1,6 @@
 """Optimize journal storage and retrieval
 
-Revision ID: 013_optimize_journal_storage_and_retrieval
+Revision ID: 013_optimize_journal
 Revises: 012_create_journal_tables
 Create Date: 2025-08-15 12:00:00.000000
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '013_optimize_journal_storage_and_retrieval'
+revision = '013_optimize_journal'
 down_revision = '012_create_journal_tables'
 branch_labels = None
 depends_on = None

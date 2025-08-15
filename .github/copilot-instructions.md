@@ -14,11 +14,11 @@
 - **Multi-tenancy**: Tenant-based isolation using middleware
 - **Migrations**: Alembic for database schema management
 
-### Frontend (React + TypeScript)
-- **Framework**: React 19+ with TypeScript
+### Frontend (Nextjs + TypeScript)
+- **Framework**: Nextjs + with TypeScript
 - **Styling**: Tailwind CSS
 - **HTTP Client**: Axios for API communication
-- **Routing**: React Router DOM
+- **Routing**: Next.js built-in routing
 - **UI Components**: Headless UI, Heroicons
 - **Notifications**: React Hot Toast
 
