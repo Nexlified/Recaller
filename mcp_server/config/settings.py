@@ -38,7 +38,7 @@ class MCPServerSettings(BaseSettings):
     
     # Model Configuration
     DEFAULT_MODEL_BACKEND: ModelBackendType = Field(default=ModelBackendType.OLLAMA)
-    MODEL_REGISTRY_PATH: str = Field(default="/app/models", description="Path to model registry")
+    MODEL_REGISTRY_PATH: str = Field(default="./models", description="Path to model registry")
     MAX_CONCURRENT_REQUESTS: int = Field(default=10, description="Maximum concurrent model requests")
     
     # Resource Limits
