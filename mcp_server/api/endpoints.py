@@ -19,6 +19,7 @@ try:
     from ..models.registry import model_registry
     from ..services.inference import inference_service
     from ..services.auth import get_current_tenant, verify_api_access
+    from ..services.privacy import privacy_enforcer
     from ..core.protocol import MCPProtocolError
 except ImportError:
     from schemas.mcp_schemas import (
@@ -30,6 +31,7 @@ except ImportError:
     from models.registry import model_registry
     from services.inference import inference_service
     from services.auth import get_current_tenant, verify_api_access
+    from services.privacy import privacy_enforcer
     from core.protocol import MCPProtocolError
 
 
@@ -47,7 +49,11 @@ async def register_model(
 ):
     """Register a new model with the MCP server."""
     try:
-        model_id = await model_registry.register_model(request)
+        # Ensure tenant context is available
+        if not current_tenant:
+            raise HTTPException(status_code=403, detail="Tenant access required")
+        
+        model_id = await model_registry.register_model(request, current_tenant.id)
         return APIResponse(
             success=True,
             data={"model_id": model_id}
@@ -66,7 +72,11 @@ async def unregister_model(
 ):
     """Unregister a model from the MCP server."""
     try:
-        await model_registry.unregister_model(model_id)
+        # Ensure tenant context is available
+        if not current_tenant:
+            raise HTTPException(status_code=403, detail="Tenant access required")
+        
+        await model_registry.unregister_model(model_id, current_tenant.id)
         return APIResponse(success=True)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -80,7 +90,7 @@ async def list_models(
     status: Optional[str] = None,
     current_tenant = Depends(get_current_tenant)
 ):
-    """List all registered models."""
+    """List all registered models accessible by the current tenant."""
     try:
         status_filter = None
         if status:
@@ -93,7 +103,10 @@ async def list_models(
             except ValueError:
                 raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
         
-        models = model_registry.list_models(status_filter=status_filter)
+        # Get tenant ID for filtering (None if tenant isolation disabled)
+        tenant_id = current_tenant.id if current_tenant else None
+        
+        models = model_registry.list_models(tenant_id=tenant_id, status_filter=status_filter)
         return models
     except Exception as e:
         logger.error(f"Failed to list models: {e}")
@@ -106,9 +119,12 @@ async def get_model(
     current_tenant = Depends(get_current_tenant)
 ):
     """Get information about a specific model."""
-    model = model_registry.get_model(model_id)
+    # Get tenant ID for access control (None if tenant isolation disabled)
+    tenant_id = current_tenant.id if current_tenant else None
+    
+    model = model_registry.get_model(model_id, tenant_id)
     if not model:
-        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found or access denied")
     return model
 
 
@@ -263,9 +279,12 @@ async def server_info():
 # Statistics and Monitoring Endpoints
 @router.get("/stats", response_model=APIResponse)
 async def server_stats(current_tenant = Depends(get_current_tenant)):
-    """Get server statistics and metrics."""
+    """Get server statistics and metrics scoped to current tenant."""
     try:
-        models = model_registry.list_models()
+        # Get tenant ID for filtering (None if tenant isolation disabled)
+        tenant_id = current_tenant.id if current_tenant else None
+        
+        models = model_registry.list_models(tenant_id=tenant_id)
         
         stats = {
             "total_models": len(models),
@@ -282,6 +301,10 @@ async def server_stats(current_tenant = Depends(get_current_tenant)):
         
         stats["inference_types"] = list(stats["inference_types"])
         
+        # Add tenant info if available
+        if current_tenant:
+            stats["tenant_id"] = current_tenant.id
+        
         return APIResponse(
             success=True,
             data=stats
@@ -289,3 +312,18 @@ async def server_stats(current_tenant = Depends(get_current_tenant)):
     except Exception as e:
         logger.error(f"Failed to get server stats: {e}")
         raise HTTPException(status_code=500, detail="Failed to get statistics")
+
+
+# Privacy Status Endpoint
+@router.get("/privacy/status", response_model=APIResponse)
+async def privacy_status():
+    """Get privacy enforcement status and configuration."""
+    try:
+        status = privacy_enforcer.get_privacy_status()
+        return APIResponse(
+            success=True,
+            data=status
+        )
+    except Exception as e:
+        logger.error(f"Failed to get privacy status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get privacy status")

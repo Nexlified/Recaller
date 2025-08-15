@@ -4,6 +4,32 @@
 
 The Model Context Protocol (MCP) server provides a standardized interface for Large Language Model (LLM) integration in Recaller. It implements MCP v1 protocol to enable secure, privacy-first connections with local or self-hosted LLMs while maintaining Recaller's multi-tenant architecture and privacy requirements.
 
+## 🔒 Security & Privacy Features (Enhanced)
+
+### Tenant Isolation
+- **Request Context**: All requests include tenant identification  
+- **Data Separation**: No cross-tenant data access - models are scoped by tenant ID
+- **Model Access**: Tenant-specific model permissions and ownership validation
+- **Resource Limits**: Per-tenant rate limiting and quotas
+- **API Filtering**: All endpoints filter results by tenant context
+
+### Privacy Protection
+- **On-Device Processing**: Local model execution preferred
+- **External Request Blocking**: Configurable blocking of all external network requests
+- **URL Validation**: Automatic detection and blocking of external URLs in configurations and prompts
+- **Data Sanitization**: Automatic removal of sensitive data from logs and error messages
+- **No Data Retention**: Optional zero-retention policy (default: 0 days)
+- **Request Anonymization**: Optional log anonymization with sensitive pattern detection
+- **Secure Communication**: TLS/HTTPS for all communications
+- **Local-Only Enforcement**: Strict mode to ensure no data leaves the environment
+
+### Access Control
+- **API Authentication**: Token-based access control with tenant validation
+- **Model Permissions**: Fine-grained model access control per tenant
+- **Rate Limiting**: Protection against abuse with tenant-scoped limits
+- **Resource Quotas**: CPU/memory usage limits per tenant
+- **Configuration Validation**: Privacy-compliant model configuration validation
+
 ## Architecture Design
 
 ### High-Level Architecture
@@ -186,7 +212,7 @@ MCP_SERVER_HOST=0.0.0.0
 MCP_SERVER_PORT=8001
 MCP_PROTOCOL_VERSION=1.0.0
 
-# Security
+# Security & Tenant Isolation
 MCP_SECRET_KEY=your-secret-key
 MCP_ENABLE_TENANT_ISOLATION=true
 
@@ -199,11 +225,36 @@ MAX_CONCURRENT_REQUESTS=10
 MAX_CONTEXT_LENGTH=4096
 MAX_RESPONSE_TOKENS=1024
 
-# Privacy
+# Privacy & Security (Enhanced)
 ENABLE_REQUEST_LOGGING=false
 ANONYMIZE_LOGS=true
 DATA_RETENTION_DAYS=0
+BLOCK_EXTERNAL_REQUESTS=true
+ALLOWED_EXTERNAL_HOSTS=[]
+ENFORCE_LOCAL_ONLY=true
+ANONYMIZE_ERROR_MESSAGES=true
 ```
+
+## 🔐 Privacy Enforcement
+
+The MCP server includes comprehensive privacy protection:
+
+1. **External Request Blocking**: All external network requests are blocked by default
+2. **Local Address Detection**: Automatic allowlisting of local/private network addresses
+3. **URL Validation**: Scanning of model configurations and prompts for external URLs
+4. **Data Sanitization**: Automatic removal of emails, SSNs, credit cards, IPs from logs
+5. **Error Message Sanitization**: Removal of file paths and URLs from error messages
+6. **Configurable Whitelist**: Optional whitelist for trusted external hosts
+
+### Privacy Status Monitoring
+
+Check current privacy settings via the API:
+
+```bash
+GET /api/v1/privacy/status
+```
+
+Returns current privacy enforcement configuration and status.
 
 ### Model Configuration
 Models are configured through JSON files or API registration:
@@ -250,21 +301,24 @@ python main.py
 ## API Endpoints
 
 ### Model Management
-- `POST /api/v1/models/register` - Register new model
-- `GET /api/v1/models` - List available models
-- `GET /api/v1/models/{id}` - Get model information
-- `DELETE /api/v1/models/{id}` - Unregister model
+- `POST /api/v1/models/register` - Register new model (tenant-scoped)
+- `GET /api/v1/models` - List available models (filtered by tenant)
+- `GET /api/v1/models/{id}` - Get model information (tenant access control)
+- `DELETE /api/v1/models/{id}` - Unregister model (tenant ownership validation)
 
 ### Inference
-- `POST /api/v1/inference/completion` - Text completion
-- `POST /api/v1/inference/chat` - Chat completion
-- `POST /api/v1/inference/embedding` - Text embeddings
+- `POST /api/v1/inference/completion` - Text completion (tenant + privacy validation)
+- `POST /api/v1/inference/chat` - Chat completion (tenant + privacy validation)
+- `POST /api/v1/inference/embedding` - Text embeddings (tenant + privacy validation)
 
 ### Health and Monitoring
 - `GET /api/v1/health` - Overall health check
 - `GET /api/v1/health/models/{id}` - Model-specific health
-- `GET /api/v1/stats` - Server statistics
+- `GET /api/v1/stats` - Server statistics (tenant-scoped)
 - `GET /api/v1/info` - Server information
+
+### Privacy & Security
+- `GET /api/v1/privacy/status` - Privacy enforcement status
 
 ## Extensibility
 

@@ -77,6 +77,9 @@ class ModelInfo(BaseModel):
     capabilities: List[InferenceType] = Field(default_factory=list, description="Supported inference types")
     context_length: int = Field(default=4096, description="Maximum context length")
     
+    # Tenant isolation
+    tenant_id: str = Field(description="Tenant ID for isolation")
+    
     # Metadata
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -90,6 +93,7 @@ class ModelRegistrationRequest(BaseModel):
     config: Dict[str, Any] = Field(description="Model configuration")
     description: Optional[str] = Field(default=None)
     capabilities: List[InferenceType] = Field(default_factory=list)
+    tenant_id: Optional[str] = Field(default=None, description="Tenant ID (will be auto-assigned from auth context)")
 
 
 # Inference Schemas

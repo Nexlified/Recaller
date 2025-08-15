@@ -50,6 +50,10 @@ class MCPServerSettings(BaseSettings):
     ENABLE_REQUEST_LOGGING: bool = Field(default=False, description="Enable request logging (privacy impact)")
     ANONYMIZE_LOGS: bool = Field(default=True, description="Anonymize sensitive data in logs")
     DATA_RETENTION_DAYS: int = Field(default=0, description="Data retention period (0 = no retention)")
+    BLOCK_EXTERNAL_REQUESTS: bool = Field(default=True, description="Block external network requests for privacy")
+    ALLOWED_EXTERNAL_HOSTS: List[str] = Field(default_factory=list, description="Whitelist of allowed external hosts")
+    ENFORCE_LOCAL_ONLY: bool = Field(default=True, description="Enforce local-only processing")
+    ANONYMIZE_ERROR_MESSAGES: bool = Field(default=True, description="Anonymize error messages to prevent data leakage")
     
     # Health Check Configuration
     HEALTH_CHECK_INTERVAL: int = Field(default=30, description="Health check interval in seconds")
