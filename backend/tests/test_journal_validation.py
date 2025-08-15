@@ -325,17 +325,16 @@ class TestSecurityBoundaries:
     def test_null_byte_injection(self):
         """Test null byte injection prevention."""
         null_content = "Normal content\x00and more content"
-        # Should handle gracefully - Python strings handle null bytes
-        entry_data = JournalEntryCreate(
-            content=null_content,
-            entry_date=date.today()
-        )
-        # Null bytes should be preserved but sanitized
-        assert entry_data.content == "Normal content\x00and more content"
+        # Now null bytes are rejected for security
+        with pytest.raises(ValidationError, match="null bytes"):
+            JournalEntryCreate(
+                content=null_content,
+                entry_date=date.today()
+            )
         
-        # Test content with both null bytes AND script (should be rejected for the script)
+        # Test content with both null bytes AND script (should be rejected for null bytes)
         malicious_null_content = "Normal content\x00<script>alert('xss')</script>"
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError, match="null bytes"):
             JournalEntryCreate(
                 content=malicious_null_content,
                 entry_date=date.today()

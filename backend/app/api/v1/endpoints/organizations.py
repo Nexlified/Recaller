@@ -113,17 +113,21 @@ def list_organizations(
         example=10
     ),
     organization_type: Optional[str] = Query(
-        None, 
+        None,
+        max_length=50,
         description="Filter by organization type (company, school, nonprofit, government, healthcare, religious)",
         example="company"
     ),
     industry: Optional[str] = Query(
-        None, 
+        None,
+        max_length=100,
         description="Filter by industry sector",
         example="Technology"
     ),
     search: Optional[str] = Query(
         None, 
+        min_length=1,
+        max_length=255,
         description="Search term for organization name, description, or website",
         example="tech"
     ),
@@ -201,6 +205,28 @@ def list_organizations(
     - Generate organization directories
     - Export organization lists for analysis
     """
+    from app.core.validation import InputSanitizer, PaginationValidator
+    from fastapi import HTTPException
+    
+    # Validate pagination parameters
+    try:
+        page, per_page = PaginationValidator.validate_pagination(page, per_page)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    # Sanitize search and filter inputs
+    try:
+        if search:
+            search = InputSanitizer.sanitize_search_query(search)
+        
+        if organization_type:
+            organization_type = InputSanitizer.sanitize_name(organization_type)
+        
+        if industry:
+            industry = InputSanitizer.sanitize_name(industry)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
+    
     tenant_id = deps.get_tenant_context(request)
     skip = (page - 1) * per_page
     
@@ -253,19 +279,34 @@ def list_organizations(
 @router.get("/search", response_model=List[OrganizationSearchResult])
 def search_organizations(
     request: Request,
-    query: str = Query(..., min_length=1, description="Search query"),
-    organization_type: Optional[str] = Query(None, description="Filter by organization type"),
-    industry: Optional[str] = Query(None, description="Filter by industry"),
+    query: str = Query(..., min_length=1, max_length=255, description="Search query"),
+    organization_type: Optional[str] = Query(None, max_length=50, description="Filter by organization type"),
+    industry: Optional[str] = Query(None, max_length=100, description="Filter by industry"),
     limit: int = Query(10, ge=1, le=50, description="Maximum results"),
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """Search organizations by name, industry, location"""
+    from app.core.validation import InputSanitizer
+    from fastapi import HTTPException
+    
+    # Sanitize search inputs
+    try:
+        sanitized_query = InputSanitizer.sanitize_search_query(query)
+        
+        if organization_type:
+            organization_type = InputSanitizer.sanitize_name(organization_type)
+        
+        if industry:
+            industry = InputSanitizer.sanitize_name(industry)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
+    
     tenant_id = deps.get_tenant_context(request)
     
     organizations = crud_organization.search_organizations(
         db=db,
         tenant_id=tenant_id,
-        query=query,
+        query=sanitized_query,
         organization_type=organization_type,
         industry=industry,
         limit=limit

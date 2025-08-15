@@ -398,10 +398,10 @@ def search_tasks(
     request: Request,
     *,
     db: Session = Depends(deps.get_db),
-    q: str = Query(..., description="Search query for task title and description"),
+    q: str = Query(..., min_length=1, max_length=255, description="Search query for task title and description"),
     status: Optional[TaskStatusEnum] = Query(None, description="Filter by status"),
     priority: Optional[TaskPriorityEnum] = Query(None, description="Filter by priority"),
-    contact_id: Optional[int] = Query(None, description="Filter by associated contact"),
+    contact_id: Optional[int] = Query(None, ge=1, description="Filter by associated contact"),
     skip: int = Query(0, ge=0, description="Number of results to skip"),
     limit: int = Query(100, ge=1, le=100, description="Number of results to return"),
     current_user: User = Depends(deps.get_current_active_user),
@@ -418,6 +418,15 @@ def search_tasks(
     - Requires valid authentication token
     - Users can only search their own tasks
     """
+    from app.core.validation import InputSanitizer
+    from fastapi import HTTPException
+    
+    # Sanitize search query
+    try:
+        sanitized_query = InputSanitizer.sanitize_search_query(q)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid search query: {str(e)}")
+    
     tenant_id = deps.get_tenant_context(request)
     
     # Build search filters
@@ -431,7 +440,7 @@ def search_tasks(
     
     tasks = task_crud.search(
         db,
-        query=q,
+        query=sanitized_query,
         user_id=current_user.id,
         tenant_id=tenant_id,
         skip=skip,

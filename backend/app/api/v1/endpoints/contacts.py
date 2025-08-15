@@ -14,8 +14,8 @@ router = APIRouter()
 @router.get("/", response_model=List[Contact])
 def list_contacts(
     db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum records to return"),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -35,17 +35,25 @@ def list_contacts(
 def search_contacts(
     *,
     db: Session = Depends(deps.get_db),
-    q: str = Query(..., description="Search query"),
-    skip: int = 0,
-    limit: int = 100,
+    q: str = Query(..., min_length=1, max_length=255, description="Search query"),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum records to return"),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Search contacts visible to current user (their own contacts + public contacts).
     """
+    # Sanitize search query
+    from app.core.validation import InputSanitizer
+    try:
+        sanitized_query = InputSanitizer.sanitize_search_query(q)
+    except ValueError as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=str(e))
+    
     contacts = contact_crud.search_contacts(
         db, 
-        query=q,
+        query=sanitized_query,
         user_id=current_user.id,
         tenant_id=current_user.tenant_id,
         skip=skip, 
