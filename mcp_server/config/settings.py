@@ -39,7 +39,14 @@ class MCPServerSettings(BaseSettings):
     # Model Configuration
     DEFAULT_MODEL_BACKEND: ModelBackendType = Field(default=ModelBackendType.OLLAMA)
     MODEL_REGISTRY_PATH: str = Field(default="./models", description="Path to model registry")
+    MODEL_CONFIG_PATH: str = Field(default="./config/models.json", description="Path to models configuration file")
+    MODEL_CONFIG_WATCH: bool = Field(default=True, description="Watch configuration file for changes")
     MAX_CONCURRENT_REQUESTS: int = Field(default=10, description="Maximum concurrent model requests")
+    
+    # Default Model Environment Variables (for quick setup)
+    DEFAULT_OLLAMA_URL: Optional[str] = Field(default="http://localhost:11434", description="Default Ollama server URL")
+    DEFAULT_HUGGINGFACE_CACHE: Optional[str] = Field(default="./models/huggingface", description="Default HuggingFace cache directory")
+    DEFAULT_OPENAI_API_URL: Optional[str] = Field(default="http://localhost:8080/v1", description="Default OpenAI compatible API URL")
     
     # Resource Limits
     MAX_CONTEXT_LENGTH: int = Field(default=4096, description="Maximum context length for models")

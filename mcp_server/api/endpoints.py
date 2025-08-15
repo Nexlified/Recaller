@@ -327,3 +327,61 @@ async def privacy_status():
     except Exception as e:
         logger.error(f"Failed to get privacy status: {e}")
         raise HTTPException(status_code=500, detail="Failed to get privacy status")
+
+
+# Configuration Management Endpoints
+@router.post("/config/reload", response_model=APIResponse)
+async def reload_configuration(
+    current_tenant = Depends(get_current_tenant)
+):
+    """Reload model configuration from files."""
+    try:
+        # Ensure tenant context is available (admin only feature)
+        if not current_tenant:
+            raise HTTPException(status_code=403, detail="Tenant access required for configuration reload")
+        
+        # Only allow if user has admin privileges or is default tenant
+        # For now, allow all tenants - in production you might want to restrict this
+        
+        success = await model_registry.reload_configuration()
+        
+        return APIResponse(
+            success=True,
+            data={
+                "reloaded": success,
+                "message": "Configuration reloaded successfully" if success else "No configuration changes detected"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed to reload configuration: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reload configuration")
+
+
+@router.get("/config/status", response_model=APIResponse)
+async def configuration_status():
+    """Get current configuration status and file information."""
+    try:
+        from ..services.config_loader import config_loader
+        from ..config.settings import mcp_settings
+        import os
+        
+        config_path = mcp_settings.MODEL_CONFIG_PATH
+        status = {
+            "config_file_path": config_path,
+            "config_file_exists": os.path.exists(config_path),
+            "watch_enabled": mcp_settings.MODEL_CONFIG_WATCH,
+            "model_registry_path": mcp_settings.MODEL_REGISTRY_PATH
+        }
+        
+        if os.path.exists(config_path):
+            stat = os.stat(config_path)
+            status["last_modified"] = stat.st_mtime
+            status["file_size"] = stat.st_size
+        
+        return APIResponse(
+            success=True,
+            data=status
+        )
+    except Exception as e:
+        logger.error(f"Failed to get configuration status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get configuration status")

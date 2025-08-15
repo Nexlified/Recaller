@@ -93,6 +93,13 @@ The MCP server accepts the following environment variables:
 - `MAX_RESPONSE_TOKENS`: Maximum response tokens (default: 1024)
 - `REQUEST_TIMEOUT_SECONDS`: Request timeout (default: 120)
 
+#### Model Configuration
+- `MODEL_CONFIG_PATH`: Path to models configuration file (default: ./config/models.json)
+- `MODEL_CONFIG_WATCH`: Watch configuration file for changes (default: true)
+- `DEFAULT_OLLAMA_URL`: Default Ollama server URL (default: http://localhost:11434)
+- `DEFAULT_HUGGINGFACE_CACHE`: Default HuggingFace cache directory (default: ./models/huggingface)
+- `DEFAULT_OPENAI_API_URL`: Default OpenAI compatible API URL (default: http://localhost:8080/v1)
+
 #### Privacy & Logging
 - `ENABLE_REQUEST_LOGGING`: Enable request logging (default: false)
 - `ANONYMIZE_LOGS`: Anonymize sensitive data in logs (default: true)
@@ -100,18 +107,84 @@ The MCP server accepts the following environment variables:
 
 ### Model Configuration
 
-Models can be configured through:
+The MCP server supports multiple ways to configure and manage models:
 
-1. **Environment variables** (for default models)
-2. **API endpoints** (for dynamic registration)
-3. **Configuration files** (for persistent setup)
+#### 1. Configuration File (Recommended)
 
-Example model registration:
+Create a `models.json` file to define multiple models at once:
+
+```json
+{
+  "version": "1.0.0",
+  "name": "My MCP Configuration",
+  "description": "Model configuration for Recaller MCP Server",
+  "models": [
+    {
+      "name": "Local Llama",
+      "backend_type": "ollama",
+      "config": {
+        "base_url": "http://localhost:11434",
+        "model_name": "llama3.2:3b"
+      },
+      "description": "Local Llama 3.2 3B model",
+      "capabilities": ["completion", "chat"]
+    },
+    {
+      "name": "BERT Embeddings",
+      "backend_type": "huggingface",
+      "config": {
+        "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+        "device": "cpu"
+      },
+      "description": "BERT-based text embeddings",
+      "capabilities": ["embedding"]
+    }
+  ],
+  "backend_configs": {
+    "ollama": {
+      "base_url": "http://localhost:11434",
+      "timeout": 120,
+      "max_retries": 3
+    },
+    "huggingface": {
+      "cache_dir": "/app/models/huggingface",
+      "device": "cpu",
+      "trust_remote_code": false
+    }
+  }
+}
+```
+
+**File Location**: By default, place this file at `./config/models.json` relative to the MCP server, or set `MODEL_CONFIG_PATH` environment variable to specify a different location.
+
+**Dynamic Reloading**: The server watches the configuration file for changes and automatically reloads models. You can also trigger manual reload via the API:
+
 ```bash
-curl -X POST http://localhost:8001/api/v1/models \
+curl -X POST http://localhost:8001/api/v1/config/reload
+```
+
+#### 2. Environment Variables (Quick Setup)
+
+For simple deployments, you can configure default backend URLs via environment variables:
+
+```bash
+# Override default backend URLs
+DEFAULT_OLLAMA_URL=http://my-ollama-server:11434
+DEFAULT_HUGGINGFACE_CACHE=/persistent/models/cache
+DEFAULT_OPENAI_API_URL=http://my-api-server:8080/v1
+
+# These will be used as defaults when not specified in configuration
+```
+
+#### 3. API Registration (Dynamic)
+
+Register models at runtime via REST API:
+
+```bash
+curl -X POST http://localhost:8001/api/v1/models/register \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Local Llama",
+    "name": "Dynamic Model",
     "backend_type": "ollama",
     "config": {
       "base_url": "http://localhost:11434",
@@ -120,6 +193,37 @@ curl -X POST http://localhost:8001/api/v1/models \
     "capabilities": ["completion", "chat"]
   }'
 ```
+
+#### 4. Configuration Management APIs
+
+Monitor and manage configuration:
+
+```bash
+# Check configuration status
+curl http://localhost:8001/api/v1/config/status
+
+# Reload configuration from file
+curl -X POST http://localhost:8001/api/v1/config/reload
+
+# List all models
+curl http://localhost:8001/api/v1/models
+```
+
+#### Supported Backend Types
+
+- **ollama**: Local Ollama server for LLMs
+- **huggingface**: HuggingFace transformers and sentence-transformers
+- **openai_compatible**: Any OpenAI-compatible API (LocalAI, vLLM, etc.)
+- **local_transformers**: Direct PyTorch/Transformers integration
+
+#### Configuration Priority
+
+Configuration sources are applied in this order (later overrides earlier):
+
+1. Default settings in code
+2. Configuration file (`models.json`)
+3. Environment variables
+4. API registration calls
 
 ## Service Architecture
 

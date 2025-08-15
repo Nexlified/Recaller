@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "name": "Recaller MCP Server Configuration",
+  "description": "Example configuration for model backends",
+  
+  "models": [
+    {
+      "name": "Llama 3.2 3B",
+      "backend_type": "ollama",
+      "config": {
+        "base_url": "http://localhost:11434",
+        "model_name": "llama3.2:3b"
+      },
+      "description": "Local Llama 3.2 3B model via Ollama",
+      "capabilities": ["completion", "chat"]
+    },
+    {
+      "name": "Code Llama 7B", 
+      "backend_type": "ollama",
+      "config": {
+        "base_url": "http://localhost:11434",
+        "model_name": "codellama:7b"
+      },
+      "description": "Code-focused Llama model via Ollama",
+      "capabilities": ["completion", "chat"]
+    },
+    {
+      "name": "BERT Base Embeddings",
+      "backend_type": "huggingface",
+      "config": {
+        "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+        "device": "cpu",
+        "dtype": "float32"
+      },
+      "description": "BERT-based embeddings model",
+      "capabilities": ["embedding"]
+    }
+  ],
+  
+  "backend_configs": {
+    "ollama": {
+      "base_url": "http://localhost:11434",
+      "timeout": 120,
+      "max_retries": 3
+    },
+    "huggingface": {
+      "cache_dir": "/app/models/huggingface",
+      "device": "cpu",
+      "trust_remote_code": false
+    },
+    "openai_compatible": {
+      "base_url": "http://localhost:8080/v1",
+      "api_key": "local-key"
+    }
+  }
+}
