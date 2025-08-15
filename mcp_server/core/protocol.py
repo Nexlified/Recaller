@@ -12,9 +12,14 @@ from typing import Dict, Any, Optional, Callable, Awaitable
 from datetime import datetime
 import uuid
 
-from ..schemas.mcp_schemas import (
-    MCPMessage, MCPRequest, MCPResponse, MCPError, MCPMessageType
-)
+try:
+    from ..schemas.mcp_schemas import (
+        MCPMessage, MCPRequest, MCPResponse, MCPError, MCPMessageType
+    )
+except ImportError:
+    from schemas.mcp_schemas import (
+        MCPMessage, MCPRequest, MCPResponse, MCPError, MCPMessageType
+    )
 
 
 logger = logging.getLogger(__name__)
