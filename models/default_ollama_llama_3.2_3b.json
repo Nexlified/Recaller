@@ -1,0 +1,14 @@
+{
+  "name": "Llama 3.2 3B",
+  "description": "Local Llama 3.2 3B model via Ollama",
+  "backend_type": "ollama",
+  "capabilities": [
+    "completion",
+    "chat"
+  ],
+  "tenant_id": "default",
+  "config": {
+    "base_url": "http://localhost:11434",
+    "model_name": "llama3.2:3b"
+  }
+}

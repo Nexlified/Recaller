@@ -67,8 +67,14 @@ async def lifespan(app: FastAPI):
         
         # Cleanup configuration loader
         try:
-            from services.config_loader import config_loader
+            from .services.config_loader import config_loader
             await config_loader.cleanup()
+        except ImportError:
+            try:
+                from services.config_loader import config_loader
+                await config_loader.cleanup()
+            except Exception as e:
+                logger.error(f"Error cleaning up config loader: {e}")
         except Exception as e:
             logger.error(f"Error cleaning up config loader: {e}")
         

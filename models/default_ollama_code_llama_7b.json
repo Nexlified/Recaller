@@ -1,0 +1,14 @@
+{
+  "name": "Code Llama 7B",
+  "description": "Code-focused Llama model via Ollama",
+  "backend_type": "ollama",
+  "capabilities": [
+    "completion",
+    "chat"
+  ],
+  "tenant_id": "default",
+  "config": {
+    "base_url": "http://localhost:11434",
+    "model_name": "codellama:7b"
+  }
+}

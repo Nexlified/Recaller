@@ -1,0 +1,14 @@
+{
+  "name": "BERT Base Embeddings",
+  "description": "BERT-based embeddings model",
+  "backend_type": "huggingface",
+  "capabilities": [
+    "embedding"
+  ],
+  "tenant_id": "default",
+  "config": {
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "device": "cpu",
+    "dtype": "float32"
+  }
+}
