@@ -256,3 +256,56 @@ class JournalEntryBulkResponse(BaseModel):
     success_count: int
     failed_count: int
     errors: List[str] = Field(default_factory=list)
+
+
+# Version Management Schemas
+
+class JournalEntryVersion(BaseModel):
+    """Schema for journal entry version information."""
+    id: int
+    entry_version: int
+    title: Optional[str]
+    content: str
+    entry_date: date
+    mood: Optional[JournalEntryMoodEnum]
+    location: Optional[str]
+    weather: Optional[str]
+    is_private: bool
+    is_archived: bool
+    created_at: datetime
+    updated_at: Optional[datetime]
+    parent_entry_id: Optional[int]
+    
+    class Config:
+        from_attributes = True
+
+
+class JournalEntryVersionSummary(BaseModel):
+    """Summary schema for journal entry versions."""
+    id: int
+    entry_version: int
+    title: Optional[str]
+    created_at: datetime
+    changes_summary: Optional[str] = None  # Brief description of changes
+    
+    class Config:
+        from_attributes = True
+
+
+class JournalEntryVersionHistory(BaseModel):
+    """Schema for journal entry version history."""
+    current_version: JournalEntryVersion
+    versions: List[JournalEntryVersionSummary]
+    total_versions: int
+
+
+class JournalEntryRevertRequest(BaseModel):
+    """Schema for reverting to a specific version."""
+    version: int = Field(..., ge=1, description="Version number to revert to")
+
+
+class JournalEntryVersionResponse(BaseModel):
+    """Schema for version operation responses."""
+    success: bool
+    message: str
+    version: Optional[JournalEntryVersion] = None

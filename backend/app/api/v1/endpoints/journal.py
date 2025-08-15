@@ -9,7 +9,9 @@ from app.models.user import User
 from app.schemas.journal import (
     JournalEntry, JournalEntryCreate, JournalEntryUpdate, JournalEntrySummary,
     JournalEntryMoodEnum, JournalTag, JournalTagCreate, JournalEntryListResponse,
-    PaginationMeta, JournalEntryBulkUpdate, JournalEntryBulkTag, JournalEntryBulkResponse
+    PaginationMeta, JournalEntryBulkUpdate, JournalEntryBulkTag, JournalEntryBulkResponse,
+    JournalEntryVersion, JournalEntryVersionHistory, JournalEntryVersionSummary,
+    JournalEntryRevertRequest, JournalEntryVersionResponse
 )
 
 router = APIRouter()
@@ -501,3 +503,187 @@ def get_popular_tags(
     )
     
     return popular_tags
+
+
+# Version Management Endpoints
+
+@router.get("/{entry_id}/versions", response_model=JournalEntryVersionHistory)
+def get_journal_entry_versions(
+    request: Request,
+    *,
+    db: Session = Depends(deps.get_db),
+    entry_id: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get version history for a journal entry.
+    
+    **Returns:**
+    - **current_version**: The latest version of the entry
+    - **versions**: List of all versions with summary information
+    - **total_versions**: Total number of versions
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Users can only access version history for their own entries
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    # Get all versions
+    versions = journal_crud.get_journal_entry_versions(
+        db=db,
+        entry_id=entry_id,
+        user_id=current_user.id,
+        tenant_id=tenant_id
+    )
+    
+    if not versions:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    
+    # Current version is the latest
+    current_version = versions[0]
+    
+    # Convert to summary format
+    version_summaries = []
+    for version in versions:
+        summary = JournalEntryVersionSummary(
+            id=version.id,
+            entry_version=version.entry_version,
+            title=version.title,
+            created_at=version.created_at,
+            changes_summary=f"Version {version.entry_version}"
+        )
+        version_summaries.append(summary)
+    
+    return JournalEntryVersionHistory(
+        current_version=JournalEntryVersion.model_validate(current_version),
+        versions=version_summaries,
+        total_versions=len(versions)
+    )
+
+
+@router.get("/{entry_id}/versions/{version}", response_model=JournalEntryVersion)
+def get_journal_entry_version(
+    request: Request,
+    *,
+    db: Session = Depends(deps.get_db),
+    entry_id: int,
+    version: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get a specific version of a journal entry.
+    
+    **Parameters:**
+    - **version**: Version number to retrieve (1 is the original)
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Users can only access versions of their own entries
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    version_entry = journal_crud.get_journal_entry_version(
+        db=db,
+        entry_id=entry_id,
+        version=version,
+        user_id=current_user.id,
+        tenant_id=tenant_id
+    )
+    
+    if not version_entry:
+        raise HTTPException(status_code=404, detail="Journal entry version not found")
+    
+    return version_entry
+
+
+@router.post("/{entry_id}/versions/{version}/revert", response_model=JournalEntryVersionResponse)
+def revert_journal_entry_to_version(
+    request: Request,
+    *,
+    db: Session = Depends(deps.get_db),
+    entry_id: int,
+    version: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Revert a journal entry to a specific version by creating a new version.
+    
+    **Parameters:**
+    - **version**: Version number to revert to
+    
+    **Note:**
+    - This creates a new version with the content from the specified version
+    - The original versions are preserved for history
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Users can only revert their own entries
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    reverted_entry = journal_crud.revert_journal_entry_to_version(
+        db=db,
+        entry_id=entry_id,
+        version=version,
+        user_id=current_user.id,
+        tenant_id=tenant_id
+    )
+    
+    if not reverted_entry:
+        raise HTTPException(
+            status_code=400, 
+            detail="Unable to revert to the specified version. Version may not exist or entry not found."
+        )
+    
+    return JournalEntryVersionResponse(
+        success=True,
+        message=f"Successfully reverted to version {version}",
+        version=JournalEntryVersion.model_validate(reverted_entry)
+    )
+
+
+@router.delete("/{entry_id}/versions/{version}", response_model=JournalEntryVersionResponse)
+def delete_journal_entry_version(
+    request: Request,
+    *,
+    db: Session = Depends(deps.get_db),
+    entry_id: int,
+    version: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Delete a specific version of a journal entry.
+    
+    **Parameters:**
+    - **version**: Version number to delete
+    
+    **Restrictions:**
+    - Cannot delete version 1 (original) if other versions exist
+    - Cannot delete the only remaining version
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Users can only delete versions of their own entries
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    success = journal_crud.delete_journal_entry_version(
+        db=db,
+        entry_id=entry_id,
+        version=version,
+        user_id=current_user.id,
+        tenant_id=tenant_id
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to delete version. Version may not exist, be the root version with children, or be the only version."
+        )
+    
+    return JournalEntryVersionResponse(
+        success=True,
+        message=f"Successfully deleted version {version}",
+        version=None
+    )
