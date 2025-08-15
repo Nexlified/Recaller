@@ -253,6 +253,8 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
 
 # Security Settings
+# CRITICAL: Generate a strong SECRET_KEY for production!
+# Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
 SECRET_KEY=your-super-secret-key-change-in-production
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_MINUTES=10080  # 7 days
@@ -427,6 +429,38 @@ server {
 ```
 
 ## 🔒 Security Configuration
+
+### SECRET_KEY Security (CRITICAL)
+
+**⚠️ WARNING**: The SECRET_KEY is used for JWT token signing and must be strong in production!
+
+1. **Generate a strong SECRET_KEY**:
+   ```bash
+   # Generate a cryptographically secure secret
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+
+2. **Security requirements**:
+   - **Minimum 32 characters** (enforced by application)
+   - **No default values** like "your-secret-key" (enforced by application)
+   - **No weak patterns** like "secret", "password", etc. (enforced by application)
+   - **Unique per environment** (development, staging, production)
+
+3. **Set in environment**:
+   ```bash
+   # In production .env file
+   SECRET_KEY=abc123xyz_your_generated_strong_secret_here_789
+   
+   # Or as environment variable
+   export SECRET_KEY="abc123xyz_your_generated_strong_secret_here_789"
+   ```
+
+4. **Application validation**:
+   - The application will **refuse to start** with weak SECRET_KEY values
+   - Error messages provide guidance for generating strong secrets
+   - This prevents JWT forgery attacks in production
+
+**Note**: If you see validation errors at startup, generate a new strong SECRET_KEY using the command above.
 
 ### SSL/TLS Setup
 

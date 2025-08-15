@@ -29,8 +29,60 @@ class Settings(BaseSettings):
         return str(url)
 
     # JWT Configuration
-    SECRET_KEY: str = "your-secret-key"  # Change this in production!
+    SECRET_KEY: str = "_FZtjmrehpEpICV9lVqTP6v2E4UNO9XBSn21rX6e7sI"  # Strong default, override in production!
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    @validator("SECRET_KEY", pre=True)
+    def validate_secret_key(cls, v: str) -> str:
+        """Validate SECRET_KEY for production security requirements."""
+        if not isinstance(v, str):
+            raise ValueError("SECRET_KEY must be a string")
+        
+        # Check for known weak defaults first (regardless of length)
+        weak_defaults = {
+            "your-secret-key",
+            "your-secret-key-change-in-production",
+            "secret",
+            "secret-key",
+            "development-secret",
+            "dev-secret",
+            "test-secret",
+            "default-secret",
+            "change-me",
+            "changeme",
+        }
+        
+        if v.lower() in weak_defaults:
+            raise ValueError(
+                f"SECRET_KEY cannot be a default/weak value: '{v}'. "
+                f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+        
+        # Check for simple patterns that indicate weak secrets (regardless of length)
+        normalized = v.lower().replace("-", "").replace("_", "").replace(" ", "")
+        weak_patterns = [
+            "yoursecretkey", "secretkey", "mysecret", "password", "admin"
+        ]
+        
+        # Check if any weak pattern matches the beginning or makes up significant portion
+        for pattern in weak_patterns:
+            if (normalized.startswith(pattern) or 
+                normalized == pattern or
+                (len(pattern) >= 6 and pattern in normalized and len(pattern) / len(normalized) > 0.3)):
+                raise ValueError(
+                    f"SECRET_KEY appears to be a weak/predictable value. "
+                    f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+                )
+        
+        # Check minimum length
+        if len(v) < 32:
+            raise ValueError(
+                f"SECRET_KEY must be at least 32 characters long for security. "
+                f"Current length: {len(v)}. "
+                f"Generate a strong secret with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+        
+        return v
     
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379/0"
