@@ -1,0 +1,198 @@
+---
+version: "1.0.0"
+category: "contact"
+type: "relationship_mappings"
+name: "Contact Relationship Mappings"
+description: "Defines relationship types and their gender-specific mappings for bidirectional contact relationships"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2024-01-01"
+  deprecated: false
+
+# Base relationship types that can be gender-specific
+gender_specific_relationships:
+  sibling:
+    description: "Brother/Sister relationship"
+    mappings:
+      male_male: ["brother", "brother"]
+      male_female: ["brother", "sister"]
+      female_male: ["sister", "brother"]
+      female_female: ["sister", "sister"]
+    fallback: ["sibling", "sibling"]
+  
+  uncle_aunt:
+    description: "Uncle/Aunt - Nephew/Niece relationship"
+    mappings:
+      male_male: ["uncle", "nephew"]
+      male_female: ["uncle", "niece"]
+      female_male: ["aunt", "nephew"]
+      female_female: ["aunt", "niece"]
+    fallback: ["uncle_aunt", "nephew_niece"]
+
+# All relationship types (including non-gender-specific ones)
+relationship_types:
+  # Family relationships
+  - key: "parent"
+    display_name: "Parent"
+    reverse: "child"
+    category: "family"
+    is_gender_specific: false
+    
+  - key: "child"
+    display_name: "Child"
+    reverse: "parent"
+    category: "family"
+    is_gender_specific: false
+    
+  - key: "sibling"
+    display_name: "Sibling"
+    reverse: "sibling"
+    category: "family"
+    is_gender_specific: true
+    gender_base: "sibling"
+    
+  - key: "brother"
+    display_name: "Brother"
+    reverse: "brother"
+    category: "family"
+    is_gender_specific: false
+    gender_specific_of: "sibling"
+    
+  - key: "sister"
+    display_name: "Sister"
+    reverse: "sister"
+    category: "family"
+    is_gender_specific: false
+    gender_specific_of: "sibling"
+    
+  - key: "uncle"
+    display_name: "Uncle"
+    reverse: "nephew"
+    category: "family"
+    is_gender_specific: false
+    gender_specific_of: "uncle_aunt"
+    
+  - key: "aunt"
+    display_name: "Aunt"
+    reverse: "niece"
+    category: "family"
+    is_gender_specific: false
+    gender_specific_of: "uncle_aunt"
+    
+  - key: "nephew"
+    display_name: "Nephew"
+    reverse: "uncle"
+    category: "family"
+    is_gender_specific: false
+    
+  - key: "niece"
+    display_name: "Niece"
+    reverse: "aunt"
+    category: "family"
+    is_gender_specific: false
+    
+  - key: "grandparent"
+    display_name: "Grandparent"
+    reverse: "grandchild"
+    category: "family"
+    is_gender_specific: false
+    
+  - key: "grandchild"
+    display_name: "Grandchild"
+    reverse: "grandparent"
+    category: "family"
+    is_gender_specific: false
+    
+  - key: "cousin"
+    display_name: "Cousin"
+    reverse: "cousin"
+    category: "family"
+    is_gender_specific: false
+    
+  # Professional relationships
+  - key: "colleague"
+    display_name: "Colleague"
+    reverse: "colleague"
+    category: "professional"
+    is_gender_specific: false
+    
+  - key: "manager"
+    display_name: "Manager"
+    reverse: "employee"
+    category: "professional"
+    is_gender_specific: false
+    
+  - key: "employee"
+    display_name: "Employee"
+    reverse: "manager"
+    category: "professional"
+    is_gender_specific: false
+    
+  - key: "client"
+    display_name: "Client"
+    reverse: "service_provider"
+    category: "professional"
+    is_gender_specific: false
+    
+  - key: "service_provider"
+    display_name: "Service Provider"
+    reverse: "client"
+    category: "professional"
+    is_gender_specific: false
+    
+  # Social relationships
+  - key: "friend"
+    display_name: "Friend"
+    reverse: "friend"
+    category: "social"
+    is_gender_specific: false
+    
+  - key: "neighbor"
+    display_name: "Neighbor"
+    reverse: "neighbor"
+    category: "social"
+    is_gender_specific: false
+    
+  - key: "acquaintance"
+    display_name: "Acquaintance"
+    reverse: "acquaintance"
+    category: "social"
+    is_gender_specific: false
+    
+  # Romantic relationships
+  - key: "partner"
+    display_name: "Partner"
+    reverse: "partner"
+    category: "romantic"
+    is_gender_specific: false
+    
+  - key: "spouse"
+    display_name: "Spouse"
+    reverse: "spouse"
+    category: "romantic"
+    is_gender_specific: false
+    
+  - key: "ex_partner"
+    display_name: "Ex-Partner"
+    reverse: "ex_partner"
+    category: "romantic"
+    is_gender_specific: false
+
+# Relationship categories
+categories:
+  - key: "family"
+    display_name: "Family"
+    description: "Family and blood relations"
+    
+  - key: "professional"
+    display_name: "Professional"
+    description: "Work and business relationships"
+    
+  - key: "social"
+    display_name: "Social"
+    description: "Friends, neighbors, and social connections"
+    
+  - key: "romantic"
+    display_name: "Romantic"
+    description: "Romantic and partner relationships"
