@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Date, UniqueConstraint, Index
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Date, UniqueConstraint, Index, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -19,6 +19,13 @@ class JournalEntryMood(enum.Enum):
     GRATEFUL = "grateful"
 
 
+class WeatherImpact(enum.Enum):
+    """Weather impact on day quality."""
+    POSITIVE = "positive"
+    NEUTRAL = "neutral"
+    NEGATIVE = "negative"
+
+
 class JournalEntry(Base):
     """Main journal entry model."""
     __tablename__ = "journal_entries"
@@ -36,6 +43,17 @@ class JournalEntry(Base):
     mood = Column(String(20), index=True)  # Optional mood/sentiment
     location = Column(String(255))  # Optional location
     weather = Column(String(100))  # Optional weather context
+    
+    # Day quality and life metrics
+    day_quality_rating = Column(Integer)  # 1-10 scale for overall day assessment
+    energy_level = Column(Integer)  # 1-10 scale
+    stress_level = Column(Integer)  # 1-10 scale
+    productivity_level = Column(Integer)  # 1-10 scale
+    social_interactions_count = Column(Integer)  # Number of social interactions
+    exercise_minutes = Column(Integer)  # Minutes of exercise
+    sleep_quality = Column(Integer)  # 1-10 scale for previous night
+    weather_impact = Column(String(20))  # positive, neutral, negative
+    significant_events = Column(JSON)  # JSON array of key events
     
     # Privacy and visibility
     is_private = Column(Boolean, nullable=False, default=True)
@@ -63,6 +81,9 @@ class JournalEntry(Base):
     __table_args__ = (
         Index('ix_journal_entries_tenant_user_date', 'tenant_id', 'user_id', 'entry_date'),
         Index('ix_journal_entries_user_archived', 'user_id', 'is_archived'),
+        Index('ix_journal_entries_day_quality_rating', 'day_quality_rating'),
+        Index('ix_journal_entries_energy_level', 'energy_level'),
+        Index('ix_journal_entries_weather_impact', 'weather_impact'),
     )
 
 

@@ -11,6 +11,12 @@ export enum JournalEntryMood {
   GRATEFUL = 'grateful',
 }
 
+export enum WeatherImpact {
+  POSITIVE = 'positive',
+  NEUTRAL = 'neutral',
+  NEGATIVE = 'negative',
+}
+
 export interface JournalTag {
   id: number;
   journal_entry_id: number;
@@ -56,6 +62,17 @@ export interface JournalEntry {
   updated_at?: string;
   tags: JournalTag[];
   attachments: JournalAttachment[];
+  
+  // Day quality and life metrics
+  day_quality_rating?: number; // 1-10 scale
+  energy_level?: number; // 1-10 scale
+  stress_level?: number; // 1-10 scale
+  productivity_level?: number; // 1-10 scale
+  social_interactions_count?: number;
+  exercise_minutes?: number;
+  sleep_quality?: number; // 1-10 scale
+  weather_impact?: WeatherImpact;
+  significant_events?: any[]; // JSON array
 }
 
 export interface JournalEntryCreate {
@@ -67,6 +84,17 @@ export interface JournalEntryCreate {
   weather?: string;
   is_private?: boolean;
   tags?: JournalTagCreate[];
+  
+  // Day quality and life metrics
+  day_quality_rating?: number; // 1-10 scale
+  energy_level?: number; // 1-10 scale
+  stress_level?: number; // 1-10 scale
+  productivity_level?: number; // 1-10 scale
+  social_interactions_count?: number;
+  exercise_minutes?: number;
+  sleep_quality?: number; // 1-10 scale
+  weather_impact?: WeatherImpact;
+  significant_events?: any[]; // JSON array
 }
 
 export interface JournalEntryUpdate {
@@ -78,6 +106,17 @@ export interface JournalEntryUpdate {
   weather?: string;
   is_private?: boolean;
   is_archived?: boolean;
+  
+  // Day quality and life metrics
+  day_quality_rating?: number; // 1-10 scale
+  energy_level?: number; // 1-10 scale
+  stress_level?: number; // 1-10 scale
+  productivity_level?: number; // 1-10 scale
+  social_interactions_count?: number;
+  exercise_minutes?: number;
+  sleep_quality?: number; // 1-10 scale
+  weather_impact?: WeatherImpact;
+  significant_events?: any[]; // JSON array
 }
 
 export interface JournalEntrySummary {
