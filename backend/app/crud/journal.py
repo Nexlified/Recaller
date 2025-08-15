@@ -176,9 +176,10 @@ def update_journal_entry(
     entry_id: int,
     user_id: int,
     tenant_id: int,
-    journal_entry: JournalEntryUpdate
+    journal_entry: JournalEntryUpdate,
+    create_version: bool = True
 ) -> Optional[JournalEntry]:
-    """Update a journal entry."""
+    """Update a journal entry, optionally creating a new version."""
     db_entry = get_journal_entry(db, entry_id=entry_id, user_id=user_id, tenant_id=tenant_id)
     if not db_entry:
         return None
@@ -187,12 +188,21 @@ def update_journal_entry(
     if "mood" in update_data and update_data["mood"]:
         update_data["mood"] = update_data["mood"].value
     
-    for field, value in update_data.items():
-        setattr(db_entry, field, value)
-    
-    db.commit()
-    db.refresh(db_entry)
-    return db_entry
+    if create_version and update_data:
+        # Create a new version instead of updating in place
+        return create_journal_entry_version(
+            db=db,
+            original_entry=db_entry,
+            update_data=update_data
+        )
+    else:
+        # Update in place (for backwards compatibility or non-content changes)
+        for field, value in update_data.items():
+            setattr(db_entry, field, value)
+        
+        db.commit()
+        db.refresh(db_entry)
+        return db_entry
 
 
 def delete_journal_entry(
@@ -589,3 +599,222 @@ def get_popular_tags(
         }
         for tag_name, tag_color, usage_count in tag_stats
     ]
+
+
+# Version Management Functions
+
+def create_journal_entry_version(
+    db: Session,
+    *,
+    original_entry: JournalEntry,
+    update_data: Dict[str, Any]
+) -> JournalEntry:
+    """Create a new version of a journal entry."""
+    # Find the root entry (the one without a parent)
+    root_entry = original_entry
+    while root_entry.parent_entry_id is not None:
+        root_entry = db.query(JournalEntry).filter(
+            JournalEntry.id == root_entry.parent_entry_id
+        ).first()
+        if not root_entry:
+            # Fallback if parent relationship is broken
+            root_entry = original_entry
+            break
+    
+    # Get the latest version number
+    latest_version = db.query(func.max(JournalEntry.entry_version)).filter(
+        or_(
+            JournalEntry.id == root_entry.id,
+            JournalEntry.parent_entry_id == root_entry.id
+        )
+    ).scalar() or 1
+    
+    # Create new version with updated data
+    new_version_data = {
+        "tenant_id": original_entry.tenant_id,
+        "user_id": original_entry.user_id,
+        "title": original_entry.title,
+        "content": original_entry.content,
+        "entry_date": original_entry.entry_date,
+        "mood": original_entry.mood,
+        "location": original_entry.location,
+        "weather": original_entry.weather,
+        "is_private": original_entry.is_private,
+        "is_archived": original_entry.is_archived,
+        "entry_version": latest_version + 1,
+        "parent_entry_id": root_entry.id,
+        "is_encrypted": original_entry.is_encrypted,
+    }
+    
+    # Apply updates
+    for field, value in update_data.items():
+        if field in new_version_data:
+            new_version_data[field] = value
+    
+    new_version = JournalEntry(**new_version_data)
+    db.add(new_version)
+    db.commit()
+    db.refresh(new_version)
+    
+    # Copy tags from original entry to new version
+    original_tags = db.query(JournalTag).filter(
+        JournalTag.journal_entry_id == original_entry.id
+    ).all()
+    
+    for tag in original_tags:
+        new_tag = JournalTag(
+            journal_entry_id=new_version.id,
+            tag_name=tag.tag_name,
+            tag_color=tag.tag_color
+        )
+        db.add(new_tag)
+    
+    db.commit()
+    return new_version
+
+
+def get_journal_entry_versions(
+    db: Session,
+    *,
+    entry_id: int,
+    user_id: int,
+    tenant_id: int,
+    include_current: bool = True
+) -> List[JournalEntry]:
+    """Get all versions of a journal entry."""
+    # First get the entry to check access
+    entry = get_journal_entry(db, entry_id=entry_id, user_id=user_id, tenant_id=tenant_id)
+    if not entry:
+        return []
+    
+    # Find the root entry
+    root_entry_id = entry.parent_entry_id if entry.parent_entry_id else entry.id
+    
+    # Get all versions
+    query = db.query(JournalEntry).filter(
+        or_(
+            JournalEntry.id == root_entry_id,
+            JournalEntry.parent_entry_id == root_entry_id
+        ),
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id
+    )
+    
+    if not include_current:
+        query = query.filter(JournalEntry.id != entry_id)
+    
+    return query.order_by(desc(JournalEntry.entry_version)).all()
+
+
+def get_journal_entry_version(
+    db: Session,
+    *,
+    entry_id: int,
+    version: int,
+    user_id: int,
+    tenant_id: int
+) -> Optional[JournalEntry]:
+    """Get a specific version of a journal entry."""
+    # First get the entry to check access
+    entry = get_journal_entry(db, entry_id=entry_id, user_id=user_id, tenant_id=tenant_id)
+    if not entry:
+        return None
+    
+    # Find the root entry
+    root_entry_id = entry.parent_entry_id if entry.parent_entry_id else entry.id
+    
+    # Get the specific version
+    return db.query(JournalEntry).filter(
+        or_(
+            JournalEntry.id == root_entry_id,
+            JournalEntry.parent_entry_id == root_entry_id
+        ),
+        JournalEntry.entry_version == version,
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id
+    ).first()
+
+
+def revert_journal_entry_to_version(
+    db: Session,
+    *,
+    entry_id: int,
+    version: int,
+    user_id: int,
+    tenant_id: int
+) -> Optional[JournalEntry]:
+    """Revert a journal entry to a specific version by creating a new version."""
+    # Get the current entry and target version
+    current_entry = get_journal_entry(db, entry_id=entry_id, user_id=user_id, tenant_id=tenant_id)
+    target_version = get_journal_entry_version(
+        db, entry_id=entry_id, version=version, user_id=user_id, tenant_id=tenant_id
+    )
+    
+    if not current_entry or not target_version:
+        return None
+    
+    # Create a new version with the target version's data
+    revert_data = {
+        "title": target_version.title,
+        "content": target_version.content,
+        "entry_date": target_version.entry_date,
+        "mood": target_version.mood,
+        "location": target_version.location,
+        "weather": target_version.weather,
+        "is_private": target_version.is_private,
+    }
+    
+    return create_journal_entry_version(
+        db=db,
+        original_entry=current_entry,
+        update_data=revert_data
+    )
+
+
+def delete_journal_entry_version(
+    db: Session,
+    *,
+    entry_id: int,
+    version: int,
+    user_id: int,
+    tenant_id: int
+) -> bool:
+    """Delete a specific version of a journal entry."""
+    # Cannot delete the root entry (version 1) if there are other versions
+    if version == 1:
+        versions = get_journal_entry_versions(
+            db, entry_id=entry_id, user_id=user_id, tenant_id=tenant_id
+        )
+        if len(versions) > 1:
+            return False  # Cannot delete root if other versions exist
+    
+    # Get the version to delete
+    version_entry = get_journal_entry_version(
+        db, entry_id=entry_id, version=version, user_id=user_id, tenant_id=tenant_id
+    )
+    
+    if not version_entry:
+        return False
+    
+    # Delete the version and its associated tags
+    db.query(JournalTag).filter(
+        JournalTag.journal_entry_id == version_entry.id
+    ).delete()
+    
+    db.delete(version_entry)
+    db.commit()
+    return True
+
+
+def get_latest_journal_entry_version(
+    db: Session,
+    *,
+    entry_id: int,
+    user_id: int,
+    tenant_id: int
+) -> Optional[JournalEntry]:
+    """Get the latest version of a journal entry."""
+    versions = get_journal_entry_versions(
+        db, entry_id=entry_id, user_id=user_id, tenant_id=tenant_id
+    )
+    return versions[0] if versions else None
