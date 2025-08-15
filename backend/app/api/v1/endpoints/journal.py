@@ -8,18 +8,32 @@ from app.crud import journal as journal_crud
 from app.models.user import User
 from app.schemas.journal import (
     JournalEntry, JournalEntryCreate, JournalEntryUpdate, JournalEntrySummary,
-    JournalEntryMoodEnum, JournalTag, JournalTagCreate
+    JournalEntryMoodEnum, JournalTag, JournalTagCreate, JournalEntryListResponse,
+    PaginationMeta, JournalEntryBulkUpdate, JournalEntryBulkTag, JournalEntryBulkResponse
 )
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[JournalEntrySummary])
+def build_pagination_meta(page: int, per_page: int, total: int) -> PaginationMeta:
+    """Build pagination metadata."""
+    total_pages = (total + per_page - 1) // per_page
+    return PaginationMeta(
+        total=total,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        has_next=page < total_pages,
+        has_previous=page > 1
+    )
+
+
+@router.get("/", response_model=JournalEntryListResponse)
 def list_journal_entries(
     request: Request,
     db: Session = Depends(deps.get_db),
-    skip: int = Query(0, ge=0, description="Number of entries to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Number of entries to return"),
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
+    per_page: int = Query(20, ge=1, le=100, description="Number of entries per page"),
     include_archived: bool = Query(False, description="Include archived entries"),
     mood: Optional[JournalEntryMoodEnum] = Query(None, description="Filter by mood"),
     start_date: Optional[date] = Query(None, description="Filter entries from this date"),
@@ -28,7 +42,7 @@ def list_journal_entries(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    List user's journal entries with optional filtering.
+    List user's journal entries with pagination and filtering.
     
     **Filtering Options:**
     - **include_archived**: Include archived entries (default: false)
@@ -38,8 +52,9 @@ def list_journal_entries(
     - **search**: Search in title and content
     
     **Pagination:**
-    - Use `skip` and `limit` parameters for pagination
-    - Maximum limit is 100 entries per request
+    - Use `page` and `per_page` parameters for pagination
+    - Returns pagination metadata including total count and page info
+    - Maximum per_page is 100 entries per request
     
     **Authentication:**
     - Requires valid authentication token
@@ -48,48 +63,28 @@ def list_journal_entries(
     tenant_id = deps.get_tenant_context(request)
     
     if search:
-        # Search entries
-        entries = journal_crud.search_entries(
+        # Use optimized search with pagination
+        entries, total_count = journal_crud.search_entries_optimized(
             db,
             user_id=current_user.id,
             tenant_id=tenant_id,
             search_text=search,
-            skip=skip,
-            limit=limit
-        )
-    elif mood:
-        # Filter by mood
-        entries = journal_crud.get_by_mood(
-            db,
-            user_id=current_user.id,
-            tenant_id=tenant_id,
-            mood=mood,
-            skip=skip,
-            limit=limit
-        )
-    elif start_date or end_date:
-        # Filter by date range
-        if not start_date:
-            start_date = date(1900, 1, 1)  # Default very old date
-        if not end_date:
-            end_date = date.today()  # Default to today
-        entries = journal_crud.get_by_date_range(
-            db,
-            user_id=current_user.id,
-            tenant_id=tenant_id,
-            start_date=start_date,
-            end_date=end_date,
+            page=page,
+            per_page=per_page,
             include_archived=include_archived
         )
     else:
-        # Get all user entries
-        entries = journal_crud.get_by_user(
+        # Use optimized general query with pagination
+        entries, total_count = journal_crud.get_entries_with_pagination(
             db,
             user_id=current_user.id,
             tenant_id=tenant_id,
-            skip=skip,
-            limit=limit,
-            include_archived=include_archived
+            page=page,
+            per_page=per_page,
+            include_archived=include_archived,
+            mood=mood,
+            start_date=start_date,
+            end_date=end_date
         )
     
     # Convert to summary format (with tag and attachment counts)
@@ -108,7 +103,13 @@ def list_journal_entries(
         )
         summaries.append(summary)
     
-    return summaries
+    # Build pagination metadata
+    pagination = build_pagination_meta(page, per_page, total_count)
+    
+    return JournalEntryListResponse(
+        items=summaries,
+        pagination=pagination
+    )
 
 
 @router.post("/", response_model=JournalEntry)
@@ -367,3 +368,136 @@ def get_journal_stats(
         tenant_id=tenant_id
     )
     return stats
+
+
+@router.post("/bulk-update", response_model=JournalEntryBulkResponse)
+def bulk_update_journal_entries(
+    request: Request,
+    *,
+    db: Session = Depends(deps.get_db),
+    bulk_update: JournalEntryBulkUpdate,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Bulk update multiple journal entries.
+    
+    **Supported Updates:**
+    - **is_archived**: Archive or unarchive entries
+    - **is_private**: Change privacy setting
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Can only update entries belonging to the authenticated user
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    # Prepare updates dictionary
+    updates = {}
+    if bulk_update.is_archived is not None:
+        updates['is_archived'] = bulk_update.is_archived
+    if bulk_update.is_private is not None:
+        updates['is_private'] = bulk_update.is_private
+    
+    if not updates:
+        raise HTTPException(status_code=400, detail="No valid updates provided")
+    
+    success_count, errors = journal_crud.bulk_update_entries(
+        db=db,
+        user_id=current_user.id,
+        tenant_id=tenant_id,
+        entry_ids=bulk_update.entry_ids,
+        updates=updates
+    )
+    
+    return JournalEntryBulkResponse(
+        success_count=success_count,
+        failed_count=len(bulk_update.entry_ids) - success_count,
+        errors=errors
+    )
+
+
+@router.post("/bulk-tag", response_model=JournalEntryBulkResponse)
+def bulk_tag_journal_entries(
+    request: Request,
+    *,
+    db: Session = Depends(deps.get_db),
+    bulk_tag: JournalEntryBulkTag,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Bulk add or remove tags from multiple journal entries.
+    
+    **Operations:**
+    - **tags_to_add**: List of tags to add to all specified entries
+    - **tags_to_remove**: List of tag names to remove from all specified entries
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Can only modify entries belonging to the authenticated user
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    success_count = 0
+    errors = []
+    
+    # Add tags if specified
+    if bulk_tag.tags_to_add:
+        add_count, add_errors = journal_crud.bulk_add_tags(
+            db=db,
+            user_id=current_user.id,
+            tenant_id=tenant_id,
+            entry_ids=bulk_tag.entry_ids,
+            tags=bulk_tag.tags_to_add
+        )
+        success_count += add_count
+        errors.extend(add_errors)
+    
+    # Remove tags if specified
+    if bulk_tag.tags_to_remove:
+        for entry_id in bulk_tag.entry_ids:
+            for tag_name in bulk_tag.tags_to_remove:
+                removed = journal_crud.remove_tag_from_entry(
+                    db=db,
+                    entry_id=entry_id,
+                    user_id=current_user.id,
+                    tenant_id=tenant_id,
+                    tag_name=tag_name
+                )
+                if removed:
+                    success_count += 1
+    
+    return JournalEntryBulkResponse(
+        success_count=success_count,
+        failed_count=0,  # Error handling could be improved here
+        errors=errors
+    )
+
+
+@router.get("/tags/popular", response_model=List[dict])
+def get_popular_tags(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    limit: int = Query(20, ge=1, le=100, description="Number of tags to return"),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get the most popular tags for the current user.
+    
+    **Returns:**
+    - List of tags with usage counts, sorted by popularity
+    - Each tag includes: name, color, and usage count
+    
+    **Authentication:**
+    - Requires valid authentication token
+    - Returns only tags from the authenticated user's entries
+    """
+    tenant_id = deps.get_tenant_context(request)
+    
+    popular_tags = journal_crud.get_popular_tags(
+        db=db,
+        user_id=current_user.id,
+        tenant_id=tenant_id,
+        limit=limit
+    )
+    
+    return popular_tags

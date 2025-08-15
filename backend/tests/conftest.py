@@ -177,6 +177,47 @@ class TestTaskCategoryAssignment(TestBase):
     category_id = Column(Integer, ForeignKey("task_categories.id", ondelete="CASCADE"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
+# Journal test models
+class TestJournalEntry(TestBase):
+    __tablename__ = "journal_entries"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(255))
+    content = Column(Text, nullable=False)
+    entry_date = Column(Date, nullable=False, index=True)
+    mood = Column(String(20), index=True)
+    location = Column(String(255))
+    weather = Column(String(100))
+    is_private = Column(Boolean, nullable=False, default=True)
+    is_archived = Column(Boolean, nullable=False, default=False, index=True)
+    entry_version = Column(Integer, nullable=False, default=1)
+    parent_entry_id = Column(Integer, ForeignKey("journal_entries.id"))
+    is_encrypted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class TestJournalTag(TestBase):
+    __tablename__ = "journal_tags"
+    id = Column(Integer, primary_key=True, index=True)
+    journal_entry_id = Column(Integer, ForeignKey("journal_entries.id", ondelete="CASCADE"), nullable=False, index=True)
+    tag_name = Column(String(50), nullable=False, index=True)
+    tag_color = Column(String(7))
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class TestJournalAttachment(TestBase):
+    __tablename__ = "journal_attachments"
+    id = Column(Integer, primary_key=True, index=True)
+    journal_entry_id = Column(Integer, ForeignKey("journal_entries.id", ondelete="CASCADE"), nullable=False, index=True)
+    filename = Column(String(255), nullable=False)
+    original_filename = Column(String(255), nullable=False)
+    file_path = Column(String(500), nullable=False)
+    file_size = Column(Integer, nullable=False)
+    file_type = Column(String(100), nullable=False)
+    description = Column(Text)
+    is_encrypted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
 # Test database configuration
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_simple.db"
 

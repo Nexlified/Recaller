@@ -232,3 +232,27 @@ class JournalEntryStats(BaseModel):
     most_used_tags: List[str] = Field(default_factory=list)
     longest_streak_days: int
     current_streak_days: int
+
+
+# Pagination Schemas
+class PaginationMeta(BaseModel):
+    """Schema for pagination metadata."""
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+    has_next: bool
+    has_previous: bool
+
+
+class JournalEntryListResponse(BaseModel):
+    """Schema for paginated journal entry responses."""
+    items: List[JournalEntrySummary]
+    pagination: PaginationMeta
+
+
+class JournalEntryBulkResponse(BaseModel):
+    """Schema for bulk operation responses."""
+    success_count: int
+    failed_count: int
+    errors: List[str] = Field(default_factory=list)
