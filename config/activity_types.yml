@@ -1,0 +1,357 @@
+# Activity Types Configuration for Shared Activities System
+# Defines available activity types, icons, default settings, and templates
+
+activity_types:
+  # Social Activities
+  dinner:
+    display_name: "Dinner"
+    category: "social"
+    icon: "utensils"
+    color: "#F59E0B"
+    description: "Dining together at restaurants or homes"
+    default_duration: 120  # minutes
+    typical_cost_range: [30, 100]  # USD per person
+    suggested_locations: ["restaurant", "home", "cafe"]
+    default_privacy: false
+    template_fields:
+      - location
+      - cost_per_person
+      - notes
+    
+  coffee:
+    display_name: "Coffee"
+    category: "social"
+    icon: "coffee"
+    color: "#8B5CF6"
+    description: "Coffee meetings and casual catch-ups"
+    default_duration: 60
+    typical_cost_range: [5, 15]
+    suggested_locations: ["cafe", "coffee_shop", "office"]
+    default_privacy: false
+    template_fields:
+      - location
+      - notes
+    
+  movie:
+    display_name: "Movie"
+    category: "entertainment"
+    icon: "film"
+    color: "#EF4444"
+    description: "Watching movies together"
+    default_duration: 150
+    typical_cost_range: [12, 25]
+    suggested_locations: ["cinema", "home", "drive_in"]
+    default_privacy: false
+    template_fields:
+      - location
+      - movie_title
+      - cost_per_person
+      - quality_rating
+    
+  # Outdoor Activities
+  sports:
+    display_name: "Sports"
+    category: "outdoor"
+    icon: "basketball"
+    color: "#10B981"
+    description: "Playing or watching sports"
+    default_duration: 90
+    typical_cost_range: [0, 50]
+    suggested_locations: ["gym", "park", "stadium", "home"]
+    default_privacy: false
+    template_fields:
+      - sport_type
+      - location
+      - duration_minutes
+      - quality_rating
+    
+  outdoor:
+    display_name: "Outdoor Activity"
+    category: "outdoor"
+    icon: "tree"
+    color: "#059669"
+    description: "Hiking, walking, outdoor adventures"
+    default_duration: 180
+    typical_cost_range: [0, 30]
+    suggested_locations: ["park", "trail", "beach", "mountain"]
+    default_privacy: false
+    template_fields:
+      - activity_details
+      - location
+      - weather_conditions
+      - photos
+    
+  # Professional Activities
+  work_meeting:
+    display_name: "Work Meeting"
+    category: "professional"
+    icon: "briefcase"
+    color: "#3B82F6"
+    description: "Professional meetings and work-related activities"
+    default_duration: 60
+    typical_cost_range: [0, 0]
+    suggested_locations: ["office", "conference_room", "cafe", "online"]
+    default_privacy: true
+    template_fields:
+      - meeting_type
+      - agenda
+      - outcomes
+      - follow_up_actions
+    
+  conference:
+    display_name: "Conference"
+    category: "professional"
+    icon: "microphone"
+    color: "#1F2937"
+    description: "Conferences, seminars, and professional events"
+    default_duration: 480
+    typical_cost_range: [50, 500]
+    suggested_locations: ["convention_center", "hotel", "university", "online"]
+    default_privacy: false
+    template_fields:
+      - event_name
+      - speakers
+      - key_takeaways
+      - networking_contacts
+    
+  # Travel Activities
+  travel:
+    display_name: "Travel"
+    category: "travel"
+    icon: "plane"
+    color: "#DC2626"
+    description: "Trips and travel experiences"
+    default_duration: 1440  # 24 hours
+    typical_cost_range: [100, 2000]
+    suggested_locations: ["city", "country", "resort", "cruise"]
+    default_privacy: false
+    template_fields:
+      - destination
+      - accommodation
+      - total_cost
+      - memorable_moments
+      - photos
+    
+  # Cultural Activities
+  cultural:
+    display_name: "Cultural Event"
+    category: "cultural"
+    icon: "palette"
+    color: "#7C3AED"
+    description: "Museums, art galleries, theater, concerts"
+    default_duration: 120
+    typical_cost_range: [15, 75]
+    suggested_locations: ["museum", "gallery", "theater", "concert_hall"]
+    default_privacy: false
+    template_fields:
+      - event_name
+      - venue
+      - cost_per_person
+      - quality_rating
+      - photos
+    
+  # Personal Activities
+  party:
+    display_name: "Party"
+    category: "social"
+    icon: "gift"
+    color: "#F97316"
+    description: "Parties, celebrations, and social gatherings"
+    default_duration: 240
+    typical_cost_range: [20, 100]
+    suggested_locations: ["home", "venue", "restaurant", "park"]
+    default_privacy: false
+    template_fields:
+      - occasion
+      - attendee_count
+      - cost_per_person
+      - photos
+      - memorable_moments
+    
+  game_night:
+    display_name: "Game Night"
+    category: "entertainment"
+    icon: "puzzle-piece"
+    color: "#6366F1"
+    description: "Board games, video games, game nights"
+    default_duration: 180
+    typical_cost_range: [0, 20]
+    suggested_locations: ["home", "game_store", "arcade"]
+    default_privacy: false
+    template_fields:
+      - games_played
+      - winners
+      - duration_minutes
+      - quality_rating
+    
+  shopping:
+    display_name: "Shopping"
+    category: "lifestyle"
+    icon: "shopping-bag"
+    color: "#EC4899"
+    description: "Shopping trips and retail therapy"
+    default_duration: 120
+    typical_cost_range: [20, 200]
+    suggested_locations: ["mall", "market", "boutique", "online"]
+    default_privacy: false
+    template_fields:
+      - purchases
+      - total_cost
+      - stores_visited
+    
+  hobby:
+    display_name: "Hobby Activity"
+    category: "personal"
+    icon: "star"
+    color: "#0EA5E9"
+    description: "Shared hobbies and personal interests"
+    default_duration: 120
+    typical_cost_range: [0, 50]
+    suggested_locations: ["home", "studio", "workshop", "club"]
+    default_privacy: false
+    template_fields:
+      - hobby_type
+      - activity_details
+      - progress_made
+      - materials_used
+    
+  volunteer:
+    display_name: "Volunteer Work"
+    category: "social"
+    icon: "heart"
+    color: "#DC2626"
+    description: "Volunteering and community service activities"
+    default_duration: 180
+    typical_cost_range: [0, 0]
+    suggested_locations: ["community_center", "park", "shelter", "school"]
+    default_privacy: false
+    template_fields:
+      - organization
+      - activity_details
+      - hours_contributed
+      - impact_made
+    
+  other:
+    display_name: "Other"
+    category: "general"
+    icon: "dots-horizontal"
+    color: "#6B7280"
+    description: "Other activities not covered by specific types"
+    default_duration: 60
+    typical_cost_range: [0, 50]
+    suggested_locations: []
+    default_privacy: false
+    template_fields:
+      - activity_details
+      - location
+      - notes
+
+# Activity Categories
+categories:
+  social:
+    display_name: "Social"
+    color: "#F59E0B"
+    icon: "users"
+    
+  entertainment:
+    display_name: "Entertainment"
+    color: "#EF4444"
+    icon: "film"
+    
+  outdoor:
+    display_name: "Outdoor"
+    color: "#10B981"
+    icon: "tree"
+    
+  professional:
+    display_name: "Professional"
+    color: "#3B82F6"
+    icon: "briefcase"
+    
+  travel:
+    display_name: "Travel"
+    color: "#DC2626"
+    icon: "plane"
+    
+  cultural:
+    display_name: "Cultural"
+    color: "#7C3AED"
+    icon: "palette"
+    
+  lifestyle:
+    display_name: "Lifestyle"
+    color: "#EC4899"
+    icon: "shopping-bag"
+    
+  personal:
+    display_name: "Personal"
+    color: "#0EA5E9"
+    icon: "star"
+    
+  general:
+    display_name: "General"
+    color: "#6B7280"
+    icon: "dots-horizontal"
+
+# Quality Rating Scale
+quality_scale:
+  1:
+    label: "Poor"
+    description: "Disappointing experience"
+    color: "#DC2626"
+    
+  2:
+    label: "Below Average"
+    description: "Not great, wouldn't repeat"
+    color: "#EA580C"
+    
+  3:
+    label: "Fair"
+    description: "Okay experience"
+    color: "#F59E0B"
+    
+  4:
+    label: "Good"
+    description: "Enjoyable time"
+    color: "#EAB308"
+    
+  5:
+    label: "Great"
+    description: "Really good experience"
+    color: "#84CC16"
+    
+  6:
+    label: "Excellent"
+    description: "Very enjoyable"
+    color: "#22C55E"
+    
+  7:
+    label: "Outstanding"
+    description: "Memorable and fun"
+    color: "#10B981"
+    
+  8:
+    label: "Amazing"
+    description: "Fantastic experience"
+    color: "#059669"
+    
+  9:
+    label: "Incredible"
+    description: "One of the best times"
+    color: "#047857"
+    
+  10:
+    label: "Perfect"
+    description: "Absolutely perfect experience"
+    color: "#065F46"
+
+# Default Settings
+defaults:
+  activity_duration: 120  # minutes
+  cost_currency: "USD"
+  privacy_level: "private"
+  photo_limit: 20
+  max_participants: 50
+  reminder_settings:
+    enabled: true
+    advance_notice: [1440, 60]  # 24 hours and 1 hour before
