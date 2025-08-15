@@ -1,7 +1,7 @@
 """Add family information tracking fields to contacts
 
-Revision ID: 015_add_family_information_tracking
-Revises: 014_add_gender_and_relationships
+Revision ID: 015_add_family_information
+Revises: 014_add_gender_relatioship
 Create Date: 2024-08-15 12:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '015_add_family_information_tracking'
-down_revision = '014_add_gender_and_relationships'
+revision = '015_add_family_information'
+down_revision = '014_add_gender_relatioship'
 branch_labels = None
 depends_on = None
 

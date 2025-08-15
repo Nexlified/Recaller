@@ -1,7 +1,7 @@
 """Add day quality and life metrics to journal entries
 
-Revision ID: 015_add_journal_life_metrics
-Revises: 014_add_gender_and_relationships
+Revision ID: 016_add_journal_life_metrics
+Revises: 015_add_family_information
 Create Date: 2025-01-15 14:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '015_add_journal_life_metrics'
-down_revision = '014_add_gender_and_relationships'
+revision = '016_add_journal_life_metrics'
+down_revision = '015_add_family_information'
 branch_labels = None
 depends_on = None
 
