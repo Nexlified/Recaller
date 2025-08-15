@@ -66,6 +66,23 @@ export const Header: React.FC<HeaderProps> = ({ user, title, onLogout }) => {
               </>
             )}
           </div>
+          
+          {/* Main Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium">
+              Dashboard
+            </Link>
+            <Link href="/contacts" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium">
+              Contacts
+            </Link>
+            <Link href="/tasks" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium">
+              Tasks
+            </Link>
+            <Link href="/journal" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 text-sm font-medium">
+              Journal
+            </Link>
+          </nav>
+
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600 dark:text-gray-300">
               Welcome, {user.full_name || user.email}
