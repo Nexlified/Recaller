@@ -1,6 +1,6 @@
 """Add relationship enhancement fields
 
-Revision ID: 021_add_relationship_enhancement_fields
+Revision ID: 022_add_relationship_fields
 Revises: 020_create_work_experience
 Create Date: 2024-01-01 12:00:00.000000
 
@@ -9,8 +9,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '021_add_relationship_enhancement_fields'
-down_revision = '020_create_work_experience'
+revision = '022_add_relationship_fields'
+down_revision = '021_create_shared_activities'
 branch_labels = None
 depends_on = None
 
