@@ -19,6 +19,7 @@ try:
     from ..config.settings import mcp_settings
     from ..services.privacy import privacy_enforcer
     from ..services.config_loader import config_loader
+    from ..backends import ModelBackend, OllamaBackend, HuggingFaceBackend
 except ImportError:
     from schemas.mcp_schemas import (
         ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
@@ -26,110 +27,10 @@ except ImportError:
     from config.settings import mcp_settings
     from services.privacy import privacy_enforcer
     from services.config_loader import config_loader
+    from backends import ModelBackend, OllamaBackend, HuggingFaceBackend
 
 
 logger = logging.getLogger(__name__)
-
-
-class ModelBackend:
-    """Base class for model backends."""
-    
-    def __init__(self, model_id: str, config: Dict[str, Any]):
-        self.model_id = model_id
-        self.config = config
-        self.status = ModelStatus.LOADING
-        self._last_health_check = None
-    
-    async def initialize(self) -> None:
-        """Initialize the model backend."""
-        raise NotImplementedError
-    
-    async def health_check(self) -> bool:
-        """Perform a health check on the model."""
-        raise NotImplementedError
-    
-    async def shutdown(self) -> None:
-        """Shutdown the model backend."""
-        raise NotImplementedError
-    
-    def get_capabilities(self) -> List[InferenceType]:
-        """Get supported inference types."""
-        raise NotImplementedError
-
-
-class OllamaBackend(ModelBackend):
-    """Ollama model backend implementation."""
-    
-    def __init__(self, model_id: str, config: Dict[str, Any]):
-        super().__init__(model_id, config)
-        self.base_url = config.get("base_url", "http://localhost:11434")
-        self.model_name = config.get("model_name", model_id)
-    
-    async def initialize(self) -> None:
-        """Initialize Ollama model."""
-        try:
-            # Check if Ollama is running and model is available
-            # Implementation would use aiohttp to call Ollama API
-            logger.info(f"Initializing Ollama model: {self.model_name}")
-            self.status = ModelStatus.AVAILABLE
-        except Exception as e:
-            logger.error(f"Failed to initialize Ollama model {self.model_name}: {e}")
-            self.status = ModelStatus.ERROR
-            raise
-    
-    async def health_check(self) -> bool:
-        """Check Ollama model health."""
-        try:
-            # Implementation would ping Ollama API
-            self._last_health_check = datetime.utcnow()
-            return True
-        except Exception as e:
-            logger.error(f"Ollama health check failed for {self.model_name}: {e}")
-            return False
-    
-    def get_capabilities(self) -> List[InferenceType]:
-        """Ollama typically supports completion and chat."""
-        return [InferenceType.COMPLETION, InferenceType.CHAT]
-
-
-class HuggingFaceBackend(ModelBackend):
-    """HuggingFace model backend implementation."""
-    
-    def __init__(self, model_id: str, config: Dict[str, Any]):
-        super().__init__(model_id, config)
-        self.model_name = config.get("model_name", model_id)
-        self.device = config.get("device", "cpu")
-        self.dtype = config.get("dtype", "float32")
-    
-    async def initialize(self) -> None:
-        """Initialize HuggingFace model."""
-        try:
-            # Implementation would load HuggingFace model
-            logger.info(f"Initializing HuggingFace model: {self.model_name}")
-            self.status = ModelStatus.AVAILABLE
-        except Exception as e:
-            logger.error(f"Failed to initialize HuggingFace model {self.model_name}: {e}")
-            self.status = ModelStatus.ERROR
-            raise
-    
-    async def health_check(self) -> bool:
-        """Check HuggingFace model health."""
-        try:
-            # Implementation would test model inference
-            self._last_health_check = datetime.utcnow()
-            return True
-        except Exception as e:
-            logger.error(f"HuggingFace health check failed for {self.model_name}: {e}")
-            return False
-    
-    def get_capabilities(self) -> List[InferenceType]:
-        """HuggingFace can support multiple inference types."""
-        return [
-            InferenceType.COMPLETION, 
-            InferenceType.CHAT, 
-            InferenceType.EMBEDDING,
-            InferenceType.CLASSIFICATION
-        ]
 
 
 class ModelRegistry:
