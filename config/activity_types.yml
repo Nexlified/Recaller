@@ -215,6 +215,22 @@ activity_types:
       - progress_made
       - materials_used
     
+  volunteer:
+    display_name: "Volunteer Work"
+    category: "social"
+    icon: "heart"
+    color: "#DC2626"
+    description: "Volunteering and community service activities"
+    default_duration: 180
+    typical_cost_range: [0, 0]
+    suggested_locations: ["community_center", "park", "shelter", "school"]
+    default_privacy: false
+    template_fields:
+      - organization
+      - activity_details
+      - hours_contributed
+      - impact_made
+    
   other:
     display_name: "Other"
     category: "general"
