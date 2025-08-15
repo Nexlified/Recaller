@@ -283,6 +283,22 @@ def update_user_me(
     **Response:**
     Returns the updated user profile. Passwords are never included in responses.
     """
+    from app.core.validation import InputSanitizer
+    from fastapi import HTTPException
+    
+    # Sanitize inputs
+    try:
+        if email is not None:
+            email = InputSanitizer.sanitize_email(email)
+        
+        if full_name is not None:
+            full_name = InputSanitizer.sanitize_name(full_name)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid input: {str(e)}"
+        )
+    
     current_user_data = jsonable_encoder(current_user)
     user_in = UserUpdate(**current_user_data)
     if password is not None:
