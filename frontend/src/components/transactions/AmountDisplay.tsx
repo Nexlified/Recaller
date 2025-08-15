@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Currency, currencyService } from '../../services/currencyService';
 
 interface AmountDisplayProps {
   amount: number;
@@ -17,17 +18,55 @@ export const AmountDisplay: React.FC<AmountDisplayProps> = ({
   showSign = true,
   className = '' 
 }) => {
-  const formatAmount = (amount: number, currency: string): string => {
+  const [currencyData, setCurrencyData] = useState<Currency | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCurrencyData = async () => {
+      if (!currency) return;
+      
+      setLoading(true);
+      try {
+        const data = await currencyService.getCurrencyByCode(currency);
+        setCurrencyData(data);
+      } catch (error) {
+        console.warn(`Failed to fetch currency data for ${currency}:`, error);
+        // Set fallback currency data
+        setCurrencyData({
+          id: 0,
+          code: currency.toUpperCase(),
+          name: currency.toUpperCase(),
+          symbol: currency.toUpperCase(),
+          decimal_places: 2,
+          is_active: true,
+          is_default: false,
+          country_codes: [],
+          created_at: '',
+          updated_at: ''
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCurrencyData();
+  }, [currency]);
+
+  const formatAmount = (amount: number, currencyData: Currency): string => {
+    if (!currencyData) {
+      return `${currency} ${amount.toFixed(2)}`;
+    }
+
     try {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: currency.toUpperCase(),
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+        currency: currencyData.code,
+        minimumFractionDigits: currencyData.decimal_places,
+        maximumFractionDigits: currencyData.decimal_places,
       }).format(Math.abs(amount));
     } catch {
       // Fallback for unsupported currencies
-      return `${currency.toUpperCase()} ${Math.abs(amount).toFixed(2)}`;
+      return `${currencyData.symbol} ${Math.abs(amount).toFixed(currencyData.decimal_places)}`;
     }
   };
 
@@ -54,7 +93,15 @@ export const AmountDisplay: React.FC<AmountDisplayProps> = ({
     }
   };
 
-  const formattedAmount = formatAmount(amount, currency);
+  if (loading || !currencyData) {
+    return (
+      <span className={`font-medium ${className}`}>
+        {currency} {amount.toFixed(2)}
+      </span>
+    );
+  }
+
+  const formattedAmount = formatAmount(amount, currencyData);
   const signPrefix = getSignPrefix(type);
   const colorClasses = getColorClasses(type);
 
