@@ -1,6 +1,6 @@
 """Add gender field to contacts and create contact relationships table
 
-Revision ID: 014_add_gender_relatioship
+Revision ID: 014_add_gender_and_relationships
 Revises: 013_optimize_journal
 Create Date: 2024-01-01 12:00:00.000000
 
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '014_add_gender_relatioship'
+revision = '014_add_gender_and_relationships'
 down_revision = '013_optimize_journal'
 branch_labels = None
 depends_on = None
