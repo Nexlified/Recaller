@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, contacts, contact_relationships, events, analytics, organizations, social_groups, 
     social_group_activities, configuration, tasks, task_scheduler,
-    transactions_simple, background_tasks, journal, currencies
+    transactions_simple, background_tasks, journal, currencies, personal_debts
 )
 
 api_router = APIRouter()
@@ -14,6 +14,7 @@ api_router.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 api_router.include_router(task_scheduler.router, prefix="/task-scheduler", tags=["Task Scheduler"])
 api_router.include_router(transactions_simple.router, prefix="/transactions", tags=["Transactions"])
 api_router.include_router(currencies.router, prefix="/currencies", tags=["Currencies"])
+api_router.include_router(personal_debts.router, prefix="/personal-debts", tags=["Personal Debts"])
 api_router.include_router(organizations.router, prefix="/organizations", tags=["Organization Management"])
 api_router.include_router(social_groups.router, prefix="/social-groups", tags=["Social Groups"])
 api_router.include_router(social_group_activities.router, prefix="/social-groups", tags=["Social Group Activities"])

@@ -21,6 +21,7 @@ from .recurring_transaction import RecurringTransaction
 from .transaction import Transaction
 from .budget import Budget
 from .journal import JournalEntry, JournalTag, JournalAttachment
+from .personal_debt import PersonalDebt, DebtPayment
 
 __all__ = [
     "Tenant",
@@ -57,5 +58,7 @@ __all__ = [
     "Budget",
     "JournalEntry",
     "JournalTag",
-    "JournalAttachment"
+    "JournalAttachment",
+    "PersonalDebt",
+    "DebtPayment"
 ]
