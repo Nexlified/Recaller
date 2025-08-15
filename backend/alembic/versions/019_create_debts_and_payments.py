@@ -1,7 +1,7 @@
 """Create personal debts and payments tables
 
-Revision ID: 016_create_personal_debts_and_payments
-Revises: 015_add_journal_life_metrics, 25ac7038b3f4
+Revision ID: 019_create_debts_and_payments
+Revises: 018_import_currencies
 Create Date: 2025-08-15 18:49:04.904824
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '016_create_personal_debts_and_payments'
-down_revision = ('015_add_journal_life_metrics', '25ac7038b3f4')
+revision = '019_create_debts_and_payments'
+down_revision = '018_import_currencies'
 branch_labels = None
 depends_on = None
 
