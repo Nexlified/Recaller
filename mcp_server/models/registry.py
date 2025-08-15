@@ -17,11 +17,13 @@ try:
         ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
     )
     from ..config.settings import mcp_settings
+    from ..services.privacy import privacy_enforcer
 except ImportError:
     from schemas.mcp_schemas import (
         ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
     )
     from config.settings import mcp_settings
+    from services.privacy import privacy_enforcer
 
 
 logger = logging.getLogger(__name__)
@@ -162,46 +164,52 @@ class ModelRegistry:
             except Exception as e:
                 logger.error(f"Failed to initialize model {model_id}: {e}")
     
-    async def register_model(self, request: ModelRegistrationRequest) -> str:
+    async def register_model(self, request: ModelRegistrationRequest, tenant_id: str) -> str:
         """
         Register a new model.
         
         Args:
             request: Model registration request
+            tenant_id: Tenant ID for isolation (from auth context)
             
         Returns:
             Model ID
         """
-        model_id = f"{request.backend_type}_{request.name}".lower().replace(" ", "_")
+        # Create tenant-scoped model ID to prevent conflicts
+        model_id = f"{tenant_id}_{request.backend_type}_{request.name}".lower().replace(" ", "_").replace("-", "_")
         
-        # Check if model already exists
+        # Check if model already exists for this tenant
         if model_id in self._models:
-            raise ValueError(f"Model {model_id} already registered")
+            raise ValueError(f"Model {request.name} already registered for tenant {tenant_id}")
         
         # Validate backend type
         if request.backend_type not in self._backend_classes:
             raise ValueError(f"Unsupported backend type: {request.backend_type}")
         
-        # Create model info
+        # Validate configuration for privacy compliance
+        validated_config = privacy_enforcer.validate_model_config(request.config)
+        
+        # Create model info with tenant isolation
         model_info = ModelInfo(
             id=model_id,
             name=request.name,
             description=request.description,
             backend_type=request.backend_type,
             capabilities=request.capabilities or [],
-            status=ModelStatus.LOADING
+            status=ModelStatus.LOADING,
+            tenant_id=tenant_id
         )
         
         # Register the model
         self._models[model_id] = model_info
         
         # Save to registry
-        await self._save_model_config(model_id, request.config)
+        await self._save_model_config(model_id, validated_config)
         
         # Initialize the model backend
         try:
-            await self._initialize_model(model_id, request.config)
-            logger.info(f"Successfully registered model: {model_id}")
+            await self._initialize_model(model_id, validated_config)
+            logger.info(f"Successfully registered model: {model_id} for tenant: {tenant_id}")
         except Exception as e:
             # Remove from registry if initialization fails
             self._models.pop(model_id, None)
@@ -210,10 +218,21 @@ class ModelRegistry:
         
         return model_id
     
-    async def unregister_model(self, model_id: str) -> None:
-        """Unregister a model."""
+    async def unregister_model(self, model_id: str, tenant_id: str) -> None:
+        """
+        Unregister a model.
+        
+        Args:
+            model_id: Model ID to unregister
+            tenant_id: Tenant ID for access control
+        """
         if model_id not in self._models:
             raise ValueError(f"Model {model_id} not found")
+        
+        # Verify tenant ownership
+        model = self._models[model_id]
+        if model.tenant_id != tenant_id:
+            raise ValueError(f"Access denied: Model {model_id} belongs to different tenant")
         
         # Shutdown backend if exists
         if model_id in self._backends:
@@ -228,23 +247,68 @@ class ModelRegistry:
         if os.path.exists(config_path):
             os.remove(config_path)
         
-        logger.info(f"Unregistered model: {model_id}")
+        logger.info(f"Unregistered model: {model_id} for tenant: {tenant_id}")
     
-    def get_model(self, model_id: str) -> Optional[ModelInfo]:
-        """Get model information."""
-        return self._models.get(model_id)
+    def get_model(self, model_id: str, tenant_id: Optional[str] = None) -> Optional[ModelInfo]:
+        """
+        Get model information with tenant access control.
+        
+        Args:
+            model_id: Model ID
+            tenant_id: Tenant ID for access control (optional for admin access)
+            
+        Returns:
+            Model information if accessible by tenant
+        """
+        model = self._models.get(model_id)
+        if not model:
+            return None
+        
+        # If tenant_id is provided, enforce tenant isolation
+        if tenant_id is not None and model.tenant_id != tenant_id:
+            return None
+        
+        return model
     
-    def list_models(self, status_filter: Optional[ModelStatus] = None) -> List[ModelInfo]:
-        """List all registered models."""
+    def list_models(self, tenant_id: Optional[str] = None, status_filter: Optional[ModelStatus] = None) -> List[ModelInfo]:
+        """
+        List models with tenant isolation.
+        
+        Args:
+            tenant_id: Tenant ID for filtering (None for admin access to all models)
+            status_filter: Optional status filter
+            
+        Returns:
+            List of models accessible by tenant
+        """
         models = list(self._models.values())
         
+        # Filter by tenant if specified
+        if tenant_id is not None:
+            models = [m for m in models if m.tenant_id == tenant_id]
+        
+        # Filter by status if specified
         if status_filter:
             models = [m for m in models if m.status == status_filter]
         
         return models
     
-    def get_model_backend(self, model_id: str) -> Optional[ModelBackend]:
-        """Get model backend instance."""
+    def get_model_backend(self, model_id: str, tenant_id: Optional[str] = None) -> Optional[ModelBackend]:
+        """
+        Get model backend instance with tenant access control.
+        
+        Args:
+            model_id: Model ID
+            tenant_id: Tenant ID for access control
+            
+        Returns:
+            Model backend if accessible by tenant
+        """
+        # Verify tenant access to model first
+        model = self.get_model(model_id, tenant_id)
+        if not model:
+            return None
+        
         return self._backends.get(model_id)
     
     async def health_check_model(self, model_id: str) -> bool:
@@ -297,7 +361,8 @@ class ModelRegistry:
                         description=config.get("description"),
                         backend_type=config.get("backend_type"),
                         capabilities=config.get("capabilities", []),
-                        status=ModelStatus.LOADING
+                        status=ModelStatus.LOADING,
+                        tenant_id=config.get("tenant_id", "default")  # Use default for legacy models
                     )
                     
                     self._models[model_id] = model_info
@@ -315,6 +380,7 @@ class ModelRegistry:
             "description": model_info.description,
             "backend_type": model_info.backend_type,
             "capabilities": model_info.capabilities,
+            "tenant_id": model_info.tenant_id,
             "config": config
         }
         

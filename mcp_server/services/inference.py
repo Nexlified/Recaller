@@ -19,6 +19,7 @@ try:
     from ..models.registry import model_registry
     from ..core.protocol import MCPProtocolError, MCPErrorCodes
     from ..config.settings import mcp_settings
+    from ..services.privacy import privacy_enforcer
 except ImportError:
     from schemas.mcp_schemas import (
         CompletionRequest, ChatRequest, EmbeddingRequest,
@@ -28,6 +29,7 @@ except ImportError:
     from models.registry import model_registry
     from core.protocol import MCPProtocolError, MCPErrorCodes
     from config.settings import mcp_settings
+    from services.privacy import privacy_enforcer
 
 
 logger = logging.getLogger(__name__)
@@ -61,12 +63,18 @@ class InferenceService:
             # Validate request
             await self._validate_request(request, InferenceType.COMPLETION)
             
-            # Get model backend
-            backend = model_registry.get_model_backend(request.model_id)
+            # Privacy validation
+            privacy_enforcer.validate_inference_request({
+                "prompt": request.prompt,
+                "model_id": request.model_id
+            })
+            
+            # Get model backend with tenant access control
+            backend = model_registry.get_model_backend(request.model_id, request.tenant_id)
             if not backend:
                 raise MCPProtocolError(
                     code=MCPErrorCodes.MODEL_NOT_AVAILABLE,
-                    message=f"Model {request.model_id} not available"
+                    message=f"Model {request.model_id} not available or access denied"
                 )
             
             # Check rate limits
@@ -119,12 +127,18 @@ class InferenceService:
             # Validate request
             await self._validate_request(request, InferenceType.CHAT)
             
-            # Get model backend
-            backend = model_registry.get_model_backend(request.model_id)
+            # Privacy validation
+            privacy_enforcer.validate_inference_request({
+                "messages": [{"content": msg.content} for msg in request.messages],
+                "model_id": request.model_id
+            })
+            
+            # Get model backend with tenant access control
+            backend = model_registry.get_model_backend(request.model_id, request.tenant_id)
             if not backend:
                 raise MCPProtocolError(
                     code=MCPErrorCodes.MODEL_NOT_AVAILABLE,
-                    message=f"Model {request.model_id} not available"
+                    message=f"Model {request.model_id} not available or access denied"
                 )
             
             # Check rate limits
@@ -177,12 +191,12 @@ class InferenceService:
             # Validate request
             await self._validate_request(request, InferenceType.EMBEDDING)
             
-            # Get model backend
-            backend = model_registry.get_model_backend(request.model_id)
+            # Get model backend with tenant access control
+            backend = model_registry.get_model_backend(request.model_id, request.tenant_id)
             if not backend:
                 raise MCPProtocolError(
                     code=MCPErrorCodes.MODEL_NOT_AVAILABLE,
-                    message=f"Model {request.model_id} not available"
+                    message=f"Model {request.model_id} not available or access denied"
                 )
             
             # Check rate limits
@@ -220,13 +234,14 @@ class InferenceService:
             self._untrack_request(request_id)
     
     async def _validate_request(self, request: Any, expected_type: InferenceType) -> None:
-        """Validate inference request parameters."""
-        # Check model exists and supports the inference type
-        model = model_registry.get_model(request.model_id)
+        """Validate inference request parameters with tenant isolation."""
+        # Check model exists and is accessible by tenant
+        tenant_id = getattr(request, 'tenant_id', None)
+        model = model_registry.get_model(request.model_id, tenant_id)
         if not model:
             raise MCPProtocolError(
                 code=MCPErrorCodes.MODEL_NOT_AVAILABLE,
-                message=f"Model {request.model_id} not found"
+                message=f"Model {request.model_id} not found or access denied for tenant"
             )
         
         if expected_type not in model.capabilities:
