@@ -2,19 +2,23 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, models
 from app.api import deps
 from app.models.personal_debt import DebtStatus, PaymentStatus
 from app.crud import personal_debt as debt_crud
+from app.schemas.personal_debt import (
+    PersonalDebt, PersonalDebtCreate, PersonalDebtUpdate, PersonalDebtWithPayments, PersonalDebtSummary,
+    DebtPayment, DebtPaymentCreate, DebtPaymentUpdate
+)
 
 router = APIRouter()
 
 
-@router.post("/", response_model=schemas.PersonalDebt)
+@router.post("/", response_model=PersonalDebt)
 def create_personal_debt(
     *,
     db: Session = Depends(deps.get_db),
-    debt_in: schemas.PersonalDebtCreate,
+    debt_in: PersonalDebtCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Create new personal debt."""
@@ -42,7 +46,7 @@ def create_personal_debt(
     return debt
 
 
-@router.get("/", response_model=List[schemas.PersonalDebt])
+@router.get("/", response_model=List[PersonalDebt])
 def read_personal_debts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -76,7 +80,7 @@ def read_personal_debts(
     return debts
 
 
-@router.get("/summary", response_model=schemas.PersonalDebtSummary)
+@router.get("/summary", response_model=PersonalDebtSummary)
 def get_debt_summary(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -87,7 +91,7 @@ def get_debt_summary(
     return summary
 
 
-@router.get("/overdue", response_model=List[schemas.PersonalDebt])
+@router.get("/overdue", response_model=List[PersonalDebt])
 def get_overdue_debts(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -98,7 +102,7 @@ def get_overdue_debts(
     return overdue_debts
 
 
-@router.get("/owed-to-me", response_model=List[schemas.PersonalDebt])
+@router.get("/owed-to-me", response_model=List[PersonalDebt])
 def get_debts_owed_to_me(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -112,7 +116,7 @@ def get_debts_owed_to_me(
     return debts
 
 
-@router.get("/i-owe", response_model=List[schemas.PersonalDebt])
+@router.get("/i-owe", response_model=List[PersonalDebt])
 def get_debts_i_owe(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -126,7 +130,7 @@ def get_debts_i_owe(
     return debts
 
 
-@router.get("/{debt_id}", response_model=schemas.PersonalDebtWithPayments)
+@router.get("/{debt_id}", response_model=PersonalDebtWithPayments)
 def read_personal_debt(
     *,
     db: Session = Depends(deps.get_db),
@@ -146,20 +150,20 @@ def read_personal_debt(
     total_paid = debt_crud.get_total_paid(db, debt_id)
     
     # Create response with payments
-    debt_dict = schemas.PersonalDebt.from_orm(debt).dict()
-    debt_dict["payments"] = [schemas.DebtPayment.from_orm(p) for p in payments]
+    debt_dict = PersonalDebt.from_orm(debt).dict()
+    debt_dict["payments"] = [DebtPayment.from_orm(p) for p in payments]
     debt_dict["total_paid"] = total_paid
     debt_dict["remaining_balance"] = debt.amount - total_paid
     
-    return schemas.PersonalDebtWithPayments(**debt_dict)
+    return PersonalDebtWithPayments(**debt_dict)
 
 
-@router.put("/{debt_id}", response_model=schemas.PersonalDebt)
+@router.put("/{debt_id}", response_model=PersonalDebt)
 def update_personal_debt(
     *,
     db: Session = Depends(deps.get_db),
     debt_id: int,
-    debt_in: schemas.PersonalDebtUpdate,
+    debt_in: PersonalDebtUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Update personal debt."""
@@ -209,12 +213,12 @@ def delete_personal_debt(
 
 
 # Debt Payment endpoints
-@router.post("/{debt_id}/payments", response_model=schemas.DebtPayment)
+@router.post("/{debt_id}/payments", response_model=DebtPayment)
 def create_debt_payment(
     *,
     db: Session = Depends(deps.get_db),
     debt_id: int,
-    payment_in: schemas.DebtPaymentCreate,
+    payment_in: DebtPaymentCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Create a payment for a debt."""
@@ -233,7 +237,7 @@ def create_debt_payment(
     return payment
 
 
-@router.get("/{debt_id}/payments", response_model=List[schemas.DebtPayment])
+@router.get("/{debt_id}/payments", response_model=List[DebtPayment])
 def read_debt_payments(
     *,
     db: Session = Depends(deps.get_db),
@@ -256,12 +260,12 @@ def read_debt_payments(
     return payments
 
 
-@router.put("/payments/{payment_id}", response_model=schemas.DebtPayment)
+@router.put("/payments/{payment_id}", response_model=DebtPayment)
 def update_debt_payment(
     *,
     db: Session = Depends(deps.get_db),
     payment_id: int,
-    payment_in: schemas.DebtPaymentUpdate,
+    payment_in: DebtPaymentUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Update debt payment."""
