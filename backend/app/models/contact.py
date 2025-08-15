@@ -30,6 +30,9 @@ class Contact(Base):
     # Notes
     notes = Column(Text)
     
+    # Gender (optional field for relationship mapping)
+    gender = Column(String(20), nullable=True)  # 'male', 'female', 'non_binary', 'prefer_not_to_say'
+    
     # Visibility scope
     visibility = Column(String(10), nullable=False, default=ContactVisibility.PRIVATE.value, index=True)
     
