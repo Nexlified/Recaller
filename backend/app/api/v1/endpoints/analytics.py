@@ -3,7 +3,7 @@ from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import get_db, get_tenant_context
 from app.schemas.analytics import (
     AnalyticsOverviewResponse,
     NetworkGrowthResponse, 
@@ -27,17 +27,13 @@ from app.models.analytics import (
 
 router = APIRouter()
 
-def get_tenant_id(request: Request) -> int:
-    """Get tenant ID from request state"""
-    return getattr(request.state, 'tenant_id', 1)
-
 @router.get("/overview", response_model=Dict[str, Any])
 def get_analytics_overview(
     request: Request,
     db: Session = Depends(get_db)
 ):
     """Get high-level dashboard metrics"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     return analytics_service.get_overview_analytics()
 
@@ -47,7 +43,7 @@ def get_analytics_summary(
     db: Session = Depends(get_db)
 ):
     """Get quick summary statistics"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     # Get summary from materialized view
     summary = db.query(ContactAnalyticsSummary).filter(
@@ -88,7 +84,7 @@ def get_analytics_trends(
     db: Session = Depends(get_db)
 ):
     """Get trending metrics over time"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     # Get daily metrics for the period
     end_date = date.today()
@@ -120,7 +116,7 @@ def get_key_performance_indicators(
     db: Session = Depends(get_db)
 ):
     """Get key performance indicators"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     overview = analytics_service.get_overview_analytics()
@@ -145,7 +141,7 @@ def get_network_overview(
     db: Session = Depends(get_db)
 ):
     """Get network size, strength, growth overview"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     overview = analytics_service.get_overview_analytics()
@@ -165,7 +161,7 @@ def get_network_distribution(
     db: Session = Depends(get_db)
 ):
     """Get relationship strength distribution"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     health_analytics = analytics_service.get_relationship_health_analytics()
@@ -178,7 +174,7 @@ def get_network_growth(
     db: Session = Depends(get_db)
 ):
     """Get network growth over time"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     return analytics_service.get_network_growth_analytics(period)
@@ -189,7 +185,7 @@ def get_network_health(
     db: Session = Depends(get_db)
 ):
     """Get overall network health score"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     return analytics_service.get_relationship_health_analytics()
@@ -201,7 +197,7 @@ def get_interactions_overview(
     db: Session = Depends(get_db)
 ):
     """Get interaction patterns and trends"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     interactions = analytics_service.get_interaction_analytics()
@@ -234,7 +230,7 @@ def get_interaction_types_breakdown(
     db: Session = Depends(get_db)
 ):
     """Get breakdown by interaction type"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     interactions = analytics_service.get_interaction_analytics()
@@ -252,7 +248,7 @@ def get_interaction_quality_trends(
     db: Session = Depends(get_db)
 ):
     """Get interaction quality trends"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     interactions = analytics_service.get_interaction_analytics()
@@ -275,7 +271,7 @@ def get_interaction_frequency_analysis(
     db: Session = Depends(get_db)
 ):
     """Get interaction frequency analysis"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     interactions = analytics_service.get_interaction_analytics()
@@ -294,7 +290,7 @@ def get_response_rate_analysis(
     db: Session = Depends(get_db)
 ):
     """Get contact response patterns"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     interactions = analytics_service.get_interaction_analytics()
@@ -318,7 +314,7 @@ def get_relationship_strength_analytics(
     db: Session = Depends(get_db)
 ):
     """Get relationship strength analytics"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     return analytics_service.get_relationship_health_analytics()
@@ -374,7 +370,7 @@ def get_relationship_maintenance_insights(
     db: Session = Depends(get_db)
 ):
     """Get relationship maintenance insights"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     health_analytics = analytics_service.get_relationship_health_analytics()
@@ -395,7 +391,7 @@ def get_organization_network_analysis(
     db: Session = Depends(get_db)
 ):
     """Get organization network analysis"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     analytics = db.query(OrganizationNetworkAnalytics).filter(
         OrganizationNetworkAnalytics.tenant_id == tenant_id
@@ -447,7 +443,7 @@ def get_social_group_engagement(
     db: Session = Depends(get_db)
 ):
     """Get social group engagement analytics"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     analytics = db.query(SocialGroupAnalytics).filter(
         SocialGroupAnalytics.tenant_id == tenant_id
@@ -473,7 +469,7 @@ def get_social_group_activity_analytics(
     db: Session = Depends(get_db)
 ):
     """Get group activity analytics"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     analytics = db.query(SocialGroupAnalytics).filter(
         SocialGroupAnalytics.tenant_id == tenant_id
@@ -501,7 +497,7 @@ def get_networking_insights(
     db: Session = Depends(get_db)
 ):
     """Get AI-generated insights"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     query = db.query(NetworkingInsight).filter(
         NetworkingInsight.tenant_id == tenant_id,
@@ -540,7 +536,7 @@ def generate_insights(
     db: Session = Depends(get_db)
 ):
     """Trigger insight generation"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     insights = analytics_service.generate_insights(insight_request.insight_types)
@@ -566,7 +562,7 @@ def get_follow_up_performance(
     db: Session = Depends(get_db)
 ):
     """Get follow-up completion rates"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     # Mock implementation - would calculate from actual follow-up data
     return {
@@ -587,7 +583,7 @@ def get_overdue_follow_ups(
     db: Session = Depends(get_db)
 ):
     """Get overdue follow-up analysis"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     overdue_contacts = db.query(Contact).filter(
         and_(
@@ -667,7 +663,7 @@ def get_churn_prediction(
     db: Session = Depends(get_db)
 ):
     """Get relationship churn prediction"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     # Mock churn prediction based on interaction patterns
     at_risk_contacts = db.query(Contact).filter(
@@ -709,7 +705,7 @@ def get_growth_predictions(
     db: Session = Depends(get_db)
 ):
     """Get network growth predictions"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     growth_analytics = analytics_service.get_network_growth_analytics(90)  # Use 90 days for prediction
@@ -766,7 +762,7 @@ def get_maintenance_predictions(
     db: Session = Depends(get_db)
 ):
     """Get relationship maintenance recommendations"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     health_analytics = analytics_service.get_relationship_health_analytics()
@@ -798,7 +794,7 @@ def compare_periods(
     db: Session = Depends(get_db)
 ):
     """Compare different time periods"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     # Calculate periods
     end_date = date.today()
@@ -862,7 +858,7 @@ def compare_groups(
     db: Session = Depends(get_db)
 ):
     """Compare different contact groups"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     
     group_id_list = [int(id.strip()) for id in group_ids.split(",")]
     
@@ -962,7 +958,7 @@ def get_monthly_report(
     """Get monthly analytics report"""
     from app.services.analytics import AnalyticsExportService
     
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     export_service = AnalyticsExportService(db, tenant_id)
     
     # Calculate date range for the month
@@ -987,7 +983,7 @@ def get_quarterly_report(
     """Get quarterly analytics report"""
     from app.services.analytics import AnalyticsExportService
     
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     export_service = AnalyticsExportService(db, tenant_id)
     
     # Calculate date range for the quarter
@@ -1014,7 +1010,7 @@ def generate_custom_report(
     """Generate custom report"""
     from app.services.analytics import AnalyticsExportService
     
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     export_service = AnalyticsExportService(db, tenant_id)
     
     return export_service.export_custom_report({
@@ -1035,7 +1031,7 @@ def export_analytics_data(
     """Export analytics data"""
     from app.services.analytics import AnalyticsExportService
     
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     export_service = AnalyticsExportService(db, tenant_id)
     
     # Parse date range
@@ -1060,7 +1056,7 @@ def get_actionable_recommendations(
     db: Session = Depends(get_db)
 ):
     """Get actionable recommendations"""
-    tenant_id = get_tenant_id(request)
+    tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     health_analytics = analytics_service.get_relationship_health_analytics()

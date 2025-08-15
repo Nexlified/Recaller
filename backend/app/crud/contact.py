@@ -5,7 +5,7 @@ from sqlalchemy import and_, or_
 from app.models.contact import Contact, ContactVisibility
 from app.schemas.contact import ContactCreate, ContactUpdate
 
-def get_contact(db: Session, contact_id: int, tenant_id: int = 1) -> Optional[Contact]:
+def get_contact(db: Session, contact_id: int, tenant_id: int) -> Optional[Contact]:
     return db.query(Contact).filter(
         Contact.id == contact_id,
         Contact.tenant_id == tenant_id
@@ -16,7 +16,7 @@ def get_contact_with_user_access(
     db: Session, 
     contact_id: int, 
     user_id: int, 
-    tenant_id: int = 1
+    tenant_id: int
 ) -> Optional[Contact]:
     """Get contact if user has access (owns it or it's public)"""
     return db.query(Contact).filter(
@@ -35,7 +35,7 @@ def can_user_edit_contact(contact: Contact, user_id: int) -> bool:
     """Check if user can edit the contact (only owner can edit)"""
     return contact.created_by_user_id == user_id
 
-def get_contact_by_email(db: Session, email: str, tenant_id: int = 1) -> Optional[Contact]:
+def get_contact_by_email(db: Session, email: str, tenant_id: int) -> Optional[Contact]:
     return db.query(Contact).filter(
         Contact.email == email,
         Contact.tenant_id == tenant_id
@@ -43,9 +43,9 @@ def get_contact_by_email(db: Session, email: str, tenant_id: int = 1) -> Optiona
 
 def get_contacts(
     db: Session, 
+    tenant_id: int,
     skip: int = 0, 
-    limit: int = 100, 
-    tenant_id: int = 1
+    limit: int = 100
 ) -> List[Contact]:
     """Get all contacts in tenant (admin function - returns all contacts)"""
     return db.query(Contact).filter(
@@ -56,9 +56,9 @@ def get_contacts(
 def get_user_contacts(
     db: Session, 
     user_id: int,
+    tenant_id: int,
     skip: int = 0, 
-    limit: int = 100, 
-    tenant_id: int = 1
+    limit: int = 100
 ) -> List[Contact]:
     """Get contacts visible to a specific user (their own + public contacts in tenant)"""
     return db.query(Contact).filter(
@@ -74,9 +74,9 @@ def get_user_contacts(
 
 def get_public_contacts(
     db: Session, 
+    tenant_id: int,
     skip: int = 0, 
-    limit: int = 100, 
-    tenant_id: int = 1
+    limit: int = 100
 ) -> List[Contact]:
     """Get only public contacts in tenant"""
     return db.query(Contact).filter(
@@ -98,7 +98,7 @@ def get_contacts_by_email(
     ).all()
 
 
-def get_contact_by_phone(db: Session, phone: str, tenant_id: int = 1) -> Optional[Contact]:
+def get_contact_by_phone(db: Session, phone: str, tenant_id: int) -> Optional[Contact]:
     return db.query(Contact).filter(
         Contact.phone == phone,
         Contact.tenant_id == tenant_id
@@ -120,7 +120,7 @@ def create_contact(
     db: Session, 
     obj_in: ContactCreate, 
     created_by_user_id: int,
-    tenant_id: int = 1
+    tenant_id: int
 ) -> Contact:
     db_obj = Contact(
         tenant_id=tenant_id,

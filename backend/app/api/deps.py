@@ -22,7 +22,9 @@ def get_db() -> Generator:
         db.close()
 
 def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    request: Request,
+    db: Session = Depends(get_db), 
+    token: str = Depends(oauth2_scheme)
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -35,7 +37,9 @@ def get_current_user(
     except (JWTError, ValidationError):
         raise credentials_exception
     
-    user = get_user_by_id(db, int(token_data.sub), tenant_id=1)  # Using default tenant for now
+    # Get tenant ID from request context
+    tenant_id = get_tenant_context(request)
+    user = get_user_by_id(db, int(token_data.sub), tenant_id=tenant_id)
     if not user:
         raise credentials_exception
     return user

@@ -11,7 +11,7 @@ from app.schemas.social_group import (
 )
 
 # Social Group CRUD operations
-def get_social_group(db: Session, social_group_id: int, tenant_id: int = 1) -> Optional[SocialGroup]:
+def get_social_group(db: Session, social_group_id: int, tenant_id: int) -> Optional[SocialGroup]:
     return db.query(SocialGroup).filter(
         SocialGroup.id == social_group_id,
         SocialGroup.tenant_id == tenant_id
@@ -19,9 +19,9 @@ def get_social_group(db: Session, social_group_id: int, tenant_id: int = 1) -> O
 
 def get_social_groups(
     db: Session, 
+    tenant_id: int,
     skip: int = 0, 
     limit: int = 100, 
-    tenant_id: int = 1,
     group_type: Optional[str] = None,
     is_active: Optional[bool] = None,
     created_by_user_id: Optional[int] = None
@@ -40,7 +40,7 @@ def get_social_groups(
 def search_social_groups(
     db: Session,
     query: str,
-    tenant_id: int = 1,
+    tenant_id: int,
     skip: int = 0,
     limit: int = 100
 ) -> List[SocialGroup]:
@@ -58,7 +58,7 @@ def create_social_group(
     db: Session, 
     obj_in: SocialGroupCreate, 
     created_by_user_id: int,
-    tenant_id: int = 1
+    tenant_id: int
 ) -> SocialGroup:
     db_obj = SocialGroup(
         tenant_id=tenant_id,
@@ -88,7 +88,7 @@ def update_social_group(
     db.refresh(db_obj)
     return db_obj
 
-def delete_social_group(db: Session, social_group_id: int, tenant_id: int = 1) -> Optional[SocialGroup]:
+def delete_social_group(db: Session, social_group_id: int, tenant_id: int) -> Optional[SocialGroup]:
     social_group = get_social_group(db, social_group_id=social_group_id, tenant_id=tenant_id)
     if social_group:
         db.delete(social_group)
@@ -99,7 +99,7 @@ def delete_social_group(db: Session, social_group_id: int, tenant_id: int = 1) -
 def get_group_members(
     db: Session, 
     social_group_id: int, 
-    tenant_id: int = 1,
+    tenant_id: int,
     status: Optional[str] = None
 ) -> List[ContactSocialGroupMembership]:
     query = db.query(ContactSocialGroupMembership).join(SocialGroup).filter(
@@ -116,7 +116,7 @@ def get_membership(
     db: Session, 
     contact_id: int, 
     social_group_id: int, 
-    tenant_id: int = 1
+    tenant_id: int
 ) -> Optional[ContactSocialGroupMembership]:
     return db.query(ContactSocialGroupMembership).join(SocialGroup).filter(
         ContactSocialGroupMembership.contact_id == contact_id,
@@ -167,7 +167,7 @@ def remove_membership(
     db: Session, 
     contact_id: int, 
     social_group_id: int, 
-    tenant_id: int = 1
+    tenant_id: int
 ) -> Optional[ContactSocialGroupMembership]:
     membership = get_membership(db, contact_id, social_group_id, tenant_id)
     if membership:
@@ -186,7 +186,7 @@ def remove_membership(
 def get_group_activities(
     db: Session, 
     social_group_id: int, 
-    tenant_id: int = 1,
+    tenant_id: int,
     skip: int = 0,
     limit: int = 100
 ) -> List[SocialGroupActivity]:
@@ -195,7 +195,7 @@ def get_group_activities(
         SocialGroup.tenant_id == tenant_id
     ).order_by(desc(SocialGroupActivity.scheduled_date)).offset(skip).limit(limit).all()
 
-def get_activity(db: Session, activity_id: int, tenant_id: int = 1) -> Optional[SocialGroupActivity]:
+def get_activity(db: Session, activity_id: int, tenant_id: int) -> Optional[SocialGroupActivity]:
     return db.query(SocialGroupActivity).join(SocialGroup).filter(
         SocialGroupActivity.id == activity_id,
         SocialGroup.tenant_id == tenant_id
@@ -233,7 +233,7 @@ def update_activity(
     db.refresh(db_obj)
     return db_obj
 
-def delete_activity(db: Session, activity_id: int, tenant_id: int = 1) -> Optional[SocialGroupActivity]:
+def delete_activity(db: Session, activity_id: int, tenant_id: int) -> Optional[SocialGroupActivity]:
     activity = get_activity(db, activity_id=activity_id, tenant_id=tenant_id)
     if activity:
         db.delete(activity)
@@ -244,7 +244,7 @@ def delete_activity(db: Session, activity_id: int, tenant_id: int = 1) -> Option
 def get_activity_attendance(
     db: Session, 
     activity_id: int, 
-    tenant_id: int = 1
+    tenant_id: int
 ) -> List[SocialGroupActivityAttendance]:
     return db.query(SocialGroupActivityAttendance).join(SocialGroupActivity).join(SocialGroup).filter(
         SocialGroupActivityAttendance.activity_id == activity_id,
