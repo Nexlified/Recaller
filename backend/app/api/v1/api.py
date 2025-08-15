@@ -12,13 +12,13 @@ api_router.include_router(contacts.router, prefix="/contacts", tags=["Contacts"]
 api_router.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 api_router.include_router(task_scheduler.router, prefix="/task-scheduler", tags=["Task Scheduler"])
 api_router.include_router(transactions_simple.router, prefix="/transactions", tags=["Transactions"])
-api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
-api_router.include_router(organizations.router, prefix="/organizations", tags=["Organizations"])
+api_router.include_router(organizations.router, prefix="/organizations", tags=["Organization Management"])
 api_router.include_router(social_groups.router, prefix="/social-groups", tags=["Social Groups"])
 api_router.include_router(social_group_activities.router, prefix="/social-groups", tags=["Social Group Activities"])
 api_router.include_router(journal.router, prefix="/journal", tags=["Journal"])
 api_router.include_router(configuration.router, prefix="/config", tags=["Configuration"])
 api_router.include_router(events.router, prefix="/events", tags=["Events"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 
 
 api_router.include_router(background_tasks.router, prefix="/background-tasks", tags=["Background Tasks"])

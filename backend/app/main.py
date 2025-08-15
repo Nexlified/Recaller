@@ -11,7 +11,8 @@ from app.services.task_scheduler import task_scheduler_service
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    docs_url="/docs"
 )
 
 # Set all CORS enabled origins
