@@ -1,7 +1,7 @@
 """Create currencies table
 
-Revision ID: 014_create_currencies_table
-Revises: 013_optimize_journal
+Revision ID: 017_create_currencies_table
+Revises: 016_add_journal_life_metrics
 Create Date: 2025-01-15
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers
-revision = '014_create_currencies_table'
-down_revision = '013_optimize_journal'
+revision = '017_create_currencies_table'
+down_revision = '016_add_journal_life_metrics'
 branch_labels = None
 depends_on = None
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Numeric, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Numeric, Enum, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
@@ -32,6 +32,13 @@ class Contact(Base):
     
     # Gender (optional field for relationship mapping)
     gender = Column(String(20), nullable=True)  # 'male', 'female', 'non_binary', 'prefer_not_to_say'
+    
+    # Family Information Tracking
+    date_of_birth = Column(Date, nullable=True)  # Birthday for reminders and age tracking
+    anniversary_date = Column(Date, nullable=True)  # Wedding anniversary or other important family date
+    maiden_name = Column(String(255), nullable=True)  # Maiden name for genealogy tracking
+    family_nickname = Column(String(100), nullable=True)  # Informal family name (e.g., "Grandma", "Uncle Bob")
+    is_emergency_contact = Column(Boolean, default=False, index=True)  # Emergency contact designation
     
     # Visibility scope
     visibility = Column(String(10), nullable=False, default=ContactVisibility.PRIVATE.value, index=True)

@@ -1,7 +1,7 @@
 """Import currencies from YAML configuration
 
-Revision ID: 25ac7038b3f4
-Revises: 014_create_currencies_table
+Revision ID: 018_import_currencies
+Revises: 017_create_currencies_table
 Create Date: 2025-08-15 18:08:56.721804
 
 """
@@ -13,8 +13,8 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision = '25ac7038b3f4'
-down_revision = '014_create_currencies_table'
+revision = '018_import_currencies'
+down_revision = '017_create_currencies_table'
 branch_labels = None
 depends_on = None
 

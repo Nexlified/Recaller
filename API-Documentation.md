@@ -607,13 +607,239 @@ Authorization: Bearer <token>
   "last_name": "Doe",
   "email": "john.doe@example.com",
   "phone": "+1-555-123-4567",
+  "gender": "male",
+  "date_of_birth": "1990-05-15",
+  "anniversary_date": "2015-08-20",
+  "maiden_name": "Smith",
+  "family_nickname": "Uncle John",
+  "is_emergency_contact": true,
   "relationship": "friend",
   "tags": ["college", "tech"],
   "metadata": {
-    "birthday": "1990-05-15",
     "company": "Tech Corp",
     "notes": "Met at conference 2023"
   }
+}
+```
+
+#### Update Contact with Family Information
+```http
+PUT /api/v1/contacts/123
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "date_of_birth": "1985-12-25",
+  "family_nickname": "Grandpa Joe",
+  "is_emergency_contact": true
+}
+```
+
+### Family Information API
+
+The Family Information API provides comprehensive tracking of family members, birthdays, anniversaries, and emergency contacts.
+
+#### Get Family Members
+```http
+GET /api/v1/family/members?include_extended=true
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "contact": {
+      "id": 1,
+      "first_name": "Robert",
+      "last_name": "Smith",
+      "family_nickname": "Dad",
+      "date_of_birth": "1965-03-15",
+      "is_emergency_contact": true,
+      "phone": "+1234567890"
+    },
+    "relationship_type": "parent",
+    "relationship_category": "family",
+    "age": 59,
+    "days_until_birthday": 210
+  }
+]
+```
+
+#### Get Upcoming Birthdays
+```http
+GET /api/v1/family/birthdays?days_ahead=30
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "contact_id": 3,
+    "contact_name": "Sarah Smith",
+    "family_nickname": "Sis",
+    "event_type": "birthday",
+    "event_date": "1992-08-25",
+    "days_until": 10,
+    "age_turning": 32
+  }
+]
+```
+
+#### Get Upcoming Anniversaries
+```http
+GET /api/v1/family/anniversaries?days_ahead=30
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "contact_id": 1,
+    "contact_name": "Robert Smith",
+    "family_nickname": "Dad",
+    "event_type": "anniversary",
+    "event_date": "1990-06-20",
+    "days_until": 15,
+    "age_turning": null
+  }
+]
+```
+
+#### Get Emergency Contacts
+```http
+GET /api/v1/family/emergency-contacts
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "contact": {
+      "id": 1,
+      "first_name": "Robert",
+      "last_name": "Smith",
+      "family_nickname": "Dad",
+      "phone": "+1234567890",
+      "email": "robert@example.com"
+    },
+    "relationship_type": "parent",
+    "primary_phone": "+1234567890",
+    "alternative_contact": "robert@example.com"
+  }
+]
+```
+
+#### Get Family Summary
+```http
+GET /api/v1/family/summary?include_extended_family=true&days_ahead_for_reminders=30
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "total_family_members": 4,
+  "family_tree": [
+    {
+      "contact_id": 4,
+      "contact_name": "William Smith",
+      "family_nickname": "Grandpa Bill",
+      "relationship_to_user": "grandparent",
+      "generation": -2,
+      "children": []
+    },
+    {
+      "contact_id": 1,
+      "contact_name": "Robert Smith",
+      "family_nickname": "Dad",
+      "relationship_to_user": "parent",
+      "generation": -1,
+      "children": []
+    }
+  ],
+  "upcoming_birthdays": [
+    {
+      "contact_id": 3,
+      "contact_name": "Sarah Smith",
+      "family_nickname": "Sis",
+      "event_type": "birthday",
+      "event_date": "1992-08-25",
+      "days_until": 10,
+      "age_turning": 32
+    }
+  ],
+  "upcoming_anniversaries": [
+    {
+      "contact_id": 1,
+      "contact_name": "Robert Smith",
+      "family_nickname": "Dad", 
+      "event_type": "anniversary",
+      "event_date": "1990-06-20",
+      "days_until": 15,
+      "age_turning": null
+    }
+  ],
+  "emergency_contacts": [
+    {
+      "contact": {
+        "id": 1,
+        "first_name": "Robert",
+        "last_name": "Smith",
+        "family_nickname": "Dad",
+        "phone": "+1234567890"
+      },
+      "relationship_type": "parent",
+      "primary_phone": "+1234567890",
+      "alternative_contact": "robert@example.com"
+    }
+  ]
+}
+```
+
+#### Get Today's Reminders
+```http
+GET /api/v1/family/reminders/today
+Authorization: Bearer <token>
+```
+
+#### Get This Week's Reminders
+```http
+GET /api/v1/family/reminders/this-week
+Authorization: Bearer <token>
+```
+
+### Contact Relationships
+
+The relationship system supports automatic gender resolution for family relationships.
+
+#### Create Family Relationship
+```http
+POST /api/v1/relationships/
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "contact_a_id": 1,
+  "contact_b_id": 2,
+  "relationship_type": "sibling",
+  "notes": "Twin brothers"
+}
+```
+
+**Response (with gender resolution):**
+```json
+{
+  "contact_a_id": 1,
+  "contact_b_id": 2,
+  "relationship_a_to_b": "brother",
+  "relationship_b_to_a": "brother",
+  "relationship_category": "family",
+  "is_gender_resolved": true,
+  "original_relationship_type": "sibling"
 }
 ```
 

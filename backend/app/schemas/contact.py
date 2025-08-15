@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 
@@ -18,6 +18,12 @@ class ContactBase(BaseModel):
     organization_id: Optional[int] = None
     notes: Optional[str] = None
     gender: Optional[str] = None  # 'male', 'female', 'non_binary', 'prefer_not_to_say'
+    # Family Information Tracking
+    date_of_birth: Optional[date] = None  # Birthday for reminders and age tracking
+    anniversary_date: Optional[date] = None  # Wedding anniversary or other important family date
+    maiden_name: Optional[str] = None  # Maiden name for genealogy tracking
+    family_nickname: Optional[str] = None  # Informal family name (e.g., "Grandma", "Uncle Bob")
+    is_emergency_contact: Optional[bool] = False  # Emergency contact designation
     visibility: Optional[ContactVisibility] = ContactVisibility.PRIVATE
     is_active: Optional[bool] = True
 
@@ -35,6 +41,12 @@ class ContactUpdate(BaseModel):
     organization_id: Optional[int] = None
     notes: Optional[str] = None
     gender: Optional[str] = None
+    # Family Information Tracking
+    date_of_birth: Optional[date] = None
+    anniversary_date: Optional[date] = None
+    maiden_name: Optional[str] = None
+    family_nickname: Optional[str] = None
+    is_emergency_contact: Optional[bool] = None
     visibility: Optional[ContactVisibility] = None
     is_active: Optional[bool] = None
 
