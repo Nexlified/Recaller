@@ -17,6 +17,7 @@ class ContactBase(BaseModel):
     job_title: Optional[str] = None
     organization_id: Optional[int] = None
     notes: Optional[str] = None
+    gender: Optional[str] = None  # 'male', 'female', 'non_binary', 'prefer_not_to_say'
     visibility: Optional[ContactVisibility] = ContactVisibility.PRIVATE
     is_active: Optional[bool] = True
 
@@ -33,6 +34,7 @@ class ContactUpdate(BaseModel):
     job_title: Optional[str] = None
     organization_id: Optional[int] = None
     notes: Optional[str] = None
+    gender: Optional[str] = None
     visibility: Optional[ContactVisibility] = None
     is_active: Optional[bool] = None
 
