@@ -34,8 +34,12 @@ class TasksService {
 
     // Add filters to query params
     if (filters) {
-      if (filters.status) params.append('status', filters.status);
-      if (filters.priority) params.append('priority', filters.priority);
+      if (filters.status && filters.status.length > 0) {
+        filters.status.forEach(status => params.append('status', status));
+      }
+      if (filters.priority && filters.priority.length > 0) {
+        filters.priority.forEach(priority => params.append('priority', priority));
+      }
       if (filters.is_recurring !== undefined) params.append('is_recurring', filters.is_recurring.toString());
       if (filters.is_overdue !== undefined) params.append('is_overdue', filters.is_overdue.toString());
       if (filters.due_date_start) params.append('due_date_from', filters.due_date_start);
