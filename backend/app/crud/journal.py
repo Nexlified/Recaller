@@ -329,3 +329,263 @@ def get_user_stats(db: Session, *, user_id: int, tenant_id: int) -> Dict[str, An
         "mood_distribution": {mood: count for mood, count in mood_stats},
         "most_used_tags": [{"tag": tag, "count": count} for tag, count in tag_stats]
     }
+
+
+# New optimized functions for performance
+
+def get_entry_count(
+    db: Session, 
+    *, 
+    user_id: int, 
+    tenant_id: int, 
+    include_archived: bool = False,
+    search_text: Optional[str] = None,
+    mood: Optional[JournalEntryMoodEnum] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None
+) -> int:
+    """Get count of journal entries matching the given filters."""
+    query = db.query(func.count(JournalEntry.id)).filter(
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id
+    )
+    
+    if not include_archived:
+        query = query.filter(JournalEntry.is_archived == False)
+    
+    if search_text:
+        query = query.filter(
+            or_(
+                JournalEntry.content.ilike(f"%{search_text}%"),
+                JournalEntry.title.ilike(f"%{search_text}%")
+            )
+        )
+    
+    if mood:
+        query = query.filter(JournalEntry.mood == mood.value)
+    
+    if start_date:
+        query = query.filter(JournalEntry.entry_date >= start_date)
+    
+    if end_date:
+        query = query.filter(JournalEntry.entry_date <= end_date)
+    
+    return query.scalar() or 0
+
+
+def get_entries_with_pagination(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    page: int = 1,
+    per_page: int = 20,
+    include_archived: bool = False,
+    search_text: Optional[str] = None,
+    mood: Optional[JournalEntryMoodEnum] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None
+) -> tuple[List[JournalEntry], int]:
+    """Get journal entries with pagination metadata."""
+    # Build the base query
+    query = db.query(JournalEntry).filter(
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id
+    )
+    
+    if not include_archived:
+        query = query.filter(JournalEntry.is_archived == False)
+    
+    if search_text:
+        query = query.filter(
+            or_(
+                JournalEntry.content.ilike(f"%{search_text}%"),
+                JournalEntry.title.ilike(f"%{search_text}%")
+            )
+        )
+    
+    if mood:
+        query = query.filter(JournalEntry.mood == mood.value)
+    
+    if start_date:
+        query = query.filter(JournalEntry.entry_date >= start_date)
+    
+    if end_date:
+        query = query.filter(JournalEntry.entry_date <= end_date)
+    
+    # Get total count before applying pagination
+    total_count = query.count()
+    
+    # Apply ordering and pagination
+    skip = (page - 1) * per_page
+    entries = query.order_by(
+        desc(JournalEntry.entry_date), 
+        desc(JournalEntry.created_at)
+    ).offset(skip).limit(per_page).all()
+    
+    return entries, total_count
+
+
+def search_entries_optimized(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    search_text: str,
+    page: int = 1,
+    per_page: int = 20,
+    include_archived: bool = False
+) -> tuple[List[JournalEntry], int]:
+    """Optimized search for journal entries with pagination."""
+    # For PostgreSQL, we could use full-text search here
+    # For now, using optimized ILIKE with proper indexing
+    
+    base_query = db.query(JournalEntry).filter(
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id,
+        or_(
+            JournalEntry.content.ilike(f"%{search_text}%"),
+            JournalEntry.title.ilike(f"%{search_text}%")
+        )
+    )
+    
+    if not include_archived:
+        base_query = base_query.filter(JournalEntry.is_archived == False)
+    
+    # Get total count
+    total_count = base_query.count()
+    
+    # Apply pagination
+    skip = (page - 1) * per_page
+    entries = base_query.order_by(
+        desc(JournalEntry.entry_date),
+        desc(JournalEntry.created_at)
+    ).offset(skip).limit(per_page).all()
+    
+    return entries, total_count
+
+
+def bulk_update_entries(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    entry_ids: List[int],
+    updates: Dict[str, Any]
+) -> tuple[int, List[str]]:
+    """Bulk update multiple journal entries."""
+    errors = []
+    success_count = 0
+    
+    try:
+        # Verify all entries belong to the user
+        entries = db.query(JournalEntry).filter(
+            JournalEntry.id.in_(entry_ids),
+            JournalEntry.user_id == user_id,
+            JournalEntry.tenant_id == tenant_id
+        ).all()
+        
+        if len(entries) != len(entry_ids):
+            found_ids = {entry.id for entry in entries}
+            missing_ids = set(entry_ids) - found_ids
+            errors.append(f"Entries not found or not accessible: {missing_ids}")
+        
+        # Apply updates to found entries
+        for entry in entries:
+            for field, value in updates.items():
+                if hasattr(entry, field):
+                    setattr(entry, field, value)
+                    success_count += 1
+        
+        db.commit()
+        
+    except Exception as e:
+        db.rollback()
+        errors.append(f"Database error: {str(e)}")
+    
+    return success_count, errors
+
+
+def bulk_add_tags(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    entry_ids: List[int],
+    tags: List[JournalTagCreate]
+) -> tuple[int, List[str]]:
+    """Bulk add tags to multiple journal entries."""
+    errors = []
+    success_count = 0
+    
+    try:
+        # Verify all entries belong to the user
+        entries = db.query(JournalEntry).filter(
+            JournalEntry.id.in_(entry_ids),
+            JournalEntry.user_id == user_id,
+            JournalEntry.tenant_id == tenant_id
+        ).all()
+        
+        if len(entries) != len(entry_ids):
+            found_ids = {entry.id for entry in entries}
+            missing_ids = set(entry_ids) - found_ids
+            errors.append(f"Entries not found or not accessible: {missing_ids}")
+        
+        # Add tags to each entry
+        for entry in entries:
+            for tag_data in tags:
+                # Check if tag already exists
+                existing = db.query(JournalTag).filter(
+                    JournalTag.journal_entry_id == entry.id,
+                    JournalTag.tag_name == tag_data.tag_name
+                ).first()
+                
+                if not existing:
+                    new_tag = JournalTag(
+                        journal_entry_id=entry.id,
+                        tag_name=tag_data.tag_name,
+                        tag_color=tag_data.tag_color
+                    )
+                    db.add(new_tag)
+                    success_count += 1
+        
+        db.commit()
+        
+    except Exception as e:
+        db.rollback()
+        errors.append(f"Database error: {str(e)}")
+    
+    return success_count, errors
+
+
+def get_popular_tags(
+    db: Session,
+    *,
+    user_id: int,
+    tenant_id: int,
+    limit: int = 20
+) -> List[Dict[str, Any]]:
+    """Get most popular tags for a user."""
+    tag_stats = db.query(
+        JournalTag.tag_name,
+        JournalTag.tag_color,
+        func.count(JournalTag.id).label('usage_count')
+    ).join(JournalEntry).filter(
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id,
+        JournalEntry.is_archived == False
+    ).group_by(
+        JournalTag.tag_name,
+        JournalTag.tag_color
+    ).order_by(
+        desc(func.count(JournalTag.id))
+    ).limit(limit).all()
+    
+    return [
+        {
+            "tag_name": tag_name,
+            "tag_color": tag_color,
+            "usage_count": usage_count
+        }
+        for tag_name, tag_color, usage_count in tag_stats
+    ]
