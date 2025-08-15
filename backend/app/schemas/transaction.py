@@ -1,13 +1,13 @@
 from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # Base Transaction schema
 class TransactionBase(BaseModel):
     type: str = Field(..., pattern="^(credit|debit)$")
     amount: Decimal = Field(..., gt=0, decimal_places=2)
-    currency: str = Field(default="USD", max_length=3)
+    currency: str = Field(default="USD", max_length=3, min_length=3)
     description: Optional[str] = None
     transaction_date: date
     category_id: Optional[int] = None
@@ -19,6 +19,18 @@ class TransactionBase(BaseModel):
     attachments: Optional[Dict[str, Any]] = None
     extra_data: Optional[Dict[str, Any]] = None
 
+    @field_validator('currency')
+    @classmethod
+    def validate_currency(cls, v):
+        """Validate currency code format"""
+        if v:
+            v = v.upper()
+            if len(v) != 3:
+                raise ValueError('Currency code must be exactly 3 characters')
+            if not v.isalpha():
+                raise ValueError('Currency code must contain only letters')
+        return v
+
 # Create Transaction schema
 class TransactionCreate(TransactionBase):
     pass
@@ -27,7 +39,7 @@ class TransactionCreate(TransactionBase):
 class TransactionUpdate(BaseModel):
     type: Optional[str] = Field(None, pattern="^(credit|debit)$")
     amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2)
-    currency: Optional[str] = Field(None, max_length=3)
+    currency: Optional[str] = Field(None, max_length=3, min_length=3)
     description: Optional[str] = None
     transaction_date: Optional[date] = None
     category_id: Optional[int] = None
@@ -38,6 +50,18 @@ class TransactionUpdate(BaseModel):
     recurring_template_id: Optional[int] = None
     attachments: Optional[Dict[str, Any]] = None
     extra_data: Optional[Dict[str, Any]] = None
+
+    @field_validator('currency')
+    @classmethod
+    def validate_currency(cls, v):
+        """Validate currency code format"""
+        if v:
+            v = v.upper()
+            if len(v) != 3:
+                raise ValueError('Currency code must be exactly 3 characters')
+            if not v.isalpha():
+                raise ValueError('Currency code must contain only letters')
+        return v
 
 # Transaction schema with relationships
 class TransactionInDBBase(TransactionBase):
