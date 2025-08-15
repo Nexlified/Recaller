@@ -181,7 +181,7 @@ export const useTaskMemo = <T>(
   computeValue: () => T,
   dependencies: Task[]
 ): T => {
-  const useTaskMemo = useMemo(() => {
+  const memoizedValue = useMemo(() => {
     const start = performance.now();
     const value = computeValue();
     const end = performance.now();
@@ -191,9 +191,9 @@ export const useTaskMemo = <T>(
     }
     
     return value;
-  }, [dependencies, computeValue]);
+  }, [computeValue, ...dependencies.map(dep => dep.id)]);
   
-  return useTaskMemo;
+  return memoizedValue;
 };
 
 /**
@@ -343,7 +343,7 @@ export const useBatchedUpdates = <T>() => {
   
   const flushUpdates = useCallback(() => {
     if (pendingUpdates.length > 0 && state !== undefined) {
-      const finalState = pendingUpdates.reduce((acc, updater) => updater(acc), state);
+      const finalState = pendingUpdates.reduce((acc, updater) => updater(acc as T), state as T);
       setState(finalState);
       setPendingUpdates([]);
     }

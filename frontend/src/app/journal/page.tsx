@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { JournalEntryList } from '../../components/journal/JournalEntryList';
 import { JournalEntrySummary, JournalEntryMood, JournalEntryListResponse } from '../../types/Journal';
@@ -16,7 +16,7 @@ export default function JournalPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const loadEntries = async (page = 1, reset = false) => {
+  const loadEntries = useCallback(async (page = 1, reset = false) => {
     try {
       setIsLoading(true);
       const filters = {
@@ -44,11 +44,11 @@ export default function JournalPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchQuery, moodFilter, includeArchived]);
 
   useEffect(() => {
     loadEntries(1, true);
-  }, [searchQuery, moodFilter, includeArchived]);
+  }, [searchQuery, moodFilter, includeArchived, loadEntries]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
