@@ -100,6 +100,15 @@ export default function Home() {
                     Manage Tasks →
                   </span>
                 </Link>
+                <Link href="/journal" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Journal</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Document your thoughts and experiences</p>
+                  <span className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
+                    Write & Read →
+                  </span>
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Activities</h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Plan and track social activities</p>
