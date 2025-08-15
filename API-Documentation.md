@@ -1,6 +1,6 @@
 # API Documentation
 
-Recaller provides a comprehensive REST API built with FastAPI, offering complete access to all financial management, task management, and personal assistant features. This documentation covers API endpoints, authentication, and usage examples.
+Recaller provides a comprehensive REST API built with FastAPI, offering complete access to all financial management, task management, journal, and personal assistant features. This documentation covers API endpoints, authentication, and usage examples.
 
 ## 🔗 Base URL
 
@@ -401,6 +401,196 @@ Authorization: Bearer <token>
   "icon": "user"
 }
 ```
+
+## 📔 Journal API
+
+The Journal API allows users to create, manage, and organize personal journal entries with rich metadata including tags, moods, locations, and more.
+
+### Journal Entries
+
+#### Create Journal Entry
+```http
+POST /api/v1/journal/
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "title": "A Great Day",
+  "content": "Today was absolutely wonderful! I accomplished so much and felt really positive about everything.",
+  "entry_date": "2023-01-15",
+  "mood": "HAPPY",
+  "location": "Home Office",
+  "weather": "Sunny",
+  "is_private": true,
+  "tags": [
+    {
+      "tag_name": "productivity",
+      "tag_color": "#4CAF50"
+    },
+    {
+      "tag_name": "work"
+    }
+  ]
+}
+```
+
+#### List Journal Entries with Filtering
+```http
+GET /api/v1/journal/?page=1&per_page=20&mood=HAPPY&start_date=2023-01-01&include_archived=false
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": 123,
+      "title": "A Great Day",
+      "entry_date": "2023-01-15",
+      "mood": "HAPPY",
+      "is_private": true,
+      "is_archived": false,
+      "created_at": "2023-01-15T14:30:00Z",
+      "tag_count": 2,
+      "attachment_count": 0
+    }
+  ],
+  "pagination": {
+    "total": 45,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 3,
+    "has_next": true,
+    "has_previous": false
+  }
+}
+```
+
+#### Get Journal Entry
+```http
+GET /api/v1/journal/123
+Authorization: Bearer <token>
+```
+
+#### Update Journal Entry
+```http
+PUT /api/v1/journal/123
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "title": "Updated: A Great Day",
+  "mood": "EXCITED",
+  "location": "Coffee Shop"
+}
+```
+
+#### Archive/Unarchive Entry
+```http
+POST /api/v1/journal/123/archive?archive=true
+Authorization: Bearer <token>
+```
+
+#### Delete Journal Entry
+```http
+DELETE /api/v1/journal/123
+Authorization: Bearer <token>
+```
+
+### Journal Tags
+
+#### Add Tag to Entry
+```http
+POST /api/v1/journal/123/tags
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "tag_name": "important",
+  "tag_color": "#FF5722"
+}
+```
+
+#### Remove Tag from Entry
+```http
+DELETE /api/v1/journal/123/tags/important
+Authorization: Bearer <token>
+```
+
+#### Get Popular Tags
+```http
+GET /api/v1/journal/tags/popular?limit=10
+Authorization: Bearer <token>
+```
+
+### Journal Statistics
+
+#### Get User Statistics
+```http
+GET /api/v1/journal/stats/
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "total_entries": 45,
+  "mood_distribution": {
+    "HAPPY": 12,
+    "CONTENT": 8,
+    "NEUTRAL": 15,
+    "ANXIOUS": 5,
+    "SAD": 3,
+    "EXCITED": 2
+  },
+  "most_used_tags": [
+    {
+      "tag_name": "work",
+      "count": 20,
+      "color": "#2196F3"
+    }
+  ]
+}
+```
+
+### Bulk Operations
+
+#### Bulk Update Entries
+```http
+POST /api/v1/journal/bulk-update
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "entry_ids": [123, 124, 125],
+  "is_archived": true,
+  "is_private": false
+}
+```
+
+#### Bulk Tag Entries
+```http
+POST /api/v1/journal/bulk-tag
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "entry_ids": [123, 124, 125],
+  "tags_to_add": [
+    {
+      "tag_name": "reviewed",
+      "tag_color": "#9C27B0"
+    }
+  ],
+  "tags_to_remove": ["draft"]
+}
+```
+
+**Available Moods:**
+- `VERY_HAPPY`, `HAPPY`, `CONTENT`, `NEUTRAL`, `ANXIOUS`, `SAD`, `VERY_SAD`, `ANGRY`, `EXCITED`, `GRATEFUL`
+
+**For detailed documentation:** See [Journal API Endpoints](docs/api/endpoints/journal.md)
 
 ## 👥 Contact Management API
 
