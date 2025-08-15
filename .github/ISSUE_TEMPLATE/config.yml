@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/Nexlified/Recaller/discussions
+    about: Ask questions and discuss features with the community
+  - name: 📚 Documentation
+    url: https://github.com/Nexlified/Recaller/wiki
+    about: Check our documentation and guides
+  - name: 🤝 Contributing Guidelines
+    url: https://github.com/Nexlified/Recaller/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to the project

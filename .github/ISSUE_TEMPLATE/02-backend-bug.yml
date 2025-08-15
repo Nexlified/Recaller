@@ -1,0 +1,231 @@
+name: ⚙️ Backend Bug Report
+description: Report a bug in the backend (FastAPI/Python/Database)
+title: "[Backend Bug]: "
+labels: ["bug", "backend"]
+projects: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a backend bug! Please fill out this form as completely as possible.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Prerequisites
+      description: By submitting this issue, you agree to follow our [Contributing Guidelines](https://github.com/Nexlified/Recaller/blob/main/CONTRIBUTING.md)
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have read the contributing guidelines
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the backend issue you encountered
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected the backend to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Make API request to '...'
+        2. With payload '...'
+        3. Expected response '...'
+        4. Got error '...'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Backend Component/Area
+      description: Which part of the backend is affected?
+      options:
+        - Authentication/Authorization
+        - User Management
+        - Task Management API
+        - Contact Management API
+        - Financial Management API
+        - Analytics API
+        - Database/Data Layer
+        - Background Tasks/Scheduler
+        - Email/Notifications
+        - File Upload/Storage
+        - API Validation/Security
+        - Multi-tenant System
+        - Not sure/Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: api-endpoint
+    attributes:
+      label: Affected API Endpoint
+      description: Which API endpoint is affected? (if applicable)
+      options:
+        - /api/v1/auth/*
+        - /api/v1/users/*
+        - /api/v1/tasks/*
+        - /api/v1/contacts/*
+        - /api/v1/organizations/*
+        - /api/v1/financial/*
+        - /api/v1/analytics/*
+        - /api/v1/files/*
+        - Multiple endpoints
+        - Not API related
+        - Other/Custom endpoint
+
+  - type: input
+    id: http-method
+    attributes:
+      label: HTTP Method
+      description: What HTTP method were you using? (if applicable)
+      placeholder: e.g., GET, POST, PUT, DELETE
+
+  - type: textarea
+    id: request-payload
+    attributes:
+      label: Request Payload
+      description: The request body/payload that caused the issue (remove any sensitive data)
+      placeholder: |
+        {
+          "field": "value",
+          "example": "data"
+        }
+      render: json
+
+  - type: textarea
+    id: response-received
+    attributes:
+      label: Response Received
+      description: The actual response you received (remove any sensitive data)
+      placeholder: |
+        {
+          "error": "error message",
+          "status_code": 500
+        }
+      render: json
+
+  - type: input
+    id: http-status-code
+    attributes:
+      label: HTTP Status Code
+      description: What HTTP status code did you receive?
+      placeholder: e.g., 400, 401, 500, 422
+
+  - type: textarea
+    id: server-logs
+    attributes:
+      label: Server Logs
+      description: Please paste relevant server logs (remove any sensitive data like tokens, passwords, emails)
+      placeholder: |
+        Paste server logs here (if available)
+        Remove any sensitive information before pasting
+      render: shell
+
+  - type: textarea
+    id: database-errors
+    attributes:
+      label: Database Errors
+      description: Any database-related error messages (if applicable)
+      placeholder: |
+        Paste database errors here (if any)
+      render: shell
+
+  - type: dropdown
+    id: deployment-method
+    attributes:
+      label: Deployment Method
+      description: How are you running the backend?
+      options:
+        - Docker Compose (development)
+        - Docker Compose (production)
+        - Manual/Local setup
+        - Cloud deployment (specify in additional context)
+        - Other (specify in additional context)
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: What version of Python are you using?
+      placeholder: e.g., Python 3.11.5
+    validations:
+      required: true
+
+  - type: input
+    id: database-version
+    attributes:
+      label: Database Version
+      description: What version of PostgreSQL are you using?
+      placeholder: e.g., PostgreSQL 15.4
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Server Operating System
+      description: Which operating system is the backend running on?
+      options:
+        - Ubuntu/Debian Linux
+        - CentOS/RHEL/Fedora
+        - Windows
+        - macOS
+        - Docker Container
+        - Cloud Platform (AWS/GCP/Azure)
+        - Other (specify in additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-variables
+    attributes:
+      label: Environment Configuration
+      description: Any relevant environment variables or configuration (remove sensitive values)
+      placeholder: |
+        POSTGRES_DB=recaller
+        DEBUG=True
+        API_V1_STR=/api/v1
+        (Remove sensitive values like passwords, secret keys)
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - Does this happen with specific data/tenant?
+        - Is this a new issue or regression?
+        - Any workarounds you've found?
+        - Related to recent changes?
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Bug Severity
+      description: How severe is this bug?
+      options:
+        - Critical (Backend completely down)
+        - High (Major API functionality broken)
+        - Medium (Some functionality affected)
+        - Low (Minor issue or edge case)
+    validations:
+      required: true

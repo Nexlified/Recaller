@@ -1,0 +1,227 @@
+name: 🐞 Bug Report
+description: Report a general bug or issue
+title: "[Bug]: "
+labels: ["bug"]
+projects: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form as completely as possible.
+        
+        **Not sure if it's frontend or backend?** Use this template for general issues or when the problem spans multiple components.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Prerequisites
+      description: By submitting this issue, you agree to follow our [Contributing Guidelines](https://github.com/Nexlified/Recaller/blob/main/CONTRIBUTING.md)
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have read the contributing guidelines
+          required: true
+        - label: I have tried basic troubleshooting (restart browser, clear cache, check internet connection)
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the issue you encountered
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Fill in '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Affected Area
+      description: Which part of the application is affected?
+      options:
+        - User Registration/Login
+        - Dashboard
+        - Task Management
+        - Contact Management
+        - Financial Management
+        - Analytics/Reports
+        - User Settings/Profile
+        - Data Import/Export
+        - Email Notifications
+        - Search Functionality
+        - Mobile Responsiveness
+        - Performance Issues
+        - Cross-component Issue
+        - Not sure/Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-type
+    attributes:
+      label: User Type
+      description: What type of user are you?
+      options:
+        - New user (first time using)
+        - Regular user
+        - Administrator
+        - Developer/Contributor
+        - Self-hosting user
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does this happen?
+      options:
+        - Always (100% of the time)
+        - Often (more than 50% of the time)
+        - Sometimes (less than 50% of the time)
+        - Rarely (happened once or twice)
+        - Can't reproduce consistently
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser (if frontend related)
+      description: Which browser are you using?
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Opera
+        - Mobile Browser
+        - Not applicable (backend only)
+        - Other (please specify in additional context)
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser Version (if applicable)
+      description: What version of the browser are you using?
+      placeholder: e.g., Chrome 120.0.6099.109
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device Type
+      options:
+        - Desktop/Laptop
+        - Mobile Phone
+        - Tablet
+        - Not applicable
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS Sonoma (14.x)
+        - macOS Ventura (13.x)
+        - macOS Monterey (12.x)
+        - Ubuntu/Linux
+        - iOS 17
+        - iOS 16
+        - Android 14
+        - Android 13
+        - Other (please specify in additional context)
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment Type
+      description: How are you accessing Recaller?
+      options:
+        - Docker Compose (local development)
+        - Self-hosted (production)
+        - Cloud deployment
+        - Demo/Testing environment
+        - Not sure
+
+  - type: textarea
+    id: error-messages
+    attributes:
+      label: Error Messages
+      description: Please paste any error messages you see (remove sensitive information)
+      placeholder: |
+        Paste error messages here (if any)
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Videos
+      description: Please attach screenshots or screen recordings if applicable
+      placeholder: |
+        You can drag and drop images/videos here or paste them directly
+
+  - type: textarea
+    id: workarounds
+    attributes:
+      label: Workarounds
+      description: Have you found any temporary workarounds for this issue?
+      placeholder: |
+        Describe any workarounds you've discovered
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - When did this issue start happening?
+        - Does it happen with specific data or in specific conditions?
+        - Are there any patterns you've noticed?
+        - Any recent changes to your setup?
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Bug Severity
+      description: How severe is this bug for your use case?
+      options:
+        - Critical (Cannot use the application at all)
+        - High (Major functionality is broken)
+        - Medium (Some functionality is affected but workarounds exist)
+        - Low (Minor issue or cosmetic problem)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact
+      description: Who else might be affected by this bug?
+      options:
+        - This affects only me
+        - This might affect other users with similar setup
+        - This could affect all users
+        - This affects only specific user roles
+        - Not sure about the impact

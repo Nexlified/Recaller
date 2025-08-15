@@ -1,0 +1,186 @@
+name: 🐛 Frontend Bug Report
+description: Report a bug in the frontend (React/Next.js/TypeScript)
+title: "[Frontend Bug]: "
+labels: ["bug", "frontend"]
+projects: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a frontend bug! Please fill out this form as completely as possible.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Prerequisites
+      description: By submitting this issue, you agree to follow our [Contributing Guidelines](https://github.com/Nexlified/Recaller/blob/main/CONTRIBUTING.md)
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have read the contributing guidelines
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the issue you encountered
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Frontend Component/Area
+      description: Which part of the frontend is affected?
+      options:
+        - Dashboard
+        - Authentication (Login/Register)
+        - Task Management
+        - Contact Management
+        - Financial Management
+        - Analytics/Reports
+        - User Profile/Settings
+        - Navigation/Layout
+        - Forms/Input Components
+        - Not sure/Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      description: Which browser are you using?
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Opera
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser Version
+      description: What version of the browser are you using?
+      placeholder: e.g., Chrome 120.0.6099.109
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device Type
+      description: What type of device are you using?
+      options:
+        - Desktop/Laptop
+        - Mobile (iOS)
+        - Mobile (Android)
+        - Tablet (iOS)
+        - Tablet (Android)
+    validations:
+      required: true
+
+  - type: input
+    id: screen-resolution
+    attributes:
+      label: Screen Resolution
+      description: What is your screen resolution?
+      placeholder: e.g., 1920x1080, 1366x768, 390x844 (mobile)
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: Which operating system are you using?
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS Sonoma (14.x)
+        - macOS Ventura (13.x)
+        - macOS Monterey (12.x)
+        - Ubuntu/Linux
+        - iOS 17
+        - iOS 16
+        - Android 14
+        - Android 13
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console Errors
+      description: Please paste any JavaScript console errors (F12 → Console tab)
+      placeholder: |
+        Paste console errors here (if any)
+      render: shell
+
+  - type: textarea
+    id: network-errors
+    attributes:
+      label: Network Errors
+      description: Any failed API requests or network errors (F12 → Network tab)
+      placeholder: |
+        Paste network errors here (if any)
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Please attach screenshots if applicable
+      placeholder: |
+        You can drag and drop images here or paste them directly
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: |
+        - Are you using any browser extensions?
+        - Does this happen in incognito/private mode?
+        - Any other relevant information?
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Bug Severity
+      description: How severe is this bug?
+      options:
+        - Critical (Application unusable)
+        - High (Major functionality broken)
+        - Medium (Some functionality affected)
+        - Low (Minor issue or cosmetic)
+    validations:
+      required: true
