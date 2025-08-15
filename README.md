@@ -1,6 +1,6 @@
-# Recaller
+# Recaller (In Active Development)
 
-**Recaller** is a privacy-first, open-source personal assistant app to help you manage your finances, communications, social activities, belongings, and recurring payments—all powered by on-device/self-hosted AI.
+**Recaller** is a privacy-first, open-source personal assistant app to help you manage your finances, communications, social activities, belongings, and recurring payments—all powered by on-device/self-hosted AI. Feel free to add suggestions, feature requests and feedbacks.
 
 ---
 
