@@ -13,12 +13,14 @@
 - [System Architecture](System-Architecture) - High-level system design
 - [Database Schema](Database-Schema) - Data models and relationships
 - [API Documentation](API-Documentation) - REST API endpoints and usage
+- [MCP Integration Guide](MCP-Integration-Guide) - LLM integration via Model Context Protocol
 
 ### Features & Modules
 - [Financial Management System](Financial-Management-System) - Complete financial tracking solution
 - [Task Management](Task-Management) - Task and reminder system
 - [Contact Management](Contact-Management) - Personal and professional contacts
 - [Analytics System](Analytics-System) - Insights and reporting
+- [MCP Integration Guide](MCP-Integration-Guide) - LLM integration and AI features
 
 ### Development
 - [Contributing Guidelines](Contributing-Guidelines) - How to contribute to the project
@@ -31,6 +33,7 @@
 - [Background Tasks](Background-Tasks) - Automated processing and notifications
 - [Security & Privacy](Security-Privacy) - Data protection and privacy features
 - [Performance Optimization](Performance-Optimization) - Scaling and optimization
+- [MCP Integration Guide](MCP-Integration-Guide) - LLM integration and configuration
 
 ## 🚀 Key Features
 
@@ -46,12 +49,14 @@
 - **Contact Management**: Personal and professional relationships
 - **Event Tracking**: Social activities and appointments
 - **Belongings Management**: Inventory and asset tracking
+- **AI Integration**: LLM-powered assistance via MCP server
 
 ### Privacy & Security
 - **On-Device AI**: No data sent to third-party services
 - **Self-Hosted**: Complete control over your data
 - **Multi-Tenant**: Secure isolation for organizations
 - **Open Source**: Transparent and extensible
+- **MCP Protocol**: Standardized LLM integration with privacy-first design
 
 ## 🏗️ Technology Stack
 
@@ -75,8 +80,16 @@
 - **API Documentation**: OpenAPI/Swagger
 - **Background Processing**: Celery + Redis
 - **Email Notifications**: SMTP integration
+- **MCP Server**: Model Context Protocol for LLM integration
 
 ## 📈 Recent Updates
+
+### MCP Server Integration (August 2025)
+- **Model Context Protocol**: Standardized LLM integration with MCP v1 compliance
+- **Multi-Backend Support**: Ollama, HuggingFace, OpenAI-compatible APIs
+- **Privacy-First AI**: On-device processing with zero external data sharing
+- **Tenant Isolation**: Complete model access control per tenant
+- **Extensible Architecture**: Plugin-based system for custom backends
 
 ### Financial Transactions Management System (August 2025)
 - Complete financial management module with 6 database tables
