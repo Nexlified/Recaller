@@ -344,6 +344,7 @@ def update_user_me(
     tags=["User Management"]
 )
 def read_user_by_id(
+    request: Request,
     user_id: int = Path(..., description="Unique identifier of the user to retrieve"),
     current_user: User = Depends(deps.get_current_active_user),
     db: Session = Depends(deps.get_db),
@@ -378,7 +379,8 @@ def read_user_by_id(
     - User profile lookups in team applications
     - Verification of user details by authorized personnel
     """
-    user = user_crud.get_user_by_id(db, user_id=user_id, tenant_id=current_user.tenant_id)
+    tenant_id = get_tenant_context(request)
+    user = user_crud.get_user_by_id(db, user_id=user_id, tenant_id=tenant_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -460,6 +462,7 @@ def read_user_by_id(
 )
 def update_user(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     user_id: int = Path(..., description="Unique identifier of the user to update"),
     user_in: UserUpdate,
@@ -518,7 +521,8 @@ def update_user(
          }'
     ```
     """
-    user = user_crud.get_user_by_id(db, user_id=user_id, tenant_id=current_user.tenant_id)
+    tenant_id = get_tenant_context(request)
+    user = user_crud.get_user_by_id(db, user_id=user_id, tenant_id=tenant_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
