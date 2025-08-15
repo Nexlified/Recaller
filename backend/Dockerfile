@@ -1,7 +1,7 @@
 FROM python:3.13-slim
 
-# Install PostgreSQL client for pg_isready
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+# Install PostgreSQL client for pg_isready and curl for healthcheck
+RUN apt-get update && apt-get install -y postgresql-client curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 

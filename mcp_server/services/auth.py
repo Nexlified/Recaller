@@ -11,8 +11,12 @@ from fastapi import HTTPException, Depends, Request
 import httpx
 from datetime import datetime
 
-from ..config.settings import mcp_settings
-from ..core.protocol import MCPProtocolError, MCPErrorCodes
+try:
+    from ..config.settings import mcp_settings
+    from ..core.protocol import MCPProtocolError, MCPErrorCodes
+except ImportError:
+    from config.settings import mcp_settings
+    from core.protocol import MCPProtocolError, MCPErrorCodes
 
 
 logger = logging.getLogger(__name__)

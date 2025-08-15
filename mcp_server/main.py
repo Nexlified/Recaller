@@ -13,12 +13,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 
-from .config.settings import mcp_settings
-from .api.endpoints import router as api_router
-from .models.registry import model_registry
-from .services.auth import auth_service
-from .core.protocol import MCPServer, MCPProtocolError
-from . import __version__, __description__
+try:
+    # Try relative imports first (when run as module)
+    from .config.settings import mcp_settings
+    from .api.endpoints import router as api_router
+    from .models.registry import model_registry
+    from .services.auth import auth_service
+    from .core.protocol import MCPProtocolError
+    from . import __version__, __description__
+except ImportError:
+    # Fall back to absolute imports (when run directly)
+    from config.settings import mcp_settings
+    from api.endpoints import router as api_router
+    from models.registry import model_registry
+    from services.auth import auth_service
+    from core.protocol import MCPProtocolError
+    import __init__
+    __version__ = __init__.__version__
+    __description__ = __init__.__description__
 
 
 # Configure logging

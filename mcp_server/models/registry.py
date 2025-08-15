@@ -12,10 +12,16 @@ import json
 import os
 from enum import Enum
 
-from ..schemas.mcp_schemas import (
-    ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
-)
-from ..config.settings import mcp_settings
+try:
+    from ..schemas.mcp_schemas import (
+        ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
+    )
+    from ..config.settings import mcp_settings
+except ImportError:
+    from schemas.mcp_schemas import (
+        ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
+    )
+    from config.settings import mcp_settings
 
 
 logger = logging.getLogger(__name__)
