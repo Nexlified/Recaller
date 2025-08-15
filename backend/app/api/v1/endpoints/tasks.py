@@ -52,7 +52,7 @@ def list_tasks(
     - Requires valid authentication token
     - Users can only see their own tasks within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # Build filter conditions
     filters = {}
@@ -140,7 +140,7 @@ def create_task(
     - Requires valid authentication token
     - Task is created for the authenticated user
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # Validate start_date <= due_date
     if task_in.start_date and task_in.due_date and task_in.start_date > task_in.due_date:
@@ -182,7 +182,7 @@ def get_task(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task_with_relations(
         db, 
@@ -228,7 +228,7 @@ def update_task(
     - 404: Task not found or user doesn't have access
     - 400: Validation errors (e.g., invalid date range)
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -272,7 +272,7 @@ def delete_task(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.delete_task(
         db,
@@ -308,7 +308,7 @@ def mark_task_complete(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.mark_completed(
         db,
@@ -348,7 +348,7 @@ def update_task_status(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -382,7 +382,7 @@ def update_task_priority(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -418,7 +418,7 @@ def search_tasks(
     - Requires valid authentication token
     - Users can only search their own tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # Build search filters
     filters = {}
@@ -464,7 +464,7 @@ def get_tasks_by_status(
     - Requires valid authentication token
     - Users can only see their own tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     tasks = task_crud.get_by_status(
         db,
@@ -500,7 +500,7 @@ def get_tasks_by_priority(
     - Requires valid authentication token
     - Users can only see their own tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     tasks = task_crud.get_by_status(
         db,
@@ -533,7 +533,7 @@ def get_overdue_tasks(
     - Requires valid authentication token
     - Users can only see their own overdue tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     tasks = task_crud.get_overdue(
         db,
@@ -564,7 +564,7 @@ def get_tasks_due_today(
     - Requires valid authentication token
     - Users can only see their own tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     today = date.today()
     
     tasks = task_crud.get_by_due_date_range(
@@ -602,7 +602,7 @@ def get_upcoming_tasks(
     - Requires valid authentication token
     - Users can only see their own tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     today = date.today()
     end_date = date.fromordinal(today.toordinal() + days)
     
@@ -640,7 +640,7 @@ def get_task_contacts(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -681,7 +681,7 @@ def add_contact_to_task(
     - 404: Task not found or user doesn't have access
     - 400: Contact already associated with task
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task_contact = task_crud.add_task_contact(
         db,
@@ -720,7 +720,7 @@ def remove_contact_from_task(
     **Error Responses:**
     - 404: Task not found, contact not associated, or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     success = task_crud.remove_task_contact(
         db,
@@ -756,7 +756,7 @@ def get_tasks_for_contact(
     - Requires valid authentication token
     - Users can only see tasks for their own contacts
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     tasks = task_crud.get_by_contact(
         db,
@@ -785,7 +785,7 @@ def list_task_categories(
     - Requires valid authentication token
     - Users can only see their own categories
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     categories = task_category_crud.get_by_user(
         db,
@@ -824,7 +824,7 @@ def create_task_category(
     **Error Responses:**
     - 409: Category name already exists for user
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # Check for duplicate name
     existing = task_category_crud.get_by_name(
@@ -867,7 +867,7 @@ def get_task_category(
     **Error Responses:**
     - 404: Category not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     category = task_category_crud.get_task_category(
         db,
@@ -910,7 +910,7 @@ def update_task_category(
     - 404: Category not found or user doesn't have access
     - 409: Category name already exists for user
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     category = task_category_crud.get_task_category(
         db,
@@ -967,7 +967,7 @@ def delete_task_category(
     **Error Responses:**
     - 404: Category not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     category = task_category_crud.delete_task_category(
         db,
@@ -1001,7 +1001,7 @@ def get_task_categories(
     **Error Responses:**
     - 404: Task not found or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -1040,7 +1040,7 @@ def assign_category_to_task(
     - 404: Task not found or user doesn't have access
     - 400: Category already assigned to task
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     assignment = task_crud.add_task_category(
         db,
@@ -1078,7 +1078,7 @@ def remove_category_from_task(
     **Error Responses:**
     - 404: Task not found, category not assigned, or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     success = task_crud.remove_task_category(
         db,
@@ -1114,7 +1114,7 @@ def get_tasks_in_category(
     - Requires valid authentication token
     - Users can only see tasks in their own categories
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     tasks = task_crud.get_by_category(
         db,
@@ -1147,7 +1147,7 @@ def get_task_recurrence(
     **Error Responses:**
     - 404: Task not found, not recurring, or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -1195,7 +1195,7 @@ def create_task_recurrence(
     - 404: Task not found or user doesn't have access
     - 400: Task already has recurrence settings
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -1238,7 +1238,7 @@ def update_task_recurrence(
     **Error Responses:**
     - 404: Task not found, not recurring, or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -1288,7 +1288,7 @@ def remove_task_recurrence(
     **Error Responses:**
     - 404: Task not found, not recurring, or user doesn't have access
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     task = task_crud.get_task(db, task_id=task_id, tenant_id=tenant_id)
     if not task or task.user_id != current_user.id:
@@ -1332,7 +1332,7 @@ def list_recurring_tasks(
     - Requires valid authentication token
     - Users can only see their own recurring tasks
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # For now, return user tasks that are recurring - can be enhanced later
     tasks = []  # This can be implemented later as it requires more complex querying
@@ -1362,7 +1362,7 @@ def get_task_analytics_overview(
     - Requires valid authentication token
     - Statistics are calculated for user's own tasks only
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     stats = task_crud.get_task_stats(
         db,
@@ -1397,7 +1397,7 @@ def get_productivity_metrics(
     - Requires valid authentication token
     - Metrics are calculated for user's own tasks only
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # For now, return basic metrics - can be enhanced later
     metrics = {
@@ -1428,7 +1428,7 @@ def get_category_analytics(
     - Requires valid authentication token
     - Analytics are calculated for user's own tasks and categories
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # For now, return basic analytics - can be enhanced later  
     analytics = {
@@ -1465,7 +1465,7 @@ def get_completion_report(
     - Requires valid authentication token
     - Report includes user's own tasks only
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     if not start_date:
         start_date = date.fromordinal(date.today().toordinal() - 30)

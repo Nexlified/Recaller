@@ -23,7 +23,7 @@ def trigger_recurring_transaction_processing(
     request: Request
 ) -> Any:
     """Trigger processing of user's recurring transactions."""
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # Trigger background task for this user
     task = process_user_recurring_transactions.delay(
@@ -46,7 +46,7 @@ def trigger_recurring_transaction_reminders(
     request: Request
 ) -> Any:
     """Trigger sending of recurring transaction reminders for user."""
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     # Trigger background task for this user
     task = send_recurring_transaction_reminders.delay(

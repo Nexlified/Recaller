@@ -45,7 +45,7 @@ def list_journal_entries(
     - Requires valid authentication token
     - Users can only see their own journal entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     if search:
         # Search entries
@@ -136,7 +136,7 @@ def create_journal_entry(
     - Requires valid authentication token
     - Entry is associated with the authenticated user and their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     journal_entry = journal_crud.create_journal_entry(
         db=db,
@@ -162,7 +162,7 @@ def get_journal_entry(
     - Requires valid authentication token
     - Users can only access their own entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     journal_entry = journal_crud.get_journal_entry_with_relations(
         db, entry_id=entry_id, user_id=current_user.id, tenant_id=tenant_id
@@ -198,7 +198,7 @@ def update_journal_entry(
     - Requires valid authentication token
     - Users can only update their own entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     journal_entry = journal_crud.update_journal_entry(
         db=db,
@@ -231,7 +231,7 @@ def delete_journal_entry(
     - Requires valid authentication token
     - Users can only delete their own entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     success = journal_crud.delete_journal_entry(
         db=db,
@@ -263,7 +263,7 @@ def archive_journal_entry(
     - Requires valid authentication token
     - Users can only archive their own entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     journal_entry = journal_crud.archive_journal_entry(
         db=db,
@@ -297,7 +297,7 @@ def add_tag_to_entry(
     - Requires valid authentication token
     - Users can only add tags to their own entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     tag = journal_crud.add_tag_to_entry(
         db=db,
@@ -327,7 +327,7 @@ def remove_tag_from_entry(
     - Requires valid authentication token
     - Users can only remove tags from their own entries within their tenant
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     success = journal_crud.remove_tag_from_entry(
         db=db,
@@ -359,7 +359,7 @@ def get_journal_stats(
     - Requires valid authentication token
     - Returns statistics only for the authenticated user's entries
     """
-    tenant_id = request.state.tenant.id
+    tenant_id = deps.get_tenant_context(request)
     
     stats = journal_crud.get_user_stats(
         db=db,
