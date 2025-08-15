@@ -7,6 +7,8 @@ from app.core.redis import redis_client
 from app.db.session import SessionLocal
 from app.api.v1.api import api_router
 from app.services.task_scheduler import task_scheduler_service
+from app.api.middleware.rate_limit import rate_limit_middleware
+from app.api.middleware.request_validation import request_validation_middleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +25,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add request validation middleware (before rate limiting)
+app.middleware("http")(request_validation_middleware)
+
+# Add rate limiting middleware 
+app.middleware("http")(rate_limit_middleware)
 
 # Combined DB session and tenant middleware
 @app.middleware("http")

@@ -109,8 +109,18 @@ def login(
     within their assigned tenant context.
     """
     tenant_id = get_tenant_context(request)
+    
+    # Sanitize username (email) input
+    from app.core.validation import InputSanitizer
+    try:
+        sanitized_username = InputSanitizer.sanitize_email(form_data.username)
+    except ValueError:
+        # If email sanitization fails, still try to authenticate with original
+        # to avoid revealing email format validation logic
+        sanitized_username = form_data.username
+    
     user = user_crud.authenticate(
-        db=db, email=form_data.username, password=form_data.password, tenant_id=tenant_id
+        db=db, email=sanitized_username, password=form_data.password, tenant_id=tenant_id
     )
     if not user:
         raise HTTPException(
@@ -234,6 +244,22 @@ def register(
     After successful registration, use the `/login` endpoint to obtain 
     an access token for API authentication.
     """
+    from app.core.validation import InputSanitizer
+    
+    # Sanitize inputs
+    try:
+        # Email is already validated by Pydantic EmailStr, but let's sanitize it
+        user_in.email = InputSanitizer.sanitize_email(user_in.email)
+        
+        # Sanitize full name if provided
+        if user_in.full_name:
+            user_in.full_name = InputSanitizer.sanitize_name(user_in.full_name)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid input: {str(e)}"
+        )
+    
     tenant_id = get_tenant_context(request)
     user = user_crud.get_user_by_email(db, email=user_in.email, tenant_id=tenant_id)
     if user:
