@@ -1,3 +1,14 @@
+---
+# Configuration Metadata
+version: "1.0.0"
+category: "social"
+type: "activity_system"
+name: "Activity System Configuration"
+description: "System-wide settings for activities feature including feature flags and limits"
+author: "Recaller Team"
+last_updated: "2025-01-15"
+deprecated: false
+
 # System-wide settings for activities feature
 system:
   feature_flags:

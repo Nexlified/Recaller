@@ -1,3 +1,14 @@
+---
+# Configuration Metadata
+version: "1.0.0"
+category: "financial"
+type: "currencies"
+name: "Currency Configuration"
+description: "ISO 4217 compliant currency definitions for financial management"
+author: "Recaller Team"
+last_updated: "2025-01-15"
+deprecated: false
+
 # Currency Configuration for Recaller
 # Based on ISO 4217 Standard Currency Codes
 # https://www.iso.org/iso-4217-currency-codes.html

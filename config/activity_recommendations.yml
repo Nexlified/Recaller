@@ -1,3 +1,14 @@
+---
+# Configuration Metadata
+version: "1.0.0"
+category: "social"
+type: "activity_recommendations"
+name: "Activity Recommendations Configuration"
+description: "Configuration for the activity recommendation engine including weights and rules"
+author: "Recaller Team"
+last_updated: "2025-01-15"
+deprecated: false
+
 # Activity recommendation engine configuration
 recommendation_engine:
   # Weight factors for recommendations
