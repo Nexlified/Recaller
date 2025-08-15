@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from pydantic_settings import BaseSettings
 from pydantic import PostgresDsn, validator
 
@@ -110,6 +110,12 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
     
+    # CORS Configuration
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000"
+    CORS_ALLOWED_METHODS: str = "GET,POST,PUT,DELETE,OPTIONS"
+    CORS_ALLOWED_HEADERS: str = "Content-Type,Authorization,X-Tenant-ID"
+    CORS_ALLOW_CREDENTIALS: bool = True
+    
     # Email Configuration (Optional)
     SMTP_HOST: Optional[str] = None
     SMTP_PORT: Optional[int] = None
@@ -117,6 +123,24 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: Optional[str] = None
     SMTP_TLS: bool = True
     SMTP_FROM_EMAIL: str = "noreply@recaller.com"
+    
+    def get_cors_origins(self) -> List[str]:
+        """Parse CORS allowed origins from comma-separated string."""
+        if self.CORS_ALLOWED_ORIGINS:
+            return [origin.strip() for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
+        return ["http://localhost:3000"]
+    
+    def get_cors_methods(self) -> List[str]:
+        """Parse CORS allowed methods from comma-separated string."""
+        if self.CORS_ALLOWED_METHODS:
+            return [method.strip() for method in self.CORS_ALLOWED_METHODS.split(",") if method.strip()]
+        return ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    
+    def get_cors_headers(self) -> List[str]:
+        """Parse CORS allowed headers from comma-separated string."""
+        if self.CORS_ALLOWED_HEADERS:
+            return [header.strip() for header in self.CORS_ALLOWED_HEADERS.split(",") if header.strip()]
+        return ["Content-Type", "Authorization", "X-Tenant-ID"]
     
     class Config:
         case_sensitive = True
