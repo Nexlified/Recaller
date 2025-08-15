@@ -133,7 +133,13 @@ def create_contact_relationship(
         contact_b_id=obj_in.contact_b_id,
         relationship_type=mapping_result.relationship_a_to_b,
         relationship_category=mapping_result.relationship_category,
+        relationship_strength=obj_in.relationship_strength,
+        relationship_status=obj_in.relationship_status,
+        start_date=obj_in.start_date,
+        end_date=obj_in.end_date,
+        is_mutual=obj_in.is_mutual,
         notes=obj_in.notes,
+        context=obj_in.context,
         is_gender_resolved=mapping_result.is_gender_resolved,
         original_relationship_type=mapping_result.original_relationship_type
     )
@@ -146,7 +152,13 @@ def create_contact_relationship(
         contact_b_id=obj_in.contact_a_id,
         relationship_type=mapping_result.relationship_b_to_a,
         relationship_category=mapping_result.relationship_category,
+        relationship_strength=obj_in.relationship_strength,
+        relationship_status=obj_in.relationship_status,
+        start_date=obj_in.start_date,
+        end_date=obj_in.end_date,
+        is_mutual=obj_in.is_mutual,
         notes=obj_in.notes,
+        context=obj_in.context,
         is_gender_resolved=mapping_result.is_gender_resolved,
         original_relationship_type=mapping_result.original_relationship_type
     )

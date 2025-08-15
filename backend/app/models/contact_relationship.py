@@ -1,7 +1,15 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, UniqueConstraint, Date, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
+import enum
+
+
+class RelationshipStatus(enum.Enum):
+    """Status of the relationship between contacts."""
+    ACTIVE = "active"
+    DISTANT = "distant"
+    ENDED = "ended"
 
 
 class ContactRelationship(Base):
@@ -22,10 +30,20 @@ class ContactRelationship(Base):
     # Relationship details
     relationship_type = Column(String(50), nullable=False)  # e.g., 'brother', 'sister', 'friend'
     relationship_category = Column(String(20), nullable=False)  # e.g., 'family', 'professional', 'social'
+    relationship_strength = Column(Integer, nullable=True)  # 1-10 scale for relationship strength
+    relationship_status = Column(Enum(RelationshipStatus), nullable=False, default=RelationshipStatus.ACTIVE)
+    
+    # Relationship timeline
+    start_date = Column(Date, nullable=True)  # When the relationship began
+    end_date = Column(Date, nullable=True)  # When the relationship ended (if applicable)
+    
+    # Mutual acknowledgment
+    is_mutual = Column(Boolean, default=True)  # Whether both contacts acknowledge this relationship
     
     # Metadata
-    notes = Column(Text)
-    is_active = Column(Boolean, default=True)
+    notes = Column(Text)  # General notes about the relationship
+    context = Column(Text)  # Additional context (e.g., "met at university", "work colleagues")
+    is_active = Column(Boolean, default=True)  # Deprecated in favor of relationship_status
     
     # Gender resolution metadata (for auditing/debugging)
     is_gender_resolved = Column(Boolean, default=False)  # True if automatically resolved from base type
