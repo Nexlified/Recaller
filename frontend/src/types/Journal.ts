@@ -72,7 +72,7 @@ export interface JournalEntry {
   exercise_minutes?: number;
   sleep_quality?: number; // 1-10 scale
   weather_impact?: WeatherImpact;
-  significant_events?: any[]; // JSON array
+  significant_events?: string[] | Record<string, unknown>[]; // JSON array of events
 }
 
 export interface JournalEntryCreate {
@@ -94,7 +94,7 @@ export interface JournalEntryCreate {
   exercise_minutes?: number;
   sleep_quality?: number; // 1-10 scale
   weather_impact?: WeatherImpact;
-  significant_events?: any[]; // JSON array
+  significant_events?: string[] | Record<string, unknown>[]; // JSON array of events
 }
 
 export interface JournalEntryUpdate {
@@ -116,7 +116,7 @@ export interface JournalEntryUpdate {
   exercise_minutes?: number;
   sleep_quality?: number; // 1-10 scale
   weather_impact?: WeatherImpact;
-  significant_events?: any[]; // JSON array
+  significant_events?: string[] | Record<string, unknown>[]; // JSON array of events
 }
 
 export interface JournalEntrySummary {
