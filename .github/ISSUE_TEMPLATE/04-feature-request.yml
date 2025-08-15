@@ -1,0 +1,229 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for Recaller
+title: "[Feature]: "
+labels: ["enhancement"]
+projects: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature! Please fill out this form as completely as possible.
+        
+        **Before submitting:** Please check existing issues and discussions to avoid duplicates.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Prerequisites
+      description: By submitting this feature request, you agree to follow our [Contributing Guidelines](https://github.com/Nexlified/Recaller/blob/main/CONTRIBUTING.md)
+      options:
+        - label: I have searched existing issues and discussions to ensure this is not a duplicate
+          required: true
+        - label: I have read the contributing guidelines
+          required: true
+        - label: I understand this is an open-source project and features are implemented by volunteers
+          required: true
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - New functionality
+        - Enhancement to existing feature
+        - Integration with external service
+        - Performance improvement
+        - User experience improvement
+        - API enhancement
+        - Developer/Admin tool
+        - Documentation improvement
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component/Area
+      description: Which part of Recaller would this feature affect?
+      options:
+        - Dashboard
+        - Task Management
+        - Contact Management
+        - Financial Management
+        - Analytics/Reports
+        - User Authentication
+        - User Profile/Settings
+        - Search & Filtering
+        - Data Import/Export
+        - Email Notifications
+        - Mobile Experience
+        - API/Backend
+        - Multi-tenant System
+        - Privacy/Security
+        - Performance
+        - Documentation
+        - Development Tools
+        - Cross-component
+        - New module/component
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Problem Description
+      description: What problem does this feature solve? What is the current limitation?
+      placeholder: |
+        Describe the problem or limitation you're experiencing:
+        - What are you trying to accomplish?
+        - What is currently missing or inadequate?
+        - How does this affect your workflow?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution in detail
+      placeholder: |
+        Describe how you think this feature should work:
+        - What should the user interface look like?
+        - How should users interact with this feature?
+        - What should the behavior be?
+        - Are there any specific requirements?
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-stories
+    attributes:
+      label: User Stories
+      description: Describe how different types of users would use this feature
+      placeholder: |
+        Example user stories:
+        - As a [user type], I want to [action] so that [benefit]
+        - As a [user type], I want to [action] so that [benefit]
+        
+        Consider different user personas:
+        - Individual users
+        - Team users
+        - Administrators
+        - Power users
+        - New users
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative approaches or workarounds?
+      placeholder: |
+        Describe any alternative solutions or workarounds you've considered:
+        - Other ways to solve the same problem
+        - Existing tools or features that partially address this
+        - Why those alternatives are not sufficient
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Critical (blocking my usage of the app)
+        - High (would significantly improve my experience)
+        - Medium (would be nice to have)
+        - Low (minor improvement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-base
+    attributes:
+      label: User Base Impact
+      description: Who would benefit from this feature?
+      options:
+        - All users
+        - Most users (majority use case)
+        - Some users (specific use case)
+        - Power users only
+        - Administrators only
+        - Developers only
+        - Not sure
+
+  - type: checkboxes
+    id: technical-considerations
+    attributes:
+      label: Technical Considerations
+      description: Are there any technical aspects to consider?
+      options:
+        - This might require database schema changes
+        - This might affect API compatibility
+        - This might require new dependencies
+        - This might impact performance
+        - This might affect security/privacy
+        - This might require third-party integrations
+        - This should work offline
+        - This should be mobile-friendly
+        - Not sure about technical implications
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples and References
+      description: Provide examples, mockups, or references to similar features
+      placeholder: |
+        - Screenshots or mockups of your idea
+        - Examples from other applications
+        - Links to relevant documentation or standards
+        - Code examples (if technical)
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Ideas
+      description: Do you have any ideas about how this could be implemented? (optional)
+      placeholder: |
+        If you have technical knowledge, share your thoughts:
+        - Potential implementation approach
+        - Technologies that could be used
+        - Challenges to consider
+        - Breaking changes to be aware of
+
+  - type: dropdown
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes
+      description: Would this feature require breaking changes?
+      options:
+        - No breaking changes expected
+        - Might require minor breaking changes
+        - Would require major breaking changes
+        - Not sure
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to contribute to implementing this feature?
+      options:
+        - I would like to implement this feature myself
+        - I could help with implementation if guided
+        - I could help with testing and feedback
+        - I could help with documentation
+        - I can only provide requirements and feedback
+        - I'm not able to contribute to implementation
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, requirements, or considerations
+      placeholder: |
+        - Are there any deadlines or time constraints?
+        - Are there specific privacy/security requirements?
+        - Should this work with existing data?
+        - Any integration requirements?
+        - Performance requirements?
