@@ -1,0 +1,121 @@
+# Pre-defined activity templates for quick creation
+activity_templates:
+  quick_dinner:
+    name: "Quick Dinner"
+    activity_type: "dinner"
+    title: "Dinner with {contact_name}"
+    description: "Casual dinner together"
+    default_duration: 120
+    template_fields:
+      location: "Restaurant TBD"
+      cost_per_person: 40
+      notes: "Looking forward to catching up!"
+    
+  coffee_catchup:
+    name: "Coffee Catch-up"
+    activity_type: "coffee"
+    title: "Coffee with {contact_name}"
+    description: "Coffee and conversation"
+    default_duration: 60
+    template_fields:
+      location: "Local coffee shop"
+      notes: "Let's catch up over coffee"
+    
+  weekend_movie:
+    name: "Weekend Movie"
+    activity_type: "movie"
+    title: "Movie Night"
+    description: "Watching a movie together"
+    default_duration: 150
+    template_fields:
+      location: "Cinema"
+      cost_per_person: 15
+      notes: "Movie night out"
+    
+  business_lunch:
+    name: "Business Lunch"
+    activity_type: "work_meeting"
+    title: "Business Lunch with {contact_name}"
+    description: "Professional lunch meeting"
+    default_duration: 90
+    template_fields:
+      location: "Business district restaurant"
+      meeting_type: "Informal business discussion"
+      notes: "Professional networking"
+    
+  birthday_celebration:
+    name: "Birthday Party"
+    activity_type: "party"
+    title: "{contact_name}'s Birthday"
+    description: "Birthday celebration"
+    default_duration: 240
+    template_fields:
+      occasion: "Birthday"
+      location: "TBD"
+      notes: "Birthday celebration!"
+    
+  hiking_adventure:
+    name: "Hiking Trip"
+    activity_type: "outdoor"
+    title: "Hiking Adventure"
+    description: "Outdoor hiking activity"
+    default_duration: 240
+    template_fields:
+      activity_details: "Nature hike"
+      location: "Local trail"
+      notes: "Exploring nature together"
+    
+  game_evening:
+    name: "Game Night"
+    activity_type: "game_night"
+    title: "Game Night"
+    description: "Playing games together"
+    default_duration: 180
+    template_fields:
+      location: "Home"
+      games_played: "TBD"
+      notes: "Fun game night"
+
+# Seasonal Templates
+seasonal_templates:
+  spring:
+    - hiking_adventure
+    - outdoor_picnic
+    - garden_visit
+    
+  summer:
+    - beach_day
+    - outdoor_sports
+    - festival_visit
+    
+  autumn:
+    - apple_picking
+    - hiking_adventure
+    - cozy_dinner
+    
+  winter:
+    - movie_marathon
+    - holiday_party
+    - indoor_games
+
+# Template Categories
+template_categories:
+  quick_activities:
+    name: "Quick Activities"
+    templates: [coffee_catchup, quick_dinner, movie_night]
+    
+  professional:
+    name: "Professional"
+    templates: [business_lunch, conference_meeting, networking_event]
+    
+  celebrations:
+    name: "Celebrations"
+    templates: [birthday_celebration, anniversary_dinner, graduation_party]
+    
+  outdoor:
+    name: "Outdoor"
+    templates: [hiking_adventure, sports_activity, picnic_day]
+    
+  entertainment:
+    name: "Entertainment"
+    templates: [movie_night, game_evening, concert_night]

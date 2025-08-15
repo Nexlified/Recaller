@@ -1,0 +1,114 @@
+# Activity recommendation engine configuration
+recommendation_engine:
+  # Weight factors for recommendations
+  weights:
+    past_activity_frequency: 0.3
+    quality_rating_average: 0.25
+    contact_preferences: 0.2
+    seasonal_factors: 0.1
+    time_since_last_activity: 0.1
+    budget_compatibility: 0.05
+    
+  # Recommendation rules
+  rules:
+    min_quality_rating: 6  # Only recommend activities with past rating >= 6
+    max_cost_variance: 0.5  # Don't recommend activities >50% above typical spending
+    seasonal_boost: 0.2  # Boost seasonal activities by 20%
+    frequency_penalty: 0.1  # Reduce score for recently repeated activities
+    
+  # Time-based recommendations
+  time_based:
+    morning:
+      preferred_types: [coffee, breakfast, workout, outdoor]
+      duration_range: [30, 120]
+      
+    afternoon:
+      preferred_types: [lunch, shopping, cultural, outdoor, sports]
+      duration_range: [60, 240]
+      
+    evening:
+      preferred_types: [dinner, movie, party, game_night, cultural]
+      duration_range: [90, 300]
+      
+    weekend:
+      preferred_types: [travel, outdoor, hobby, party, cultural, sports]
+      duration_range: [120, 480]
+      
+  # Contact interaction patterns
+  interaction_patterns:
+    high_frequency:  # Seen in last 2 weeks
+      suggested_types: [coffee, casual_dining, hobby]
+      complexity: "simple"
+      
+    medium_frequency:  # Seen in last month
+      suggested_types: [dinner, movie, cultural, sports]
+      complexity: "moderate"
+      
+    low_frequency:  # Haven't seen in >month
+      suggested_types: [special_dinner, travel, major_event]
+      complexity: "elaborate"
+      
+  # Budget-based recommendations
+  budget_tiers:
+    free:
+      max_cost: 0
+      types: [outdoor, home_activities, free_events]
+      
+    budget_friendly:
+      max_cost: 25
+      types: [coffee, casual_dining, local_activities]
+      
+    moderate:
+      max_cost: 100
+      types: [dinner, entertainment, cultural]
+      
+    premium:
+      max_cost: 500
+      types: [fine_dining, travel, premium_events]
+      
+    luxury:
+      max_cost: 1000
+      types: [luxury_travel, exclusive_events, premium_experiences]
+
+# Notification settings
+notifications:
+  activity_reminders:
+    enabled: true
+    advance_times: [1440, 60]  # 24 hours and 1 hour before
+    
+  follow_up_suggestions:
+    enabled: true
+    delay_days: 3  # Suggest follow-up activities 3 days after completion
+    
+  quality_rating_reminders:
+    enabled: true
+    delay_hours: 24  # Remind to rate activity 24 hours after completion
+    
+  photo_upload_reminders:
+    enabled: true
+    delay_hours: 2  # Remind to upload photos 2 hours after activity
+
+# Analytics configuration
+analytics:
+  reporting_periods:
+    - weekly
+    - monthly
+    - quarterly
+    - yearly
+    
+  metrics:
+    - activity_frequency
+    - quality_trends
+    - spending_patterns
+    - contact_interaction_frequency
+    - activity_type_preferences
+    
+  insights:
+    relationship_health:
+      green_threshold: 14  # days since last activity
+      yellow_threshold: 30
+      red_threshold: 90
+      
+    activity_diversity:
+      min_types_per_month: 3
+      recommendation_threshold: 5

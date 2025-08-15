@@ -1,0 +1,35 @@
+# System-wide settings for activities feature
+system:
+  feature_flags:
+    photo_upload: true
+    location_services: true
+    cost_tracking: true
+    quality_ratings: true
+    activity_suggestions: true
+    calendar_integration: false  # Future feature
+    
+  limits:
+    max_activities_per_day: 10
+    max_participants_per_activity: 50
+    max_photos_per_activity: 20
+    max_activity_duration: 2880  # minutes (48 hours)
+    
+  storage:
+    photo_max_size: 10485760  # 10MB
+    photo_formats: [jpg, jpeg, png, webp]
+    activity_retention_days: 3650  # 10 years
+    
+  integrations:
+    maps_provider: "openstreetmap"  # openstreetmap, google, mapbox
+    weather_provider: "openweather"
+    currency_provider: "exchangerate"
+    
+  privacy:
+    default_privacy_level: "private"
+    allow_public_activities: true
+    photo_face_detection: false  # Privacy-first approach
+    
+  performance:
+    activity_cache_ttl: 300  # 5 minutes
+    photo_cache_ttl: 3600  # 1 hour
+    insights_cache_ttl: 1800  # 30 minutes
