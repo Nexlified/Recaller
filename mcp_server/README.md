@@ -128,24 +128,28 @@ mcp_server/
 ## Supported Backends
 
 ### Ollama
-- **Use Case**: Local LLM deployment
+- **Use Case**: Local LLM deployment with full API integration
 - **Models**: Llama, Mistral, CodeLlama, etc.
-- **Features**: Completion, chat, streaming
+- **Features**: Completion, chat, streaming, automatic model pulling
+- **Implementation**: Complete with real API calls and health monitoring
 
 ### HuggingFace
 - **Use Case**: Transformer models and embeddings
-- **Models**: BERT, RoBERTa, sentence-transformers
-- **Features**: Embeddings, classification, completion
+- **Models**: BERT, RoBERTa, sentence-transformers, DialoGPT
+- **Features**: Embeddings, classification, completion, chat
+- **Implementation**: Extensible framework (placeholder with examples)
 
 ### OpenAI Compatible
-- **Use Case**: Local or cloud APIs following OpenAI format
-- **Examples**: LocalAI, Oobabooga, vLLM
+- **Use Case**: Any API following OpenAI format
+- **Examples**: LocalAI, Oobabooga, vLLM, text-generation-webui
 - **Features**: Full OpenAI API compatibility
+- **Implementation**: Complete example backend with real API integration
 
 ### Custom Backends
 - **Extensible**: Plugin architecture for custom implementations
-- **Interface**: Simple backend interface to implement
+- **Interface**: Simple ModelBackend interface to implement
 - **Examples**: Direct PyTorch, TensorFlow, or custom inference engines
+- **Documentation**: Comprehensive guide for creating new backends
 
 ## API Endpoints
 
@@ -296,12 +300,18 @@ curl http://localhost:8001/api/v1/stats
 
 ### Adding New Backends
 
+The MCP server supports a fully extensible backend architecture. Creating new backends is straightforward:
+
 1. **Implement Backend Interface**:
    ```python
+   from backends.base_backend import ModelBackend
+   
    class CustomBackend(ModelBackend):
        async def initialize(self): ...
        async def health_check(self): ...
        def get_capabilities(self): ...
+       async def generate_completion(self, prompt, **kwargs): ...
+       async def generate_chat_response(self, messages, **kwargs): ...
    ```
 
 2. **Register Backend**:
@@ -310,11 +320,43 @@ curl http://localhost:8001/api/v1/stats
    self._backend_classes["custom"] = CustomBackend
    ```
 
-3. **Test Integration**:
-   ```python
-   # Add tests for new backend
-   pytest tests/test_custom_backend.py
+3. **Configure Model**:
+   ```json
+   {
+     "name": "My Custom Model",
+     "backend_type": "custom",
+     "config": {
+       "api_url": "https://your-api.com",
+       "model_name": "your-model"
+     }
+   }
    ```
+
+4. **Test Integration**:
+   ```bash
+   python test_extensibility.py
+   ```
+
+For detailed instructions, see [Backend Extension Guide](../docs/mcp-backend-extension-guide.md).
+
+### Example Backends
+
+- **Ollama Backend**: Complete implementation with API integration ([backends/ollama_backend.py](backends/ollama_backend.py))
+- **HuggingFace Backend**: Extensible framework with examples ([backends/huggingface_backend.py](backends/huggingface_backend.py))
+- **OpenAI Compatible**: Example for API-based backends ([examples/openai_compatible_backend.py](examples/openai_compatible_backend.py))
+
+### Testing New Backends
+
+```bash
+# Test the extensibility system
+python test_extensibility.py
+
+# Run specific backend tests
+pytest tests/test_custom_backend.py -v
+
+# Test with real services (if available)
+python examples/test_ollama_integration.py
+```
 
 ### Running Tests
 

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "Recaller MCP Server Configuration",
-  "description": "Example configuration for model backends",
+  "description": "Example configuration for model backends with extensible support",
   
   "models": [
     {
@@ -9,7 +9,12 @@
       "backend_type": "ollama",
       "config": {
         "base_url": "http://localhost:11434",
-        "model_name": "llama3.2:3b"
+        "model_name": "llama3.2:3b",
+        "timeout": 120,
+        "max_retries": 3,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "max_tokens": 1024
       },
       "description": "Local Llama 3.2 3B model via Ollama",
       "capabilities": ["completion", "chat"]
@@ -19,10 +24,13 @@
       "backend_type": "ollama",
       "config": {
         "base_url": "http://localhost:11434",
-        "model_name": "codellama:7b"
+        "model_name": "codellama:7b",
+        "timeout": 180,
+        "temperature": 0.1,
+        "max_tokens": 2048
       },
       "description": "Code-focused Llama model via Ollama",
-      "capabilities": ["completion", "chat"]
+      "capabilities": ["completion"]
     },
     {
       "name": "BERT Base Embeddings",
@@ -30,10 +38,53 @@
       "config": {
         "model_name": "sentence-transformers/all-MiniLM-L6-v2",
         "device": "cpu",
-        "dtype": "float32"
+        "dtype": "float32",
+        "cache_dir": "./models/huggingface",
+        "trust_remote_code": false
       },
       "description": "BERT-based embeddings model",
       "capabilities": ["embedding"]
+    },
+    {
+      "name": "DialoGPT Chat",
+      "backend_type": "huggingface", 
+      "config": {
+        "model_name": "microsoft/DialoGPT-medium",
+        "device": "cpu",
+        "cache_dir": "./models/huggingface",
+        "max_length": 1024,
+        "temperature": 0.8,
+        "do_sample": true
+      },
+      "description": "Conversational AI model",
+      "capabilities": ["chat", "completion"]
+    },
+    {
+      "name": "LocalAI Server",
+      "backend_type": "openai_compatible",
+      "config": {
+        "base_url": "http://localhost:8080/v1",
+        "model_name": "gpt-3.5-turbo",
+        "timeout": 120,
+        "temperature": 0.7,
+        "max_tokens": 1024
+      },
+      "description": "LocalAI server with OpenAI-compatible API",
+      "capabilities": ["completion", "chat", "embedding"]
+    },
+    {
+      "name": "vLLM Inference Server",
+      "backend_type": "openai_compatible",
+      "config": {
+        "base_url": "http://localhost:8000/v1", 
+        "model_name": "meta-llama/Llama-2-7b-chat-hf",
+        "timeout": 120,
+        "temperature": 0.7,
+        "max_tokens": 1024,
+        "top_p": 0.9
+      },
+      "description": "vLLM high-performance inference server",
+      "capabilities": ["completion", "chat"]
     }
   ],
   
@@ -44,13 +95,13 @@
       "max_retries": 3
     },
     "huggingface": {
-      "cache_dir": "/app/models/huggingface",
+      "cache_dir": "./models/huggingface",
       "device": "cpu",
       "trust_remote_code": false
     },
     "openai_compatible": {
-      "base_url": "http://localhost:8080/v1",
-      "api_key": "local-key"
+      "timeout": 120,
+      "max_retries": 3
     }
   }
 }
