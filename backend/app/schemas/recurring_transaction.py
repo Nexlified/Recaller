@@ -8,7 +8,7 @@ class RecurringTransactionBase(BaseModel):
     template_name: str = Field(..., max_length=200)
     type: str = Field(..., pattern="^(credit|debit)$")
     amount: Decimal = Field(..., gt=0, decimal_places=2)
-    currency: str = Field(default="USD", max_length=3)
+    currency: str = Field(default="USD", max_length=3, min_length=3)
     description: Optional[str] = None
     category_id: Optional[int] = None
     subcategory_id: Optional[int] = None
@@ -20,6 +20,18 @@ class RecurringTransactionBase(BaseModel):
     reminder_days: int = Field(default=3, ge=0)
     is_active: bool = True
     extra_data: Optional[Dict[str, Any]] = None
+
+    @field_validator('currency')
+    @classmethod
+    def validate_currency(cls, v):
+        """Validate currency code format"""
+        if v:
+            v = v.upper()
+            if len(v) != 3:
+                raise ValueError('Currency code must be exactly 3 characters')
+            if not v.isalpha():
+                raise ValueError('Currency code must contain only letters')
+        return v
 
     @field_validator('end_date')
     @classmethod
@@ -37,7 +49,7 @@ class RecurringTransactionUpdate(BaseModel):
     template_name: Optional[str] = Field(None, max_length=200)
     type: Optional[str] = Field(None, pattern="^(credit|debit)$")
     amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2)
-    currency: Optional[str] = Field(None, max_length=3)
+    currency: Optional[str] = Field(None, max_length=3, min_length=3)
     description: Optional[str] = None
     category_id: Optional[int] = None
     subcategory_id: Optional[int] = None
@@ -49,6 +61,18 @@ class RecurringTransactionUpdate(BaseModel):
     reminder_days: Optional[int] = Field(None, ge=0)
     is_active: Optional[bool] = None
     extra_data: Optional[Dict[str, Any]] = None
+
+    @field_validator('currency')
+    @classmethod
+    def validate_currency(cls, v):
+        """Validate currency code format"""
+        if v:
+            v = v.upper()
+            if len(v) != 3:
+                raise ValueError('Currency code must be exactly 3 characters')
+            if not v.isalpha():
+                raise ValueError('Currency code must contain only letters')
+        return v
 
 # Recurring Transaction schema with database fields
 class RecurringTransactionInDBBase(RecurringTransactionBase):

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   TransactionFilters, 
   TransactionCategory,
@@ -8,6 +8,7 @@ import {
   TRANSACTION_TYPE_OPTIONS,
   FinancialAccount
 } from '../../types/Transaction';
+import { Currency, currencyService } from '../../services/currencyService';
 
 interface TransactionFiltersProps {
   filters: TransactionFilters;
@@ -24,6 +25,49 @@ export const TransactionFiltersComponent: React.FC<TransactionFiltersProps> = ({
   accounts,
   className = ''
 }) => {
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [currenciesLoading, setCurrenciesLoading] = useState(true);
+
+  // Load currencies
+  useEffect(() => {
+    const loadCurrencies = async () => {
+      setCurrenciesLoading(true);
+      try {
+        const activeCurrencies = await currencyService.getActiveCurrencies();
+        setCurrencies(activeCurrencies);
+      } catch (error) {
+        console.error('Failed to load currencies:', error);
+        // Fallback to hardcoded currencies
+        setCurrencies([
+          {
+            id: 1, code: 'USD', name: 'US Dollar', symbol: '$', 
+            decimal_places: 2, is_active: true, is_default: true,
+            country_codes: ['US'], created_at: '', updated_at: ''
+          },
+          {
+            id: 2, code: 'EUR', name: 'Euro', symbol: '€', 
+            decimal_places: 2, is_active: true, is_default: false,
+            country_codes: ['DE', 'FR'], created_at: '', updated_at: ''
+          },
+          {
+            id: 3, code: 'GBP', name: 'British Pound', symbol: '£', 
+            decimal_places: 2, is_active: true, is_default: false,
+            country_codes: ['GB'], created_at: '', updated_at: ''
+          },
+          {
+            id: 4, code: 'JPY', name: 'Japanese Yen', symbol: '¥', 
+            decimal_places: 0, is_active: true, is_default: false,
+            country_codes: ['JP'], created_at: '', updated_at: ''
+          }
+        ]);
+      } finally {
+        setCurrenciesLoading(false);
+      }
+    };
+
+    loadCurrencies();
+  }, []);
+
   const updateFilter = <K extends keyof TransactionFilters>(
     key: K,
     value: TransactionFilters[K]
@@ -149,14 +193,27 @@ export const TransactionFiltersComponent: React.FC<TransactionFiltersProps> = ({
             value={filters.currency || ''}
             onChange={(e) => updateFilter('currency', e.target.value || undefined)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={currenciesLoading}
           >
             <option value="">All Currencies</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="CAD">CAD</option>
-            <option value="AUD">AUD</option>
-            <option value="JPY">JPY</option>
+            {currenciesLoading ? (
+              <option disabled>Loading currencies...</option>
+            ) : currencies.length > 0 ? (
+              currencies.map((currency) => (
+                <option key={currency.id} value={currency.code}>
+                  {currency.code} - {currency.name}
+                </option>
+              ))
+            ) : (
+              <>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="CAD">CAD - Canadian Dollar</option>
+                <option value="AUD">AUD - Australian Dollar</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+              </>
+            )}
           </select>
         </div>
       </div>

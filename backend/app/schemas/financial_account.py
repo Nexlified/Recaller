@@ -1,7 +1,7 @@
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # Base Financial Account schema
 class FinancialAccountBase(BaseModel):
@@ -10,8 +10,20 @@ class FinancialAccountBase(BaseModel):
     account_number: Optional[str] = Field(None, max_length=50)
     bank_name: Optional[str] = Field(None, max_length=100)
     current_balance: Decimal = Field(default=0, decimal_places=2)
-    currency: str = Field(default="USD", max_length=3)
+    currency: str = Field(default="USD", max_length=3, min_length=3)
     is_active: bool = True
+
+    @field_validator('currency')
+    @classmethod
+    def validate_currency(cls, v):
+        """Validate currency code format"""
+        if v:
+            v = v.upper()
+            if len(v) != 3:
+                raise ValueError('Currency code must be exactly 3 characters')
+            if not v.isalpha():
+                raise ValueError('Currency code must contain only letters')
+        return v
 
 # Create Financial Account schema
 class FinancialAccountCreate(FinancialAccountBase):
@@ -24,8 +36,20 @@ class FinancialAccountUpdate(BaseModel):
     account_number: Optional[str] = Field(None, max_length=50)
     bank_name: Optional[str] = Field(None, max_length=100)
     current_balance: Optional[Decimal] = Field(None, decimal_places=2)
-    currency: Optional[str] = Field(None, max_length=3)
+    currency: Optional[str] = Field(None, max_length=3, min_length=3)
     is_active: Optional[bool] = None
+
+    @field_validator('currency')
+    @classmethod
+    def validate_currency(cls, v):
+        """Validate currency code format"""
+        if v:
+            v = v.upper()
+            if len(v) != 3:
+                raise ValueError('Currency code must be exactly 3 characters')
+            if not v.isalpha():
+                raise ValueError('Currency code must contain only letters')
+        return v
 
 # Financial Account schema with database fields
 class FinancialAccountInDBBase(FinancialAccountBase):
