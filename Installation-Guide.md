@@ -30,12 +30,48 @@ The fastest way to get Recaller running is with Docker Compose:
 4. **Access the application:**
    - **Frontend**: http://localhost:3000
    - **Backend API**: http://localhost:8000
+   - **MCP Server**: http://localhost:8001
    - **API Documentation**: http://localhost:8000/docs
+   - **MCP Server Docs**: http://localhost:8001/docs
    - **Task Monitor (Flower)**: http://localhost:5555
 
 5. **Create your first user account** through the frontend registration flow
 
 That's it! Recaller is now running with all services.
+
+### 🔍 Service Verification
+
+Verify all services are running correctly:
+
+```bash
+# Check service status
+docker compose ps
+
+# Verify MCP server health
+curl http://localhost:8001/api/v1/health
+
+# Verify backend health
+curl http://localhost:8000/health
+```
+
+Expected MCP server response:
+```json
+{
+  "status": "healthy",
+  "models": []
+}
+```
+
+### 🤖 MCP Server Integration
+
+The MCP (Model Context Protocol) Server enables LLM integration for AI features:
+
+- **Port**: 8001
+- **Health Check**: `/api/v1/health`
+- **Model Management**: `/api/v1/models`
+- **Documentation**: http://localhost:8001/docs
+
+For detailed MCP server configuration and model setup, see [MCP Server Deployment Guide](./docs/mcp-server-deployment.md).
 
 ## 🛠️ Manual Installation
 

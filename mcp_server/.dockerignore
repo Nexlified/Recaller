@@ -1,0 +1,48 @@
+# Git files
+.git
+.gitignore
+
+# Python cache and virtual environments
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+.env
+.pytest_cache/
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation
+README.md
+docs/
+*.md
+
+# Test files
+tests/
+test_*
+*_test.py
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files (these should be mounted as volumes)
+models/
+*.bin
+*.safetensors
+*.gguf
