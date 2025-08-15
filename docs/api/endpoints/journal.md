@@ -893,6 +893,18 @@ Complete journal entry object with all relationships:
   "is_encrypted": false,
   "created_at": "2023-01-15T14:30:00Z",
   "updated_at": "2023-01-15T16:45:00Z",
+  "day_quality_rating": 8,
+  "energy_level": 7,
+  "stress_level": 3,
+  "productivity_level": 9,
+  "social_interactions_count": 5,
+  "exercise_minutes": 30,
+  "sleep_quality": 8,
+  "weather_impact": "positive",
+  "significant_events": [
+    "Completed important project milestone",
+    "Had great team meeting"
+  ],
   "tags": [
     {
       "id": 1,
@@ -905,6 +917,18 @@ Complete journal entry object with all relationships:
   "attachments": []
 }
 ```
+
+#### Day Quality and Life Metrics Fields
+
+- `day_quality_rating` (integer, 1-10): Overall day assessment rating
+- `energy_level` (integer, 1-10): Personal energy level for the day
+- `stress_level` (integer, 1-10): Stress level experienced during the day
+- `productivity_level` (integer, 1-10): How productive the day felt
+- `social_interactions_count` (integer, ≥0): Number of social interactions
+- `exercise_minutes` (integer, ≥0): Minutes of exercise or physical activity
+- `sleep_quality` (integer, 1-10): Quality of sleep from the previous night
+- `weather_impact` (string): How weather affected the day - `"positive"`, `"neutral"`, or `"negative"`
+- `significant_events` (array): List of significant events or accomplishments
 
 ### JournalEntrySummary
 

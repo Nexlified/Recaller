@@ -7,7 +7,7 @@ security vulnerabilities and ensure data integrity across all API endpoints.
 
 import re
 import html
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from datetime import date, datetime, timedelta
 from pydantic import validator, ValidationError
 import urllib.parse
@@ -384,6 +384,68 @@ def create_tag_name_validator():
             raise ValueError("Tag name cannot be empty")
         return ContentSanitizer.sanitize_tag_name(v)
     return validate_tag_name
+
+
+def create_rating_validator(field_name: str):
+    """Create a validator function for 1-10 rating fields."""
+    def validate_rating(v: Optional[int]) -> Optional[int]:
+        if v is None:
+            return v
+        if not isinstance(v, int):
+            raise ValueError(f"{field_name} must be an integer")
+        if v < 1 or v > 10:
+            raise ValueError(f"{field_name} must be between 1 and 10")
+        return v
+    return validate_rating
+
+
+def create_positive_integer_validator(field_name: str):
+    """Create a validator function for positive integer fields."""
+    def validate_positive_integer(v: Optional[int]) -> Optional[int]:
+        if v is None:
+            return v
+        if not isinstance(v, int):
+            raise ValueError(f"{field_name} must be an integer")
+        if v < 0:
+            raise ValueError(f"{field_name} must be 0 or positive")
+        return v
+    return validate_positive_integer
+
+
+def create_weather_impact_validator():
+    """Create a validator function for weather impact."""
+    def validate_weather_impact(v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        if v not in ['positive', 'neutral', 'negative']:
+            raise ValueError("Weather impact must be 'positive', 'neutral', or 'negative'")
+        return v
+    return validate_weather_impact
+
+
+def create_significant_events_validator():
+    """Create a validator function for significant events JSON array."""
+    def validate_significant_events(v: Optional[Any]) -> Optional[Any]:
+        if v is None:
+            return v
+        if not isinstance(v, list):
+            raise ValueError("Significant events must be a list")
+        # Validate each event is a string or dict with reasonable size
+        for event in v:
+            if isinstance(event, str):
+                if len(event) > 500:  # Reasonable limit per event
+                    raise ValueError("Each significant event description must be under 500 characters")
+            elif isinstance(event, dict):
+                # If it's a dict, validate it has reasonable structure
+                if len(str(event)) > 1000:  # Reasonable limit for dict representation
+                    raise ValueError("Each significant event object must be under 1000 characters when serialized")
+            else:
+                raise ValueError("Each significant event must be a string or object")
+        # Limit total number of events
+        if len(v) > 20:
+            raise ValueError("Maximum 20 significant events allowed per entry")
+        return v
+    return validate_significant_events
 
 
 class PaginationValidator:

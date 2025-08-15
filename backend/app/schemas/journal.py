@@ -1,10 +1,10 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from pydantic import BaseModel, Field, validator
 from datetime import datetime, date
 from enum import Enum
 
 # Import the model enums for validation
-from app.models.journal import JournalEntryMood
+from app.models.journal import JournalEntryMood, WeatherImpact
 from app.core.validation import (
     create_journal_content_validator,
     create_journal_title_validator,
@@ -13,6 +13,10 @@ from app.core.validation import (
     create_entry_date_validator,
     create_tag_name_validator,
     create_tag_color_validator,
+    create_rating_validator,
+    create_positive_integer_validator,
+    create_weather_impact_validator,
+    create_significant_events_validator,
 )
 
 
@@ -28,6 +32,13 @@ class JournalEntryMoodEnum(str, Enum):
     ANGRY = JournalEntryMood.ANGRY.value
     EXCITED = JournalEntryMood.EXCITED.value
     GRATEFUL = JournalEntryMood.GRATEFUL.value
+
+
+class WeatherImpactEnum(str, Enum):
+    """Weather impact options for journal entries."""
+    POSITIVE = WeatherImpact.POSITIVE.value
+    NEUTRAL = WeatherImpact.NEUTRAL.value
+    NEGATIVE = WeatherImpact.NEGATIVE.value
 
 
 # Journal Tag Schemas
@@ -109,12 +120,33 @@ class JournalEntryBase(BaseModel):
     weather: Optional[str] = Field(default=None, max_length=100)
     is_private: bool = Field(default=True)
     
+    # Day quality and life metrics (all optional)
+    day_quality_rating: Optional[int] = Field(default=None, ge=1, le=10)
+    energy_level: Optional[int] = Field(default=None, ge=1, le=10)
+    stress_level: Optional[int] = Field(default=None, ge=1, le=10)
+    productivity_level: Optional[int] = Field(default=None, ge=1, le=10)
+    social_interactions_count: Optional[int] = Field(default=None, ge=0)
+    exercise_minutes: Optional[int] = Field(default=None, ge=0)
+    sleep_quality: Optional[int] = Field(default=None, ge=1, le=10)
+    weather_impact: Optional[WeatherImpactEnum] = None
+    significant_events: Optional[List[Any]] = Field(default=None)
+    
     # Validators for security and data integrity
     _validate_title = validator('title', allow_reuse=True)(create_journal_title_validator())
     _validate_content = validator('content', allow_reuse=True)(create_journal_content_validator())
     _validate_entry_date = validator('entry_date', allow_reuse=True)(create_entry_date_validator())
     _validate_location = validator('location', allow_reuse=True)(create_journal_location_validator())
     _validate_weather = validator('weather', allow_reuse=True)(create_journal_weather_validator())
+    
+    # Validators for new life metrics fields
+    _validate_day_quality_rating = validator('day_quality_rating', allow_reuse=True)(create_rating_validator('Day quality rating'))
+    _validate_energy_level = validator('energy_level', allow_reuse=True)(create_rating_validator('Energy level'))
+    _validate_stress_level = validator('stress_level', allow_reuse=True)(create_rating_validator('Stress level'))
+    _validate_productivity_level = validator('productivity_level', allow_reuse=True)(create_rating_validator('Productivity level'))
+    _validate_sleep_quality = validator('sleep_quality', allow_reuse=True)(create_rating_validator('Sleep quality'))
+    _validate_social_interactions_count = validator('social_interactions_count', allow_reuse=True)(create_positive_integer_validator('Social interactions count'))
+    _validate_exercise_minutes = validator('exercise_minutes', allow_reuse=True)(create_positive_integer_validator('Exercise minutes'))
+    _validate_significant_events = validator('significant_events', allow_reuse=True)(create_significant_events_validator())
 
 
 class JournalEntryCreate(JournalEntryBase):
@@ -133,12 +165,33 @@ class JournalEntryUpdate(BaseModel):
     is_private: Optional[bool] = None
     is_archived: Optional[bool] = None
     
+    # Day quality and life metrics (all optional for updates)
+    day_quality_rating: Optional[int] = Field(default=None, ge=1, le=10)
+    energy_level: Optional[int] = Field(default=None, ge=1, le=10)
+    stress_level: Optional[int] = Field(default=None, ge=1, le=10)
+    productivity_level: Optional[int] = Field(default=None, ge=1, le=10)
+    social_interactions_count: Optional[int] = Field(default=None, ge=0)
+    exercise_minutes: Optional[int] = Field(default=None, ge=0)
+    sleep_quality: Optional[int] = Field(default=None, ge=1, le=10)
+    weather_impact: Optional[WeatherImpactEnum] = None
+    significant_events: Optional[List[Any]] = Field(default=None)
+    
     # Validators for security and data integrity
     _validate_title = validator('title', allow_reuse=True)(create_journal_title_validator())
     _validate_content = validator('content', allow_reuse=True)(create_journal_content_validator())
     _validate_entry_date = validator('entry_date', allow_reuse=True)(create_entry_date_validator())
     _validate_location = validator('location', allow_reuse=True)(create_journal_location_validator())
     _validate_weather = validator('weather', allow_reuse=True)(create_journal_weather_validator())
+    
+    # Validators for new life metrics fields
+    _validate_day_quality_rating = validator('day_quality_rating', allow_reuse=True)(create_rating_validator('Day quality rating'))
+    _validate_energy_level = validator('energy_level', allow_reuse=True)(create_rating_validator('Energy level'))
+    _validate_stress_level = validator('stress_level', allow_reuse=True)(create_rating_validator('Stress level'))
+    _validate_productivity_level = validator('productivity_level', allow_reuse=True)(create_rating_validator('Productivity level'))
+    _validate_sleep_quality = validator('sleep_quality', allow_reuse=True)(create_rating_validator('Sleep quality'))
+    _validate_social_interactions_count = validator('social_interactions_count', allow_reuse=True)(create_positive_integer_validator('Social interactions count'))
+    _validate_exercise_minutes = validator('exercise_minutes', allow_reuse=True)(create_positive_integer_validator('Exercise minutes'))
+    _validate_significant_events = validator('significant_events', allow_reuse=True)(create_significant_events_validator())
 
 
 class JournalEntryInDBBase(JournalEntryBase):
