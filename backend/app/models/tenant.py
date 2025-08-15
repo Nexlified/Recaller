@@ -20,3 +20,4 @@ class Tenant(Base):
     daily_metrics = relationship("DailyNetworkMetric", back_populates="tenant")
     tasks = relationship("Task", back_populates="tenant")
     task_categories = relationship("TaskCategory", back_populates="tenant")
+    journal_entries = relationship("JournalEntry", back_populates="tenant")

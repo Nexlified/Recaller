@@ -27,6 +27,7 @@ class User(Base):
     tasks = relationship(lambda: Task, back_populates="user")
     task_categories = relationship(lambda: TaskCategory, back_populates="user")
     financial_accounts = relationship(lambda: FinancialAccount, back_populates="user")
+    journal_entries = relationship(lambda: JournalEntry, back_populates="user")
 
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant
@@ -34,3 +35,4 @@ from app.models.contact import Contact
 from app.models.analytics import NetworkingInsight
 from app.models.task import Task, TaskCategory
 from app.models.financial_account import FinancialAccount
+from app.models.journal import JournalEntry

@@ -20,6 +20,7 @@ from .transaction_subcategory import TransactionSubcategory
 from .recurring_transaction import RecurringTransaction
 from .transaction import Transaction
 from .budget import Budget
+from .journal import JournalEntry, JournalTag, JournalAttachment
 
 __all__ = [
     "Tenant",
@@ -53,5 +54,8 @@ __all__ = [
     "TransactionSubcategory", 
     "RecurringTransaction",
     "Transaction",
-    "Budget"
+    "Budget",
+    "JournalEntry",
+    "JournalTag",
+    "JournalAttachment"
 ]
