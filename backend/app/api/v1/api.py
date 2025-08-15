@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, contacts, events, analytics, organizations, social_groups, 
     social_group_activities, configuration, tasks, task_scheduler,
-    transactions_simple, background_tasks
+    transactions_simple, background_tasks, journal
 )
 
 api_router = APIRouter()
@@ -16,6 +16,7 @@ api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytic
 api_router.include_router(organizations.router, prefix="/organizations", tags=["Organizations"])
 api_router.include_router(social_groups.router, prefix="/social-groups", tags=["Social Groups"])
 api_router.include_router(social_group_activities.router, prefix="/social-groups", tags=["Social Group Activities"])
+api_router.include_router(journal.router, prefix="/journal", tags=["Journal"])
 api_router.include_router(configuration.router, prefix="/config", tags=["Configuration"])
 api_router.include_router(events.router, prefix="/events", tags=["Events"])
 
