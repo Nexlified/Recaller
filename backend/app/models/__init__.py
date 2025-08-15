@@ -2,6 +2,7 @@
 from .tenant import Tenant
 from .user import User
 from .contact import Contact, ContactInteraction
+from .contact_work_experience import ContactWorkExperience
 from .organization import Organization, OrganizationAlias, OrganizationLocation
 from .social_group import SocialGroup, SocialGroupActivity, SocialGroupActivityAttendance, ContactSocialGroupMembership
 from .analytics import (
@@ -28,6 +29,7 @@ __all__ = [
     "User", 
     "Contact",
     "ContactInteraction",
+    "ContactWorkExperience",
     "Organization",
     "OrganizationAlias", 
     "OrganizationLocation",

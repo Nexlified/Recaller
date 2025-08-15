@@ -56,6 +56,18 @@ class Contact(Base):
     organization = relationship(lambda: Organization, foreign_keys=[organization_id], back_populates="contacts")
     interactions = relationship("ContactInteraction", back_populates="contact", cascade="all, delete-orphan")
     task_contacts = relationship(lambda: TaskContact, back_populates="contact")
+    work_experiences = relationship("ContactWorkExperience", foreign_keys="ContactWorkExperience.contact_id", back_populates="contact", cascade="all, delete-orphan")
+    
+    # Helper properties for work experience
+    @property
+    def current_work_experience(self):
+        """Get the current work experience"""
+        return next((exp for exp in self.work_experiences if exp.is_current), None)
+
+    @property
+    def work_history(self):
+        """Get all work experiences ordered by start date (most recent first)"""
+        return sorted(self.work_experiences, key=lambda x: x.start_date, reverse=True)
 
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant
