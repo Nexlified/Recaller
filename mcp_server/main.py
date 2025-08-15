@@ -65,6 +65,19 @@ async def lifespan(app: FastAPI):
     finally:
         logger.info("Shutting down MCP Server...")
         
+        # Cleanup configuration loader
+        try:
+            from .services.config_loader import config_loader
+            await config_loader.cleanup()
+        except ImportError:
+            try:
+                from services.config_loader import config_loader
+                await config_loader.cleanup()
+            except Exception as e:
+                logger.error(f"Error cleaning up config loader: {e}")
+        except Exception as e:
+            logger.error(f"Error cleaning up config loader: {e}")
+        
         # Cleanup auth service
         await auth_service.cleanup()
         

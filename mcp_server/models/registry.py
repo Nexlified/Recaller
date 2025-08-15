@@ -18,12 +18,14 @@ try:
     )
     from ..config.settings import mcp_settings
     from ..services.privacy import privacy_enforcer
+    from ..services.config_loader import config_loader
 except ImportError:
     from schemas.mcp_schemas import (
         ModelInfo, ModelStatus, ModelRegistrationRequest, InferenceType
     )
     from config.settings import mcp_settings
     from services.privacy import privacy_enforcer
+    from services.config_loader import config_loader
 
 
 logger = logging.getLogger(__name__)
@@ -154,7 +156,13 @@ class ModelRegistry:
         # Create registry directory if it doesn't exist
         os.makedirs(self._registry_path, exist_ok=True)
         
-        # Load existing model configurations
+        # Initialize configuration loader
+        await config_loader.initialize()
+        
+        # Load models from configuration files first
+        await self._load_models_from_config()
+        
+        # Load existing model configurations from registry
         await self._load_registry()
         
         # Initialize all registered models
@@ -163,6 +171,44 @@ class ModelRegistry:
                 await self._initialize_model(model_id)
             except Exception as e:
                 logger.error(f"Failed to initialize model {model_id}: {e}")
+    
+    async def _load_models_from_config(self) -> None:
+        """Load models from configuration files."""
+        try:
+            model_requests = await config_loader.get_model_requests()
+            
+            for request in model_requests:
+                try:
+                    # Use default tenant for configuration-loaded models
+                    await self.register_model(request, "default")
+                    logger.info(f"Loaded model from configuration: {request.name}")
+                except Exception as e:
+                    logger.error(f"Failed to load model from configuration {request.name}: {e}")
+                    
+        except Exception as e:
+            logger.error(f"Failed to load models from configuration: {e}")
+    
+    async def reload_configuration(self) -> bool:
+        """
+        Reload models from configuration files.
+        
+        Returns:
+            True if configuration was reloaded successfully
+        """
+        try:
+            # Check if configuration has changed
+            if await config_loader.reload_configuration():
+                logger.info("Reloading models from updated configuration")
+                
+                # Load new models from configuration
+                await self._load_models_from_config()
+                
+                return True
+            return False
+            
+        except Exception as e:
+            logger.error(f"Failed to reload configuration: {e}")
+            raise
     
     async def register_model(self, request: ModelRegistrationRequest, tenant_id: str) -> str:
         """
