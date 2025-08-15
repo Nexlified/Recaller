@@ -163,7 +163,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
 
       {/* Content */}
       <div className="px-6 py-6">
-        <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none">
+        <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none dark:prose-invert">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {entry.content}
           </ReactMarkdown>
