@@ -1,10 +1,19 @@
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from datetime import datetime, date
 from enum import Enum
 
 # Import the model enums for validation
 from app.models.journal import JournalEntryMood
+from app.core.validation import (
+    create_journal_content_validator,
+    create_journal_title_validator,
+    create_journal_location_validator,
+    create_journal_weather_validator,
+    create_entry_date_validator,
+    create_tag_name_validator,
+    create_tag_color_validator,
+)
 
 
 class JournalEntryMoodEnum(str, Enum):
@@ -26,6 +35,10 @@ class JournalTagBase(BaseModel):
     """Base schema for journal tags."""
     tag_name: str = Field(..., min_length=1, max_length=50)
     tag_color: Optional[str] = Field(default=None, max_length=7, pattern=r'^#[0-9A-Fa-f]{6}$')
+    
+    # Validators
+    _validate_tag_name = validator('tag_name', allow_reuse=True)(create_tag_name_validator())
+    _validate_tag_color = validator('tag_color', allow_reuse=True)(create_tag_color_validator())
 
 
 class JournalTagCreate(JournalTagBase):
@@ -37,6 +50,10 @@ class JournalTagUpdate(BaseModel):
     """Schema for updating a journal tag."""
     tag_name: Optional[str] = Field(None, min_length=1, max_length=50)
     tag_color: Optional[str] = Field(default=None, max_length=7, pattern=r'^#[0-9A-Fa-f]{6}$')
+    
+    # Validators
+    _validate_tag_name = validator('tag_name', allow_reuse=True)(create_tag_name_validator())
+    _validate_tag_color = validator('tag_color', allow_reuse=True)(create_tag_color_validator())
 
 
 class JournalTag(JournalTagBase):
@@ -91,6 +108,13 @@ class JournalEntryBase(BaseModel):
     location: Optional[str] = Field(default=None, max_length=255)
     weather: Optional[str] = Field(default=None, max_length=100)
     is_private: bool = Field(default=True)
+    
+    # Validators for security and data integrity
+    _validate_title = validator('title', allow_reuse=True)(create_journal_title_validator())
+    _validate_content = validator('content', allow_reuse=True)(create_journal_content_validator())
+    _validate_entry_date = validator('entry_date', allow_reuse=True)(create_entry_date_validator())
+    _validate_location = validator('location', allow_reuse=True)(create_journal_location_validator())
+    _validate_weather = validator('weather', allow_reuse=True)(create_journal_weather_validator())
 
 
 class JournalEntryCreate(JournalEntryBase):
@@ -108,6 +132,13 @@ class JournalEntryUpdate(BaseModel):
     weather: Optional[str] = Field(default=None, max_length=100)
     is_private: Optional[bool] = None
     is_archived: Optional[bool] = None
+    
+    # Validators for security and data integrity
+    _validate_title = validator('title', allow_reuse=True)(create_journal_title_validator())
+    _validate_content = validator('content', allow_reuse=True)(create_journal_content_validator())
+    _validate_entry_date = validator('entry_date', allow_reuse=True)(create_entry_date_validator())
+    _validate_location = validator('location', allow_reuse=True)(create_journal_location_validator())
+    _validate_weather = validator('weather', allow_reuse=True)(create_journal_weather_validator())
 
 
 class JournalEntryInDBBase(JournalEntryBase):
