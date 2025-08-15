@@ -1,9 +1,10 @@
 from typing import Any, List
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status, Path
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status, Path, Request
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api import deps
+from app.api.deps import get_tenant_context
 from app.crud import user as user_crud
 from app.models.user import User
 from app.schemas.user import User as UserSchema
@@ -63,6 +64,7 @@ router = APIRouter()
     tags=["User Management"]
 )
 def read_users(
+    request: Request,
     db: Session = Depends(deps.get_db),
     skip: int = Query(0, ge=0, description="Number of users to skip for pagination"),
     limit: int = Query(100, ge=1, le=100, description="Maximum number of users to return"),
@@ -96,7 +98,8 @@ def read_users(
     **Response:**
     Returns an array of user objects without sensitive information like passwords.
     """
-    users = user_crud.get_users(db, skip=skip, limit=limit)
+    tenant_id = get_tenant_context(request)
+    users = user_crud.get_users(db, tenant_id=tenant_id, skip=skip, limit=limit)
     return users
 
 @router.get(
@@ -375,7 +378,7 @@ def read_user_by_id(
     - User profile lookups in team applications
     - Verification of user details by authorized personnel
     """
-    user = user_crud.get_user_by_id(db, user_id=user_id)
+    user = user_crud.get_user_by_id(db, user_id=user_id, tenant_id=current_user.tenant_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -515,7 +518,7 @@ def update_user(
          }'
     ```
     """
-    user = user_crud.get_user_by_id(db, user_id=user_id)
+    user = user_crud.get_user_by_id(db, user_id=user_id, tenant_id=current_user.tenant_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

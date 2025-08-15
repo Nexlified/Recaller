@@ -22,9 +22,9 @@ def get_event(db: Session, event_id: int, tenant_id: int) -> Optional[Event]:
 
 def get_events(
     db: Session, 
+    tenant_id: int,
     skip: int = 0, 
     limit: int = 100, 
-    tenant_id: int = 1,
     event_type: Optional[str] = None,
     status: Optional[str] = None,
     start_date_from: Optional[date] = None,

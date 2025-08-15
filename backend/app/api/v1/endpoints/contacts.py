@@ -24,9 +24,9 @@ def list_contacts(
     contacts = contact_crud.get_user_contacts(
         db, 
         user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
         skip=skip, 
-        limit=limit, 
-        tenant_id=current_user.tenant_id
+        limit=limit
     )
     return contacts
 
@@ -66,9 +66,9 @@ def list_public_contacts(
     """
     contacts = contact_crud.get_public_contacts(
         db, 
+        tenant_id=current_user.tenant_id,
         skip=skip, 
-        limit=limit, 
-        tenant_id=current_user.tenant_id
+        limit=limit
     )
     return contacts
 

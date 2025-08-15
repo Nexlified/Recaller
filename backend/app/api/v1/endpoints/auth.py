@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.api import deps
+from app.api.deps import get_tenant_context
 from app.core import security
 from app.core.config import settings
 from app.crud import user as user_crud
@@ -107,8 +108,9 @@ def login(
     User authentication respects tenant isolation. Users can only authenticate 
     within their assigned tenant context.
     """
+    tenant_id = get_tenant_context(request)
     user = user_crud.authenticate(
-        db=db, email=form_data.username, password=form_data.password
+        db=db, email=form_data.username, password=form_data.password, tenant_id=tenant_id
     )
     if not user:
         raise HTTPException(
@@ -182,6 +184,7 @@ def login(
 )
 def register(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db),
     user_in: UserCreate,
 ) -> Any:
@@ -231,11 +234,12 @@ def register(
     After successful registration, use the `/login` endpoint to obtain 
     an access token for API authentication.
     """
-    user = user_crud.get_user_by_email(db, email=user_in.email)
+    tenant_id = get_tenant_context(request)
+    user = user_crud.get_user_by_email(db, email=user_in.email, tenant_id=tenant_id)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system",
         )
-    user = user_crud.create_user(db, obj_in=user_in)
+    user = user_crud.create_user(db, obj_in=user_in, tenant_id=tenant_id)
     return user

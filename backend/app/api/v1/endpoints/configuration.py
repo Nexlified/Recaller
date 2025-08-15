@@ -3,6 +3,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.api import deps
+from app.api.deps import get_tenant_context
 from app.crud import configuration as config_crud
 from app.models.user import User
 from app.schemas import configuration as config_schemas
@@ -23,7 +24,7 @@ def list_categories(
     """
     List all configuration categories.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     categories = config_crud.get_categories(
         db=db, 
         tenant_id=tenant_id, 
@@ -44,7 +45,7 @@ def get_category(
     """
     Get a configuration category by key.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     category = config_crud.get_category_by_key(db=db, key=key, tenant_id=tenant_id)
     if not category:
         raise HTTPException(
@@ -72,7 +73,7 @@ def create_category(
             detail="Not enough permissions"
         )
     
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # Check if category with same key already exists
     existing_category = config_crud.get_category_by_key(
@@ -109,7 +110,7 @@ def update_category(
             detail="Not enough permissions"
         )
     
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     category = config_crud.get_category_by_key(db=db, key=key, tenant_id=tenant_id)
     if not category:
         raise HTTPException(
@@ -145,7 +146,7 @@ def delete_category(
             detail="Not enough permissions"
         )
     
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     category = config_crud.delete_category(db=db, category_id=0, tenant_id=tenant_id)
     if not category:
         raise HTTPException(
@@ -169,7 +170,7 @@ def list_types(
     """
     List all configuration types.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     types = config_crud.get_types(
         db=db, 
         tenant_id=tenant_id, 
@@ -191,7 +192,7 @@ def get_type(
     """
     Get a configuration type by key.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     config_type = config_crud.get_type_by_key(db=db, key=key, tenant_id=tenant_id)
     if not config_type:
         raise HTTPException(
@@ -213,7 +214,7 @@ def get_types_by_category(
     """
     Get configuration types by category.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     types = config_crud.get_types(
         db=db, 
         tenant_id=tenant_id, 
@@ -243,7 +244,7 @@ def create_type(
             detail="Not enough permissions"
         )
     
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # Check if type with same key already exists
     existing_type = config_crud.get_type_by_key(
@@ -290,7 +291,7 @@ def update_type(
             detail="Not enough permissions"
         )
     
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     config_type = config_crud.get_type_by_key(db=db, key=key, tenant_id=tenant_id)
     if not config_type:
         raise HTTPException(
@@ -337,7 +338,7 @@ def delete_type(
             detail="Not enough permissions"
         )
     
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     config_type = config_crud.get_type_by_key(db=db, key=key, tenant_id=tenant_id)
     if not config_type:
         raise HTTPException(
@@ -375,7 +376,7 @@ def list_values(
     """
     List configuration values with optional filtering.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # If search or advanced filtering is needed, use search functionality
     if search or category or tags:
@@ -418,7 +419,7 @@ def get_value(
     """
     Get a configuration value by ID.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     value = config_crud.get_value_by_id(db=db, value_id=value_id, tenant_id=tenant_id)
     if not value:
         raise HTTPException(
@@ -442,7 +443,7 @@ def get_values_by_type(
     """
     Get configuration values by type.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     values = config_crud.get_values(
         db=db,
         tenant_id=tenant_id,
@@ -467,7 +468,7 @@ def create_value(
     """
     Create a new configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # Verify type exists
     config_type = config_crud.get_type_by_id(
@@ -515,7 +516,7 @@ def update_value(
     """
     Update a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     value = config_crud.get_value_by_id(db=db, value_id=value_id, tenant_id=tenant_id)
     if not value:
         raise HTTPException(
@@ -555,7 +556,7 @@ def delete_value(
     """
     Delete a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     deleted_value = config_crud.delete_value(
         db=db, value_id=value_id, tenant_id=tenant_id
     )
@@ -578,7 +579,7 @@ def get_hierarchy(
     """
     Get hierarchical structure for a configuration type.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # Get root level values for this type
     values = config_crud.get_values(
@@ -619,7 +620,7 @@ def get_hierarchy_children(
     """
     Get children of a parent configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     values = config_crud.get_values(
         db=db,
         tenant_id=tenant_id,
@@ -640,7 +641,7 @@ def get_value_ancestors(
     """
     Get all ancestors of a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     ancestors = config_crud.get_value_ancestors(
         db=db, value_id=value_id, tenant_id=tenant_id
     )
@@ -658,7 +659,7 @@ def get_value_descendants(
     """
     Get all descendants of a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     descendants = config_crud.get_value_descendants(
         db=db, value_id=value_id, tenant_id=tenant_id, max_depth=max_depth
     )
@@ -676,7 +677,7 @@ def move_value(
     """
     Move a configuration value to a new parent.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     moved_value = config_crud.move_value(
         db=db, value_id=value_id, new_parent_id=new_parent_id, tenant_id=tenant_id
     )
@@ -707,7 +708,7 @@ def search_configurations(
     """
     Search across all configurations.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     search_tags = tags.split(',') if tags else None
     
     query = config_schemas.ConfigurationSearchQuery(
@@ -737,7 +738,7 @@ def get_value_translations(
     """
     Get all translations for a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     translations = config_crud.get_translations(
         db=db, value_id=value_id, tenant_id=tenant_id
     )
@@ -755,7 +756,7 @@ def get_value_translation(
     """
     Get a specific translation for a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     translation = config_crud.get_translation(
         db=db, value_id=value_id, language_code=language_code, tenant_id=tenant_id
     )
@@ -779,7 +780,7 @@ def create_value_translation(
     """
     Add a translation for a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # Verify value exists
     value = config_crud.get_value_by_id(db=db, value_id=value_id, tenant_id=tenant_id)
@@ -818,7 +819,7 @@ def update_value_translation(
     """
     Update a translation for a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     translation = config_crud.get_translation(
         db=db, value_id=value_id, language_code=language_code, tenant_id=tenant_id
     )
@@ -845,7 +846,7 @@ def delete_value_translation(
     """
     Delete a translation for a configuration value.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     deleted_translation = config_crud.delete_translation(
         db=db, value_id=value_id, language_code=language_code, tenant_id=tenant_id
     )
@@ -867,7 +868,7 @@ def get_configuration_health(
     """
     Get configuration system health status.
     """
-    tenant_id = getattr(request.state, 'tenant_id', 1)
+    tenant_id = get_tenant_context(request)
     
     # Get counts
     categories = config_crud.get_categories(db=db, tenant_id=tenant_id, active_only=False)
