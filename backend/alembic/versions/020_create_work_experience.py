@@ -1,7 +1,7 @@
 """Create contact work experience table
 
-Revision ID: 016_create_contact_work_experience
-Revises: 015_add_journal_life_metrics
+Revision ID: 020_create_work_experience
+Revises: 019_create_debts_and_payments
 Create Date: 2025-01-15 15:00:00.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '016_create_contact_work_experience'
-down_revision = '015_add_journal_life_metrics'
+revision = '020_create_work_experience'
+down_revision = '019_create_debts_and_payments'
 branch_labels = None
 depends_on = None
 
