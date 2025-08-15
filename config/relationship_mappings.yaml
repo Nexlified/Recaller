@@ -30,7 +30,7 @@ relationship_types:
       mutual: true
     
     brother:
-      reverse: sister
+      reverse: sibling
       category: family
       description: "Male sibling"
       mutual: false
