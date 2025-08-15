@@ -15,7 +15,7 @@ from app.models.currency import Currency
 
 def load_currencies_config():
     """Load currencies from YAML configuration"""
-    config_path = Path(__file__).parent.parent.parent / "shared" / "config" / "reference-data" / "core" / "currencies.yml"
+    config_path = Path(__file__).parent.parent.parent / "config" / "currencies.yml"
     
     if not config_path.exists():
         raise FileNotFoundError(f"Currency configuration file not found: {config_path}")
@@ -28,22 +28,20 @@ def import_currencies():
     db = SessionLocal()
     try:
         config = load_currencies_config()
-        currencies_data = config['values']
+        currencies_data = config['currencies']
         
         imported_count = 0
         updated_count = 0
         
         for currency_info in currencies_data:
-            # Extract currency data from YAML structure
-            code = currency_info['metadata']['iso_code']
-            name = currency_info['display_name']
-            symbol = currency_info['metadata']['symbol']
-            decimal_places = currency_info['metadata']['decimal_places']
-            country_codes = currency_info['metadata'].get('countries', [])
+            # Extract currency data from simplified YAML structure
+            code = currency_info['code']
+            name = currency_info['name']
+            symbol = currency_info['symbol']
+            decimal_places = currency_info['decimal_places']
+            country_codes = currency_info.get('countries', [])
             is_active = currency_info['is_active']
-            
-            # Set USD as default if no default exists
-            is_default = code == 'USD'
+            is_default = currency_info.get('is_default', False)
             
             # Check if currency already exists
             existing = db.query(Currency).filter(Currency.code == code).first()
@@ -69,8 +67,10 @@ def import_currencies():
                 existing.decimal_places = decimal_places
                 existing.is_active = is_active
                 existing.country_codes = country_codes
-                # Only set as default if no other default exists
-                if is_default and not db.query(Currency).filter(Currency.is_default == True).first():
+                # Only set as default if explicitly marked as default
+                if is_default:
+                    # Clear other defaults first
+                    db.query(Currency).filter(Currency.is_default == True).update({Currency.is_default: False})
                     existing.is_default = True
                     
                 db.add(existing)

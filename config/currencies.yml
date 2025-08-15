@@ -1,0 +1,403 @@
+# Currency Configuration for Recaller
+# Based on ISO 4217 Standard Currency Codes
+# https://www.iso.org/iso-4217-currency-codes.html
+
+metadata:
+  version: "1.0.0"
+  description: "Comprehensive currency database for Recaller financial management"
+  last_updated: "2024-01-15"
+  iso_standard: "ISO 4217"
+
+currencies:
+  - code: USD
+    name: "US Dollar"
+    symbol: "$"
+    decimal_places: 2
+    countries: ["US"]
+    is_active: true
+    is_default: true
+    
+  - code: EUR
+    name: "Euro"
+    symbol: "€"
+    decimal_places: 2
+    countries: ["AD", "AT", "BE", "CY", "DE", "EE", "ES", "FI", "FR", "GR", "IE", "IT", "LT", "LU", "LV", "MC", "MT", "NL", "PT", "SI", "SK", "SM", "VA"]
+    is_active: true
+    is_default: false
+    
+  - code: GBP
+    name: "British Pound Sterling"
+    symbol: "£"
+    decimal_places: 2
+    countries: ["GB", "IM", "JE", "GG"]
+    is_active: true
+    is_default: false
+    
+  - code: JPY
+    name: "Japanese Yen"
+    symbol: "¥"
+    decimal_places: 0
+    countries: ["JP"]
+    is_active: true
+    is_default: false
+    
+  - code: CAD
+    name: "Canadian Dollar"
+    symbol: "C$"
+    decimal_places: 2
+    countries: ["CA"]
+    is_active: true
+    is_default: false
+    
+  - code: AUD
+    name: "Australian Dollar"
+    symbol: "A$"
+    decimal_places: 2
+    countries: ["AU", "CX", "CC", "HM", "KI", "NR", "NF", "TV"]
+    is_active: true
+    is_default: false
+    
+  - code: CHF
+    name: "Swiss Franc"
+    symbol: "CHF"
+    decimal_places: 2
+    countries: ["CH", "LI"]
+    is_active: true
+    is_default: false
+    
+  - code: CNY
+    name: "Chinese Yuan"
+    symbol: "¥"
+    decimal_places: 2
+    countries: ["CN"]
+    is_active: true
+    is_default: false
+    
+  - code: INR
+    name: "Indian Rupee"
+    symbol: "₹"
+    decimal_places: 2
+    countries: ["IN", "BT"]
+    is_active: true
+    is_default: false
+    
+  - code: KRW
+    name: "South Korean Won"
+    symbol: "₩"
+    decimal_places: 0
+    countries: ["KR"]
+    is_active: true
+    is_default: false
+    
+  - code: BRL
+    name: "Brazilian Real"
+    symbol: "R$"
+    decimal_places: 2
+    countries: ["BR"]
+    is_active: true
+    is_default: false
+    
+  - code: MXN
+    name: "Mexican Peso"
+    symbol: "$"
+    decimal_places: 2
+    countries: ["MX"]
+    is_active: true
+    is_default: false
+    
+  - code: RUB
+    name: "Russian Ruble"
+    symbol: "₽"
+    decimal_places: 2
+    countries: ["RU"]
+    is_active: true
+    is_default: false
+    
+  - code: ZAR
+    name: "South African Rand"
+    symbol: "R"
+    decimal_places: 2
+    countries: ["ZA", "LS", "NA", "SZ"]
+    is_active: true
+    is_default: false
+    
+  - code: SGD
+    name: "Singapore Dollar"
+    symbol: "S$"
+    decimal_places: 2
+    countries: ["SG"]
+    is_active: true
+    is_default: false
+    
+  - code: HKD
+    name: "Hong Kong Dollar"
+    symbol: "HK$"
+    decimal_places: 2
+    countries: ["HK"]
+    is_active: true
+    is_default: false
+    
+  - code: NOK
+    name: "Norwegian Krone"
+    symbol: "kr"
+    decimal_places: 2
+    countries: ["NO", "SJ", "BV"]
+    is_active: true
+    is_default: false
+    
+  - code: SEK
+    name: "Swedish Krona"
+    symbol: "kr"
+    decimal_places: 2
+    countries: ["SE"]
+    is_active: true
+    is_default: false
+    
+  - code: DKK
+    name: "Danish Krone"
+    symbol: "kr"
+    decimal_places: 2
+    countries: ["DK", "FO", "GL"]
+    is_active: true
+    is_default: false
+    
+  - code: PLN
+    name: "Polish Zloty"
+    symbol: "zł"
+    decimal_places: 2
+    countries: ["PL"]
+    is_active: true
+    is_default: false
+    
+  - code: CZK
+    name: "Czech Koruna"
+    symbol: "Kč"
+    decimal_places: 2
+    countries: ["CZ"]
+    is_active: true
+    is_default: false
+    
+  - code: HUF
+    name: "Hungarian Forint"
+    symbol: "Ft"
+    decimal_places: 2
+    countries: ["HU"]
+    is_active: true
+    is_default: false
+    
+  - code: ILS
+    name: "Israeli New Shekel"
+    symbol: "₪"
+    decimal_places: 2
+    countries: ["IL", "PS"]
+    is_active: true
+    is_default: false
+    
+  - code: AED
+    name: "UAE Dirham"
+    symbol: "د.إ"
+    decimal_places: 2
+    countries: ["AE"]
+    is_active: true
+    is_default: false
+    
+  - code: SAR
+    name: "Saudi Riyal"
+    symbol: "﷼"
+    decimal_places: 2
+    countries: ["SA"]
+    is_active: true
+    is_default: false
+    
+  - code: THB
+    name: "Thai Baht"
+    symbol: "฿"
+    decimal_places: 2
+    countries: ["TH"]
+    is_active: true
+    is_default: false
+    
+  - code: MYR
+    name: "Malaysian Ringgit"
+    symbol: "RM"
+    decimal_places: 2
+    countries: ["MY"]
+    is_active: true
+    is_default: false
+    
+  - code: PHP
+    name: "Philippine Peso"
+    symbol: "₱"
+    decimal_places: 2
+    countries: ["PH"]
+    is_active: true
+    is_default: false
+    
+  - code: IDR
+    name: "Indonesian Rupiah"
+    symbol: "Rp"
+    decimal_places: 2
+    countries: ["ID"]
+    is_active: true
+    is_default: false
+    
+  - code: VND
+    name: "Vietnamese Dong"
+    symbol: "₫"
+    decimal_places: 0
+    countries: ["VN"]
+    is_active: true
+    is_default: false
+    
+  - code: TRY
+    name: "Turkish Lira"
+    symbol: "₺"
+    decimal_places: 2
+    countries: ["TR"]
+    is_active: true
+    is_default: false
+    
+  - code: EGP
+    name: "Egyptian Pound"
+    symbol: "£"
+    decimal_places: 2
+    countries: ["EG"]
+    is_active: true
+    is_default: false
+    
+  - code: NGN
+    name: "Nigerian Naira"
+    symbol: "₦"
+    decimal_places: 2
+    countries: ["NG"]
+    is_active: true
+    is_default: false
+    
+  - code: KES
+    name: "Kenyan Shilling"
+    symbol: "KSh"
+    decimal_places: 2
+    countries: ["KE"]
+    is_active: true
+    is_default: false
+    
+  - code: GHS
+    name: "Ghanaian Cedi"
+    symbol: "₵"
+    decimal_places: 2
+    countries: ["GH"]
+    is_active: true
+    is_default: false
+    
+  - code: MAD
+    name: "Moroccan Dirham"
+    symbol: "MAD"
+    decimal_places: 2
+    countries: ["MA", "EH"]
+    is_active: true
+    is_default: false
+    
+  - code: TND
+    name: "Tunisian Dinar"
+    symbol: "د.ت"
+    decimal_places: 3
+    countries: ["TN"]
+    is_active: true
+    is_default: false
+    
+  - code: CLP
+    name: "Chilean Peso"
+    symbol: "$"
+    decimal_places: 0
+    countries: ["CL"]
+    is_active: true
+    is_default: false
+    
+  - code: ARS
+    name: "Argentine Peso"
+    symbol: "$"
+    decimal_places: 2
+    countries: ["AR"]
+    is_active: true
+    is_default: false
+    
+  - code: COP
+    name: "Colombian Peso"
+    symbol: "$"
+    decimal_places: 2
+    countries: ["CO"]
+    is_active: true
+    is_default: false
+    
+  - code: PEN
+    name: "Peruvian Sol"
+    symbol: "S/"
+    decimal_places: 2
+    countries: ["PE"]
+    is_active: true
+    is_default: false
+    
+  - code: UYU
+    name: "Uruguayan Peso"
+    symbol: "$U"
+    decimal_places: 2
+    countries: ["UY"]
+    is_active: true
+    is_default: false
+    
+  - code: BOB
+    name: "Bolivian Boliviano"
+    symbol: "Bs"
+    decimal_places: 2
+    countries: ["BO"]
+    is_active: true
+    is_default: false
+    
+  - code: RON
+    name: "Romanian Leu"
+    symbol: "lei"
+    decimal_places: 2
+    countries: ["RO"]
+    is_active: true
+    is_default: false
+    
+  - code: BGN
+    name: "Bulgarian Lev"
+    symbol: "лв"
+    decimal_places: 2
+    countries: ["BG"]
+    is_active: true
+    is_default: false
+    
+  - code: HRK
+    name: "Croatian Kuna"
+    symbol: "kn"
+    decimal_places: 2
+    countries: ["HR"]
+    is_active: true
+    is_default: false
+    
+  - code: UAH
+    name: "Ukrainian Hryvnia"
+    symbol: "₴"
+    decimal_places: 2
+    countries: ["UA"]
+    is_active: true
+    is_default: false
+    
+# Cryptocurrencies (Optional - can be enabled for crypto tracking)
+  - code: BTC
+    name: "Bitcoin"
+    symbol: "₿"
+    decimal_places: 8
+    countries: []
+    is_active: false
+    is_default: false
+    
+  - code: ETH
+    name: "Ethereum"
+    symbol: "Ξ"
+    decimal_places: 18
+    countries: []
+    is_active: false
+    is_default: false
