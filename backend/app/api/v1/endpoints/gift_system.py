@@ -1,11 +1,15 @@
 from typing import Any, List, Optional, Dict
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.orm import Session
+from datetime import date
+from decimal import Decimal
 
 from app.api import deps
 from app.api.deps import get_tenant_context
 from app.core.enhanced_settings import get_settings
 from app.models.user import User
+from app.crud import gift as gift_crud
+from app.services.gift_recommendation import GiftRecommendationService
 from app.schemas.gift_system import (
     GiftSystemConfig,
     GiftIntegrationSettings,
@@ -13,7 +17,13 @@ from app.schemas.gift_system import (
     GiftSystemStatus,
     GiftCategoryReference,
     GiftOccasionReference,
-    GiftBudgetRangeReference
+    GiftBudgetRangeReference,
+    Gift,
+    GiftCreate,
+    GiftUpdate,
+    GiftIdea,
+    GiftIdeaCreate,
+    GiftIdeaUpdate
 )
 
 router = APIRouter()
@@ -275,3 +285,552 @@ def get_gift_budget_ranges(
     ]
     
     return budget_ranges
+
+
+# Gift CRUD Endpoints
+
+@router.get("/gifts/", response_model=List[Gift])
+def list_gifts(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum records to return"),
+    status: Optional[str] = Query(None, description="Filter by gift status"),
+    category: Optional[str] = Query(None, description="Filter by gift category"),
+    occasion: Optional[str] = Query(None, description="Filter by occasion"),
+    recipient_contact_id: Optional[int] = Query(None, description="Filter by recipient contact ID")
+) -> Any:
+    """
+    Retrieve gifts for the current user.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gifts = gift_crud.get_gifts(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        skip=skip,
+        limit=limit,
+        status=status,
+        category=category,
+        occasion=occasion,
+        recipient_contact_id=recipient_contact_id
+    )
+    return gifts
+
+
+@router.get("/gifts/{gift_id}", response_model=Gift)
+def get_gift(
+    request: Request,
+    gift_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get gift by ID.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gift = gift_crud.get_gift_with_user_access(
+        db, 
+        gift_id=gift_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not gift:
+        raise HTTPException(status_code=404, detail="Gift not found")
+    return gift
+
+
+@router.post("/gifts/", response_model=Gift)
+def create_gift(
+    request: Request,
+    gift_in: GiftCreate,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Create new gift.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gift = gift_crud.create_gift(
+        db, 
+        obj_in=gift_in, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    return gift
+
+
+@router.put("/gifts/{gift_id}", response_model=Gift)
+def update_gift(
+    request: Request,
+    gift_id: int,
+    gift_in: GiftUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Update gift. Only the gift owner can update it.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gift = gift_crud.get_gift_with_user_access(
+        db, 
+        gift_id=gift_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not gift:
+        raise HTTPException(status_code=404, detail="Gift not found")
+    
+    gift = gift_crud.update_gift(db, db_obj=gift, obj_in=gift_in)
+    return gift
+
+
+@router.delete("/gifts/{gift_id}", response_model=Gift)
+def delete_gift(
+    request: Request,
+    gift_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Delete gift (soft delete).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gift = gift_crud.get_gift_with_user_access(
+        db, 
+        gift_id=gift_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not gift:
+        raise HTTPException(status_code=404, detail="Gift not found")
+    
+    gift = gift_crud.delete_gift(db, db_obj=gift)
+    return gift
+
+
+# Gift Ideas CRUD Endpoints
+
+@router.get("/gift-ideas/", response_model=List[GiftIdea])
+def list_gift_ideas(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum records to return"),
+    category: Optional[str] = Query(None, description="Filter by category"),
+    target_contact_id: Optional[int] = Query(None, description="Filter by target contact ID"),
+    is_favorite: Optional[bool] = Query(None, description="Filter by favorite status"),
+    min_rating: Optional[int] = Query(None, ge=1, le=5, description="Minimum rating filter")
+) -> Any:
+    """
+    Retrieve gift ideas for the current user.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    ideas = gift_crud.get_gift_ideas(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        skip=skip,
+        limit=limit,
+        category=category,
+        target_contact_id=target_contact_id,
+        is_favorite=is_favorite,
+        min_rating=min_rating
+    )
+    return ideas
+
+
+@router.get("/gift-ideas/search/", response_model=List[GiftIdea])
+def search_gift_ideas(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    q: str = Query(..., min_length=1, max_length=255, description="Search query"),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum records to return")
+) -> Any:
+    """
+    Search gift ideas by title, description, tags, or category.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    # Sanitize search query
+    from app.core.validation import InputSanitizer
+    try:
+        sanitized_query = InputSanitizer.sanitize_search_query(q)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    ideas = gift_crud.search_gift_ideas(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        query=sanitized_query,
+        skip=skip,
+        limit=limit
+    )
+    return ideas
+
+
+@router.get("/gift-ideas/popular/", response_model=List[GiftIdea])
+def get_popular_gift_ideas(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    limit: int = Query(10, ge=1, le=50, description="Maximum records to return")
+) -> Any:
+    """
+    Get most popular gift ideas (by times gifted).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    ideas = gift_crud.get_popular_gift_ideas(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        limit=limit
+    )
+    return ideas
+
+
+@router.get("/gift-ideas/{idea_id}", response_model=GiftIdea)
+def get_gift_idea(
+    request: Request,
+    idea_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get gift idea by ID.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    idea = gift_crud.get_gift_idea_with_user_access(
+        db, 
+        idea_id=idea_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not idea:
+        raise HTTPException(status_code=404, detail="Gift idea not found")
+    return idea
+
+
+@router.post("/gift-ideas/", response_model=GiftIdea)
+def create_gift_idea(
+    request: Request,
+    idea_in: GiftIdeaCreate,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Create new gift idea.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    idea = gift_crud.create_gift_idea(
+        db, 
+        obj_in=idea_in, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    return idea
+
+
+@router.put("/gift-ideas/{idea_id}", response_model=GiftIdea)
+def update_gift_idea(
+    request: Request,
+    idea_id: int,
+    idea_in: GiftIdeaUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Update gift idea. Only the idea owner can update it.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    idea = gift_crud.get_gift_idea_with_user_access(
+        db, 
+        idea_id=idea_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not idea:
+        raise HTTPException(status_code=404, detail="Gift idea not found")
+    
+    idea = gift_crud.update_gift_idea(db, db_obj=idea, obj_in=idea_in)
+    return idea
+
+
+@router.delete("/gift-ideas/{idea_id}", response_model=GiftIdea)
+def delete_gift_idea(
+    request: Request,
+    idea_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Delete gift idea (soft delete).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    idea = gift_crud.get_gift_idea_with_user_access(
+        db, 
+        idea_id=idea_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not idea:
+        raise HTTPException(status_code=404, detail="Gift idea not found")
+    
+    idea = gift_crud.delete_gift_idea(db, db_obj=idea)
+    return idea
+
+
+@router.post("/gift-ideas/{idea_id}/mark-as-gifted", response_model=GiftIdea)
+def mark_gift_idea_as_gifted(
+    request: Request,
+    idea_id: int,
+    gifted_date: Optional[date] = Query(None, description="Date when gift was given"),
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Mark gift idea as gifted (increment usage counter).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    idea = gift_crud.get_gift_idea_with_user_access(
+        db, 
+        idea_id=idea_id, 
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    if not idea:
+        raise HTTPException(status_code=404, detail="Gift idea not found")
+    
+    idea = gift_crud.mark_gift_idea_as_gifted(db, db_obj=idea, gifted_date=gifted_date)
+    return idea
+
+
+# Analytics and Recommendations
+
+@router.get("/analytics/", response_model=Dict[str, Any])
+def get_gift_analytics(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get gift analytics for the current user.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    analytics = gift_crud.get_gift_analytics(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id
+    )
+    return analytics
+
+
+@router.get("/analytics/budget-insights/", response_model=Dict[str, Any])
+def get_budget_insights(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get budget insights and spending patterns.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    recommendation_service = GiftRecommendationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    insights = recommendation_service.get_budget_insights()
+    return insights
+
+
+@router.get("/analytics/gift-patterns/", response_model=Dict[str, Any])
+def get_gift_giving_patterns(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get gift-giving patterns and preferences analysis.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    recommendation_service = GiftRecommendationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    patterns = recommendation_service.get_gift_giving_patterns()
+    return patterns
+
+
+@router.get("/recommendations/upcoming-occasions/", response_model=List[Dict[str, Any]])
+def get_upcoming_occasions(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    days_ahead: int = Query(30, ge=1, le=365, description="Number of days to look ahead")
+) -> Any:
+    """
+    Get upcoming gift occasions and reminders.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    recommendation_service = GiftRecommendationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    occasions = recommendation_service.get_upcoming_occasions(days_ahead)
+    return occasions
+
+
+@router.get("/recommendations/for-contact/{contact_id}", response_model=List[Dict[str, Any]])
+def get_gift_recommendations_for_contact(
+    request: Request,
+    contact_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    occasion: Optional[str] = Query(None, description="Filter by occasion"),
+    budget_max: Optional[Decimal] = Query(None, description="Maximum budget filter"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum recommendations to return")
+) -> Any:
+    """
+    Get gift recommendations for a specific contact.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    recommendation_service = GiftRecommendationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    recommendations = recommendation_service.get_gift_suggestions_for_contact(
+        contact_id=contact_id,
+        occasion=occasion,
+        budget_max=budget_max,
+        limit=limit
+    )
+    return recommendations
+
+
+@router.get("/recommendations/reminders/", response_model=List[Dict[str, Any]])
+def get_reminder_suggestions(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    days_ahead: int = Query(60, ge=1, le=365, description="Number of days to look ahead for reminders")
+) -> Any:
+    """
+    Get suggestions for setting up gift reminders.
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    recommendation_service = GiftRecommendationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    suggestions = recommendation_service.get_reminder_suggestions(days_ahead)
+    return suggestions
+
+
+# Integration Endpoints
+
+@router.get("/gifts/by-recipient/{contact_id}", response_model=List[Gift])
+def get_gifts_by_recipient(
+    request: Request,
+    contact_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum records to return")
+) -> Any:
+    """
+    Get gifts for a specific recipient (contact integration).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gifts = gift_crud.get_gifts_by_recipient(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        recipient_contact_id=contact_id,
+        skip=skip,
+        limit=limit
+    )
+    return gifts
+
+
+@router.get("/gifts/by-date-range/", response_model=List[Gift])
+def get_gifts_by_date_range(
+    request: Request,
+    start_date: date = Query(..., description="Start date for occasion filter"),
+    end_date: date = Query(..., description="End date for occasion filter"),
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get gifts within a date range (reminder integration).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    gifts = gift_crud.get_gifts_by_occasion_date_range(
+        db,
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        start_date=start_date,
+        end_date=end_date
+    )
+    return gifts
