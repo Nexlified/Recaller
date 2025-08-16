@@ -10,6 +10,7 @@ from app.core.enhanced_settings import get_settings
 from app.models.user import User
 from app.crud import gift as gift_crud
 from app.services.gift_recommendation import GiftRecommendationService
+from app.services.gift_integration import GiftIntegrationService
 from app.schemas.gift_system import (
     GiftSystemConfig,
     GiftIntegrationSettings,
@@ -834,3 +835,101 @@ def get_gifts_by_date_range(
         end_date=end_date
     )
     return gifts
+
+
+# Advanced Integration Endpoints
+
+@router.get("/integration/contacts-with-gifts/", response_model=List[Dict[str, Any]])
+def get_contacts_with_gifts(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Get contacts and their associated gifts (contact system integration).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    integration_service = GiftIntegrationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    contacts_data = integration_service.get_contacts_with_gifts()
+    return contacts_data
+
+
+@router.get("/integration/financial-summary/", response_model=Dict[str, Any])
+def get_gift_financial_summary(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    year: Optional[int] = Query(None, description="Year for financial summary")
+) -> Any:
+    """
+    Get financial summary of gift spending (financial system integration).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    integration_service = GiftIntegrationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    summary = integration_service.get_financial_summary(year)
+    return summary
+
+
+@router.get("/integration/reminder-data/", response_model=List[Dict[str, Any]])
+def get_gift_reminder_data(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    days_ahead: int = Query(30, ge=1, le=365, description="Days ahead for reminders")
+) -> Any:
+    """
+    Get gift reminder data (reminder system integration).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    integration_service = GiftIntegrationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    reminder_data = integration_service.get_reminder_data(days_ahead)
+    return reminder_data
+
+
+@router.post("/integration/create-from-contact-occasion/", response_model=Gift)
+def create_gift_from_contact_occasion(
+    request: Request,
+    contact_id: int = Query(..., description="Contact ID"),
+    occasion: str = Query(..., description="Occasion name"),
+    occasion_date: date = Query(..., description="Occasion date"),
+    budget_amount: Optional[float] = Query(None, description="Budget amount"),
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Create a gift from contact occasion data (contact system integration).
+    """
+    settings = get_settings()
+    if not settings.GIFT_SYSTEM_ENABLED:
+        raise HTTPException(status_code=404, detail="Gift system is not enabled")
+    
+    integration_service = GiftIntegrationService(
+        db, current_user.id, current_user.tenant_id
+    )
+    
+    gift = integration_service.create_gift_from_contact_occasion(
+        contact_id=contact_id,
+        occasion=occasion,
+        occasion_date=occasion_date,
+        budget_amount=budget_amount
+    )
+    
+    if not gift:
+        raise HTTPException(status_code=404, detail="Contact not found or gift creation failed")
+    
+    return gift
