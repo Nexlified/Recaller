@@ -8,7 +8,13 @@ import { Header } from '@/components/layout/Header';
 import { RelationshipManager } from '@/components/contacts/RelationshipManager';
 import { RelationshipNetwork } from '@/components/contacts/RelationshipNetwork';
 import { RelationshipTimeline } from '@/components/contacts/RelationshipTimeline';
+import { FamilyTree } from '@/components/contacts/FamilyTree';
+import { ProfessionalNetwork } from '@/components/contacts/ProfessionalNetwork';
+import { SocialNetwork } from '@/components/contacts/SocialNetwork';
+import { RelationshipAnalyticsDashboard } from '@/components/contacts/RelationshipAnalytics';
 import contactsService, { Contact } from '@/services/contacts';
+import contactRelationshipService from '@/services/contactRelationships';
+import { ContactRelationship } from '@/types/ContactRelationship';
 import type { User } from '@/services/auth';
 
 interface ContactDetailPageProps {
@@ -21,10 +27,13 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [contact, setContact] = useState<Contact | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [relationships, setRelationships] = useState<ContactRelationship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'details' | 'relationships' | 'network' | 'timeline'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'relationships' | 'network' | 'visualizations' | 'analytics'>('details');
 
-  const contactId = parseInt(params.id);
+  // Get contactId from params
+  const contactId = parseInt((params as any).id);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -36,13 +45,17 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
     } else {
       setIsLoading(false);
     }
-  }, [contactId, loadContact]);
+  }, [contactId]);
 
   const loadContact = useCallback(async () => {
     try {
       setIsLoading(true);
-      const contacts = await contactsService.getContacts();
-      const foundContact = contacts.find(c => c.id === contactId);
+      const [allContacts, contactRelationships] = await Promise.all([
+        contactsService.getContacts(),
+        contactRelationshipService.getContactRelationships(contactId)
+      ]);
+      
+      const foundContact = allContacts.find(c => c.id === contactId);
       
       if (!foundContact) {
         router.push('/contacts');
@@ -50,6 +63,8 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
       }
       
       setContact(foundContact);
+      setContacts(allContacts);
+      setRelationships(contactRelationships);
     } catch (error) {
       console.error('Error loading contact:', error);
       router.push('/contacts');
@@ -176,17 +191,27 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
-                  Network
+                  Network Map
                 </button>
                 <button
-                  onClick={() => setActiveTab('timeline')}
+                  onClick={() => setActiveTab('visualizations')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'timeline'
+                    activeTab === 'visualizations'
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
-                  Timeline
+                  Visualizations
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'analytics'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Analytics
                 </button>
               </nav>
             </div>
@@ -195,88 +220,149 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
           {/* Tab content */}
           <div className="mt-6">
             {activeTab === 'details' && (
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                <div className="px-6 py-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Contact Information</h3>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        First Name
-                      </label>
-                      <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                        {contact.first_name}
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                  <div className="px-6 py-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Contact Information</h3>
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          First Name
+                        </label>
+                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                          {contact.first_name}
+                        </div>
+                      </div>
+                      
+                      {contact.last_name && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Last Name
+                          </label>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {contact.last_name}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {contact.email && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Email
+                          </label>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            <a href={`mailto:${contact.email}`} className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                              {contact.email}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {contact.phone && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Phone
+                          </label>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            <a href={`tel:${contact.phone}`} className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                              {contact.phone}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {contact.job_title && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Job Title
+                          </label>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {contact.job_title}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {contact.company && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Company
+                          </label>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {contact.company}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {contact.notes && (
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Notes
+                          </label>
+                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
+                            {contact.notes}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Relationship Summary */}
+                {relationships.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                    <div className="px-6 py-4">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Relationship Summary</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(
+                          relationships.reduce((acc, rel) => {
+                            acc[rel.relationship_category] = (acc[rel.relationship_category] || 0) + 1;
+                            return acc;
+                          }, {} as Record<string, number>)
+                        ).map(([category, count]) => (
+                          <div key={category} className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white">{count}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 capitalize">{category}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    
-                    {contact.last_name && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Last Name
-                        </label>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          {contact.last_name}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {contact.email && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Email
-                        </label>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          <a href={`mailto:${contact.email}`} className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                            {contact.email}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {contact.phone && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Phone
-                        </label>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          <a href={`tel:${contact.phone}`} className="text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                            {contact.phone}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {contact.job_title && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Job Title
-                        </label>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          {contact.job_title}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {contact.company && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Company
-                        </label>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          {contact.company}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {contact.notes && (
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Notes
-                        </label>
-                        <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                          {contact.notes}
-                        </div>
-                      </div>
-                    )}
+                  </div>
+                )}
+
+                {/* Quick Actions */}
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                  <div className="px-6 py-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => setActiveTab('relationships')}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <span className="mr-2">👥</span>
+                        Manage Relationships
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('visualizations')}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <span className="mr-2">🌳</span>
+                        View Family Tree
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('network')}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <span className="mr-2">🕸️</span>
+                        Social Network
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('analytics')}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <span className="mr-2">📊</span>
+                        View Analytics
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -292,12 +378,43 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
             )}
 
             {activeTab === 'network' && (
-              <RelationshipNetwork contactId={contactId} width={800} height={500} />
+              <div className="space-y-6">
+                <SocialNetwork
+                  contactId={contactId}
+                  relationships={relationships}
+                  contacts={contacts}
+                  onContactClick={(id) => router.push(`/contacts/${id}`)}
+                />
+                <RelationshipTimeline contactId={contactId} />
+              </div>
             )}
 
-            {activeTab === 'timeline' && (
+            {activeTab === 'visualizations' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <FamilyTree
+                    contactId={contactId}
+                    relationships={relationships.filter(r => r.relationship_category === 'family')}
+                    contacts={contacts}
+                    onContactClick={(id) => router.push(`/contacts/${id}`)}
+                  />
+                  <ProfessionalNetwork
+                    contactId={contactId}
+                    relationships={relationships.filter(r => r.relationship_category === 'professional')}
+                    contacts={contacts}
+                    onContactClick={(id) => router.push(`/contacts/${id}`)}
+                  />
+                </div>
+                <RelationshipNetwork contactId={contactId} width={800} height={400} />
+              </div>
+            )}
+
+            {activeTab === 'analytics' && (
               <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <RelationshipTimeline contactId={contactId} />
+                <RelationshipAnalyticsDashboard
+                  contactId={contactId}
+                  relationships={relationships}
+                />
               </div>
             )}
           </div>

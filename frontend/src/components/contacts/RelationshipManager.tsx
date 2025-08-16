@@ -8,6 +8,7 @@ import {
 import { Contact } from '../../services/contacts';
 import contactRelationshipService from '../../services/contactRelationships';
 import contactsService from '../../services/contacts';
+import relationshipService from '../../services/relationships';
 
 interface RelationshipManagerProps {
   contactId: number;
@@ -29,10 +30,14 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     relationship_type: '',
     relationship_strength: 5,
     relationship_status: RelationshipStatus.ACTIVE,
+    start_date: new Date().toISOString().split('T')[0],
+    end_date: undefined,
     is_mutual: true,
     notes: '',
     context: ''
   });
+  const [showBidirectionalPreview, setShowBidirectionalPreview] = useState(false);
+  const [relationshipCategories, setRelationshipCategories] = useState<Record<string, RelationshipTypeOption[]>>({});
 
   useEffect(() => {
     loadData();
@@ -51,6 +56,16 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       setRelationshipOptions(optionsData);
       // Filter out the current contact from available contacts
       setAvailableContacts(contactsData.filter(c => c.id !== contactId));
+      
+      // Group relationship options by category
+      const grouped = optionsData.reduce((acc, option) => {
+        if (!acc[option.category]) {
+          acc[option.category] = [];
+        }
+        acc[option.category].push(option);
+        return acc;
+      }, {} as Record<string, RelationshipTypeOption[]>);
+      setRelationshipCategories(grouped);
     } catch (error) {
       console.error('Error loading relationship data:', error);
     } finally {
@@ -64,16 +79,30 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
         alert('Please select a contact and relationship type');
         return;
       }
+      
+      const validationResult = relationshipService.validateBidirectionalRelationship(
+        newRelationship.contact_a_id,
+        newRelationship.contact_b_id,
+        newRelationship.relationship_type
+      );
+      
+      if (!validationResult.valid) {
+        alert(`Validation failed: ${validationResult.errors.join(', ')}`);
+        return;
+      }
 
       await contactRelationshipService.createRelationship(newRelationship);
       await loadData();
       setShowAddForm(false);
+      setShowBidirectionalPreview(false);
       setNewRelationship({
         contact_a_id: contactId,
         contact_b_id: 0,
         relationship_type: '',
         relationship_strength: 5,
         relationship_status: RelationshipStatus.ACTIVE,
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: undefined,
         is_mutual: true,
         notes: '',
         context: ''
@@ -85,6 +114,35 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       console.error('Error creating relationship:', error);
       alert('Failed to create relationship. Please try again.');
     }
+  };
+
+  const getSelectedContactName = () => {
+    const contact = availableContacts.find(c => c.id === newRelationship.contact_b_id);
+    return contact ? `${contact.first_name} ${contact.last_name || ''}`.trim() : '';
+  };
+
+  const getCurrentContactName = () => {
+    // This would ideally come from a contact context or prop
+    return 'Current Contact';
+  };
+
+  const getBidirectionalPreview = () => {
+    if (!newRelationship.relationship_type || !newRelationship.contact_b_id) {
+      return null;
+    }
+    
+    const selectedOption = relationshipOptions.find(opt => opt.key === newRelationship.relationship_type);
+    if (!selectedOption) return null;
+    
+    const currentName = getCurrentContactName();
+    const selectedName = getSelectedContactName();
+    
+    // For simplicity, show the basic relationship preview
+    // In a full implementation, this would use the gender resolution logic
+    return {
+      aToB: `${currentName} → ${selectedName}: ${selectedOption.display_name}`,
+      bToA: `${selectedName} → ${currentName}: ${selectedOption.display_name}` // This would be the reverse type
+    };
   };
 
   const handleDeleteRelationship = async (relationship: ContactRelationship) => {
@@ -192,36 +250,65 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
               </label>
               <select
                 value={newRelationship.relationship_type}
-                onChange={(e) => setNewRelationship({
-                  ...newRelationship,
-                  relationship_type: e.target.value
-                })}
+                onChange={(e) => {
+                  setNewRelationship({
+                    ...newRelationship,
+                    relationship_type: e.target.value
+                  });
+                  // Show preview when type is selected
+                  if (e.target.value && newRelationship.contact_b_id) {
+                    setShowBidirectionalPreview(true);
+                  }
+                }}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="">Select relationship type...</option>
-                {relationshipOptions.map(option => (
-                  <option key={option.key} value={option.key}>
-                    {option.display_name} ({option.category})
-                  </option>
+                {Object.entries(relationshipCategories).map(([category, options]) => (
+                  <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                    {options.map(option => (
+                      <option key={option.key} value={option.key}>
+                        {option.display_name}
+                        {option.description && ` - ${option.description}`}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Strength (1-10)
+                Relationship Strength: {newRelationship.relationship_strength}/10
               </label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={newRelationship.relationship_strength}
-                onChange={(e) => setNewRelationship({
-                  ...newRelationship,
-                  relationship_strength: parseInt(e.target.value)
-                })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
+              <div className="mt-2 space-y-2">
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={newRelationship.relationship_strength}
+                  onChange={(e) => setNewRelationship({
+                    ...newRelationship,
+                    relationship_strength: parseInt(e.target.value)
+                  })}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>Weak</span>
+                  <span>Moderate</span>
+                  <span>Strong</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-full h-2 bg-gray-200 rounded-full">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-200 ${getStrengthColor(newRelationship.relationship_strength)}`}
+                      style={{ width: `${(newRelationship.relationship_strength / 10) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem]">
+                    {newRelationship.relationship_strength}/10
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -241,22 +328,96 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
                 <option value={RelationshipStatus.ENDED}>Ended</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={newRelationship.start_date || ''}
+                onChange={(e) => setNewRelationship({
+                  ...newRelationship,
+                  start_date: e.target.value
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                End Date (Optional)
+              </label>
+              <input
+                type="date"
+                value={newRelationship.end_date || ''}
+                onChange={(e) => setNewRelationship({
+                  ...newRelationship,
+                  end_date: e.target.value || undefined
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                disabled={newRelationship.relationship_status === RelationshipStatus.ACTIVE}
+              />
+              {newRelationship.relationship_status === RelationshipStatus.ACTIVE && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  End date disabled for active relationships
+                </p>
+              )}
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Notes
-            </label>
-            <textarea
-              value={newRelationship.notes}
-              onChange={(e) => setNewRelationship({
-                ...newRelationship,
-                notes: e.target.value
-              })}
-              rows={2}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Optional notes about the relationship..."
-            />
+          {/* Bidirectional Preview */}
+          {showBidirectionalPreview && getBidirectionalPreview() && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                📝 Bidirectional Relationship Preview
+              </h5>
+              <div className="space-y-1 text-sm">
+                <div className="text-blue-800 dark:text-blue-200">
+                  {getBidirectionalPreview()?.aToB}
+                </div>
+                <div className="text-blue-800 dark:text-blue-200">
+                  {getBidirectionalPreview()?.bToA}
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                Both relationship directions will be created automatically
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Notes
+              </label>
+              <textarea
+                value={newRelationship.notes}
+                onChange={(e) => setNewRelationship({
+                  ...newRelationship,
+                  notes: e.target.value
+                })}
+                rows={2}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder="Optional notes about the relationship..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Context
+              </label>
+              <textarea
+                value={newRelationship.context}
+                onChange={(e) => setNewRelationship({
+                  ...newRelationship,
+                  context: e.target.value
+                })}
+                rows={2}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder="Where did you meet, how do you know each other..."
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2">
