@@ -27,6 +27,7 @@ api_router.include_router(configuration.router, prefix="/config", tags=["Configu
 api_router.include_router(config_manager.router, prefix="/config-manager", tags=["Configuration Manager"])
 api_router.include_router(activity_config.router, prefix="/activity-config", tags=["Activity Configuration"])
 api_router.include_router(gift_system.router, prefix="/config", tags=["Gift System Configuration"])
+api_router.include_router(gift_system.router, prefix="/gifts", tags=["Gift Management"])
 api_router.include_router(events.router, prefix="/events", tags=["Events"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 
