@@ -306,6 +306,14 @@ export default function TaskListPage() {
     setCurrentPage(1); // Reset to first page when filters change
   }, [tasks, activeFilters]);
 
+  // Handle pagination when filteredTasks changes due to deletions
+  useEffect(() => {
+    const newTotalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    }
+  }, [filteredTasks.length, currentPage, tasksPerPage]);
+
   const loadTaskData = async () => {
     try {
       setLoading(true);
@@ -345,12 +353,18 @@ export default function TaskListPage() {
   const handleTaskDelete = async (taskId: number) => {
     if (!confirm('Are you sure you want to delete this task?')) return;
     
+    // Optimistic update: remove from UI immediately
+    const originalTasks = tasks;
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+    
     try {
       await tasksService.deleteTask(taskId);
-      setTasks(prev => prev.filter(task => task.id !== taskId));
+      // Success - task already removed from UI
     } catch (err) {
       console.error('Error deleting task:', err);
       setError('Failed to delete task');
+      // Revert optimistic update on error
+      setTasks(originalTasks);
     }
   };
 

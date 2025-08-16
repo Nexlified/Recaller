@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import {
   TaskList,
   TaskForm,
+  TaskFormData,
   TaskFilters,
   CategoryManager,
   TaskPriorityBadge,
@@ -152,15 +153,15 @@ export default function TaskManagementDemo() {
     console.log(`Task ${taskId} completed`);
   };
 
-  const handleTaskSubmit = (taskData: TaskCreate | TaskUpdate) => {
+  const handleTaskSubmit = (data: TaskFormData) => {
     if (editingTask) {
       // Update existing task - cast to any to handle the type mismatch safely
-      const updatedTask = { ...editingTask, ...taskData } as Task;
+      const updatedTask = { ...editingTask, ...data.core } as Task;
       handleTaskUpdate(updatedTask);
       setEditingTask(undefined);
     } else {
       // Create new task
-      const createData = taskData as TaskCreate;
+      const createData = data.core as TaskCreate;
       const newTask: Task = {
         id: Math.max(...tasks.map(t => t.id)) + 1,
         tenant_id: 1,
