@@ -23,6 +23,7 @@ from .transaction import Transaction
 from .budget import Budget
 from .journal import JournalEntry, JournalTag, JournalAttachment
 from .personal_debt import PersonalDebt, DebtPayment
+from .personal_reminder import PersonalReminder
 
 __all__ = [
     "Tenant",
@@ -62,5 +63,6 @@ __all__ = [
     "JournalTag",
     "JournalAttachment",
     "PersonalDebt",
-    "DebtPayment"
+    "DebtPayment",
+    "PersonalReminder"
 ]
