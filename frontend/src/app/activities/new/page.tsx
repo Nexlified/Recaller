@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ActivityForm } from '../../../components/activities/ActivityForm';
-import { SharedActivityCreate } from '../../../types/Activity';
+import { SharedActivityCreate, SharedActivityUpdate } from '../../../types/Activity';
 import { Contact } from '../../../services/contacts';
 import { useActivities } from '../../../hooks/useActivities';
 import contactsService from '../../../services/contacts';
