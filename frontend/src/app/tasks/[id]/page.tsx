@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
-import { TaskForm } from '@/components/tasks/TaskForm';
+import { TaskForm, TaskFormData } from '@/components/tasks/TaskForm';
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge';
 import { TaskPriorityBadge } from '@/components/tasks/TaskPriorityBadge';
 import { DueDateIndicator } from '@/components/tasks/DueDateIndicator';
@@ -274,14 +274,52 @@ export default function TaskDetailPage() {
     setIsEditing(true);
   };
 
-  const handleSave = async (taskData: TaskUpdate) => {
+  const handleSave = async (data: TaskFormData) => {
     if (!task) return;
     
     try {
       setError(null);
       
-      const updatedTask = await tasksService.updateTask(task.id, taskData);
-      setTask(updatedTask);
+      // Update the core task fields
+      const updatedTask = await tasksService.updateTask(task.id, data.core as TaskUpdate);
+      
+      // Handle category associations if they exist
+      if (data.associations) {
+        const currentCategoryIds = task.categories.map(c => c.id);
+        const newCategoryIds = data.associations.category_ids;
+        
+        // Remove categories that are no longer selected
+        const categoriesToRemove = currentCategoryIds.filter(id => !newCategoryIds.includes(id));
+        for (const categoryId of categoriesToRemove) {
+          await tasksService.removeCategoryFromTask(task.id, categoryId);
+        }
+        
+        // Add new categories
+        const categoriesToAdd = newCategoryIds.filter(id => !currentCategoryIds.includes(id));
+        for (const categoryId of categoriesToAdd) {
+          await tasksService.assignCategoryToTask(task.id, { category_id: categoryId });
+        }
+        
+        // Handle contact associations
+        const currentContactIds = task.contacts.map(c => c.id);
+        const newContactIds = data.associations.contact_ids;
+        
+        // Remove contacts that are no longer selected
+        const contactsToRemove = currentContactIds.filter(id => !newContactIds.includes(id));
+        for (const contactId of contactsToRemove) {
+          await tasksService.removeContactFromTask(task.id, contactId);
+        }
+        
+        // Add new contacts
+        const contactsToAdd = newContactIds.filter(id => !currentContactIds.includes(id));
+        for (const contactId of contactsToAdd) {
+          await tasksService.addContactToTask(task.id, contactId);
+        }
+      }
+      
+      // Reload task data to get updated associations
+      const refreshedTask = await tasksService.getTask(task.id);
+      setTask(refreshedTask);
       setIsEditing(false);
     } catch (err) {
       console.error('Error updating task:', err);

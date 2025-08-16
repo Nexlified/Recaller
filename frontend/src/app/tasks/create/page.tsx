@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
-import { TaskForm } from '@/components/tasks/TaskForm';
+import { TaskForm, TaskFormData } from '@/components/tasks/TaskForm';
 import authService from '@/services/auth';
 import tasksService from '@/services/tasks';
 import { TaskCreate, TaskUpdate, TaskCategory } from '@/types/Task';
@@ -60,9 +60,9 @@ export default function CreateTaskPage() {
     }
   };
 
-  const handleTaskSubmit = async (taskData: TaskCreate | TaskUpdate) => {
-    // For create page, this will always be TaskCreate
-    await handleTaskCreate(taskData as TaskCreate);
+  const handleTaskSubmit = async (data: TaskFormData) => {
+    // For create page, use the core data and it will include category/contact associations
+    await handleTaskCreate(data.core as TaskCreate);
   };
 
   const handleCancel = () => {

@@ -13,9 +13,17 @@ import {
 import { Contact } from '../../services/contacts';
 import { RecurrenceSettings } from './RecurrenceSettings';
 
+export interface TaskFormData {
+  core: TaskCreate | TaskUpdate;
+  associations?: {
+    category_ids: number[];
+    contact_ids: number[];
+  };
+}
+
 interface TaskFormProps {
   task?: Task;
-  onSubmit: (task: TaskCreate | TaskUpdate) => void;
+  onSubmit: (data: TaskFormData) => void;
   onCancel: () => void;
   contacts?: Contact[];
   categories?: TaskCategory[];
@@ -143,9 +151,17 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           due_date: submitData.due_date || undefined,
         };
 
-        onSubmit(updateData);
+        onSubmit({
+          core: updateData,
+          associations: {
+            category_ids: submitData.category_ids || [],
+            contact_ids: submitData.contact_ids || [],
+          }
+        });
       } else {
-        onSubmit(submitData as TaskCreate);
+        onSubmit({
+          core: submitData as TaskCreate
+        });
       }
     } catch (error) {
       setErrors({
