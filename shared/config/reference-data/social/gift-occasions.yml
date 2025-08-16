@@ -1,0 +1,182 @@
+---
+version: "1.0.0"
+category: "social"
+type: "gift_occasions"
+name: "Gift Occasions"
+description: "Common occasions for gift giving"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2025-01-16"
+  deprecated: false
+
+values:
+  - key: "birthday"
+    display_name: "Birthday"
+    description: "Annual birthday celebrations"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "cake"
+      color: "#FF5722"
+      frequency: "annual"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "high"
+    tags: ["birthday", "celebration", "annual"]
+
+  - key: "anniversary"
+    display_name: "Anniversary"
+    description: "Wedding or relationship anniversaries"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "heart"
+      color: "#E91E63"
+      frequency: "annual"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "high"
+    tags: ["anniversary", "love", "relationship"]
+
+  - key: "christmas"
+    display_name: "Christmas"
+    description: "Christmas holiday gifts"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "tree"
+      color: "#4CAF50"
+      frequency: "annual"
+      date: "12-25"
+      advance_reminder_days: [60, 30, 14, 7]
+      budget_importance: "high"
+    tags: ["christmas", "holiday", "winter"]
+
+  - key: "valentines"
+    display_name: "Valentine's Day"
+    description: "Valentine's Day romantic gifts"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "heart"
+      color: "#E91E63"
+      frequency: "annual"
+      date: "02-14"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "medium"
+    tags: ["valentines", "romance", "love"]
+
+  - key: "mothers_day"
+    display_name: "Mother's Day"
+    description: "Mother's Day appreciation gifts"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "flower"
+      color: "#FF9800"
+      frequency: "annual"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "medium"
+    tags: ["mothers_day", "family", "appreciation"]
+
+  - key: "fathers_day"
+    display_name: "Father's Day"
+    description: "Father's Day appreciation gifts"
+    sort_order: 5
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "tools"
+      color: "#607D8B"
+      frequency: "annual"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "medium"
+    tags: ["fathers_day", "family", "appreciation"]
+
+  - key: "graduation"
+    display_name: "Graduation"
+    description: "Educational milestone celebrations"
+    sort_order: 6
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "graduation"
+      color: "#9C27B0"
+      frequency: "milestone"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "medium"
+    tags: ["graduation", "achievement", "education"]
+
+  - key: "wedding"
+    display_name: "Wedding"
+    description: "Wedding ceremony gifts"
+    sort_order: 7
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "rings"
+      color: "#FFD700"
+      frequency: "milestone"
+      advance_reminder_days: [60, 30, 14, 7]
+      budget_importance: "high"
+    tags: ["wedding", "celebration", "milestone"]
+
+  - key: "baby_shower"
+    display_name: "Baby Shower"
+    description: "New baby celebration gifts"
+    sort_order: 8
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "baby"
+      color: "#FFC0CB"
+      frequency: "milestone"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "medium"
+    tags: ["baby", "shower", "family"]
+
+  - key: "housewarming"
+    display_name: "Housewarming"
+    description: "New home celebration gifts"
+    sort_order: 9
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "home"
+      color: "#4CAF50"
+      frequency: "milestone"
+      advance_reminder_days: [14, 7, 1]
+      budget_importance: "medium"
+    tags: ["housewarming", "home", "celebration"]
+
+  - key: "retirement"
+    display_name: "Retirement"
+    description: "Retirement celebration gifts"
+    sort_order: 10
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "sunset"
+      color: "#FF7043"
+      frequency: "milestone"
+      advance_reminder_days: [30, 14, 7, 1]
+      budget_importance: "medium"
+    tags: ["retirement", "milestone", "achievement"]
+
+  - key: "just_because"
+    display_name: "Just Because"
+    description: "Spontaneous thoughtful gifts"
+    sort_order: 11
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "surprise"
+      color: "#795548"
+      frequency: "spontaneous"
+      advance_reminder_days: []
+      budget_importance: "low"
+    tags: ["spontaneous", "thoughtful", "surprise"]

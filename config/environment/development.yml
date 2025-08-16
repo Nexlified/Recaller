@@ -80,3 +80,15 @@ external_services:
   maps_provider: "${MAPS_PROVIDER:openstreetmap}"
   weather_provider: "${WEATHER_PROVIDER:openweather}"
   currency_provider: "${CURRENCY_PROVIDER:exchangerate}"
+
+# Gift System Configuration
+gift_system:
+  enabled: "${GIFT_SYSTEM_ENABLED:true}"
+  default_budget_currency: "${GIFT_DEFAULT_CURRENCY:USD}"
+  max_budget_amount: "${GIFT_MAX_BUDGET:10000}"
+  suggestion_engine: "${GIFT_SUGGESTION_ENGINE:basic}"
+  reminder_advance_days: "${GIFT_REMINDER_DAYS:7,3,1}"
+  auto_create_tasks: "${GIFT_AUTO_CREATE_TASKS:true}"
+  privacy_mode: "${GIFT_PRIVACY_MODE:personal}"
+  image_storage_enabled: "${GIFT_IMAGE_STORAGE:true}"
+  external_links_enabled: "${GIFT_EXTERNAL_LINKS:true}"

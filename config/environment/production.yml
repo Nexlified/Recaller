@@ -61,3 +61,15 @@ performance:
   cache_ttl: "${CACHE_TTL:3600}"
   session_timeout: "${SESSION_TIMEOUT:1800}"
   request_timeout: "${REQUEST_TIMEOUT:30}"
+
+# Gift System Configuration (Production)
+gift_system:
+  enabled: "${GIFT_SYSTEM_ENABLED:true}"
+  default_budget_currency: "${GIFT_DEFAULT_CURRENCY:USD}"
+  max_budget_amount: "${GIFT_MAX_BUDGET:5000}"
+  suggestion_engine: "${GIFT_SUGGESTION_ENGINE:basic}"
+  reminder_advance_days: "${GIFT_REMINDER_DAYS:7,3,1}"
+  auto_create_tasks: "${GIFT_AUTO_CREATE_TASKS:true}"
+  privacy_mode: "${GIFT_PRIVACY_MODE:strict}"
+  image_storage_enabled: "${GIFT_IMAGE_STORAGE:false}"
+  external_links_enabled: "${GIFT_EXTERNAL_LINKS:false}"
