@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GiftFilters, GIFT_STATUS_OPTIONS, GIFT_CATEGORIES, GIFT_OCCASIONS } from '../../types/Gift';
+import { GiftFilters as GiftFiltersType, GIFT_STATUS_OPTIONS, GIFT_CATEGORIES, GIFT_OCCASIONS } from '../../types/Gift';
 import { Contact } from '../../services/contacts';
 
 interface GiftFiltersProps {
-  filters: GiftFilters;
-  onFiltersChange: (filters: GiftFilters) => void;
+  filters: GiftFiltersType;
+  onFiltersChange: (filters: GiftFiltersType) => void;
   contacts?: Contact[];
   className?: string;
   collapsible?: boolean;
@@ -20,7 +20,7 @@ export const GiftFilters: React.FC<GiftFiltersProps> = ({
   collapsible = true
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [localFilters, setLocalFilters] = useState<GiftFilters>(filters);
+  const [localFilters, setLocalFilters] = useState<GiftFiltersType>(filters);
 
   // Update local filters when external filters change
   useEffect(() => {
@@ -33,9 +33,9 @@ export const GiftFilters: React.FC<GiftFiltersProps> = ({
     return value !== undefined && value !== '';
   });
 
-  const updateFilter = <K extends keyof GiftFilters>(
+  const updateFilter = <K extends keyof GiftFiltersType>(
     key: K,
-    value: GiftFilters[K]
+    value: GiftFiltersType[K]
   ) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
@@ -43,12 +43,12 @@ export const GiftFilters: React.FC<GiftFiltersProps> = ({
   };
 
   const clearFilters = () => {
-    const emptyFilters: GiftFilters = {};
+    const emptyFilters: GiftFiltersType = {};
     setLocalFilters(emptyFilters);
     onFiltersChange(emptyFilters);
   };
 
-  const toggleArrayFilter = <K extends keyof GiftFilters>(
+  const toggleArrayFilter = <K extends keyof GiftFiltersType>(
     key: K,
     value: string,
     currentArray: string[] = []
@@ -56,7 +56,7 @@ export const GiftFilters: React.FC<GiftFiltersProps> = ({
     const newArray = currentArray.includes(value)
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value];
-    updateFilter(key, newArray.length > 0 ? newArray : undefined);
+    updateFilter(key, newArray.length > 0 ? newArray as GiftFiltersType[K] : undefined);
   };
 
   const filterContent = (

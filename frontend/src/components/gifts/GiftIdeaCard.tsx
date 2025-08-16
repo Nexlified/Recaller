@@ -48,7 +48,7 @@ export const GiftIdeaCard: React.FC<GiftIdeaCardProps> = ({
                   {giftIdea.category}
                 </span>
               )}
-              {giftIdea.rating > 0 && (
+              {giftIdea.rating && giftIdea.rating > 0 && (
                 <div className="flex items-center space-x-1">
                   {getRatingStars(giftIdea.rating)}
                   <span className="text-xs text-gray-500 dark:text-gray-400">({giftIdea.rating})</span>
