@@ -39,13 +39,11 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   const [showBidirectionalPreview, setShowBidirectionalPreview] = useState(false);
   const [relationshipCategories, setRelationshipCategories] = useState<Record<string, RelationshipTypeOption[]>>({});
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
+      console.log('Loading relationship data...');
+      
       const [relationshipsData, optionsData, contactsData] = await Promise.all([
         contactRelationshipService.getContactRelationships(contactId),
         contactRelationshipService.getRelationshipOptions(),
@@ -72,6 +70,10 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       setIsLoading(false);
     }
   }, [contactId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCreateRelationship = async () => {
     try {
@@ -116,14 +118,14 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     }
   };
 
-  const getSelectedContactName = () => {
-    const contact = availableContacts.find(c => c.id === newRelationship.contact_b_id);
-    return contact ? `${contact.first_name} ${contact.last_name || ''}`.trim() : '';
-  };
-
   const getCurrentContactName = () => {
     // This would ideally come from a contact context or prop
     return 'Current Contact';
+  };
+
+  const getSelectedContactName = () => {
+    const selectedContact = availableContacts.find(c => c.id === newRelationship.contact_b_id);
+    return selectedContact ? `${selectedContact.first_name} ${selectedContact.last_name || ''}`.trim() : 'Selected Contact';
   };
 
   const getBidirectionalPreview = () => {
@@ -211,6 +213,7 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
           Relationships ({relationships.length})
         </h3>
         <button
+          type="button"
           onClick={() => setShowAddForm(!showAddForm)}
           className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
@@ -263,16 +266,28 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="">Select relationship type...</option>
-                {Object.entries(relationshipCategories).map(([category, options]) => (
-                  <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
-                    {options.map(option => (
-                      <option key={option.key} value={option.key}>
-                        {option.display_name}
-                        {option.description && ` - ${option.description}`}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
+                {Object.keys(relationshipCategories).length === 0 ? (
+                  <option value="" disabled>Loading relationship types...</option>
+                ) : (
+                  Object.entries(relationshipCategories).map(([category, options]) => (
+                    <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                      {options.map(option => (
+                        <option key={option.key} value={option.key}>
+                          {option.display_name}
+                          {option.description && ` - ${option.description}`}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))
+                )}
+                {/* Debug: Show raw options if categories are empty but options exist */}
+                {Object.keys(relationshipCategories).length === 0 && relationshipOptions.length > 0 && 
+                  relationshipOptions.map(option => (
+                    <option key={option.key} value={option.key}>
+                      {option.display_name} (Debug: {option.category})
+                    </option>
+                  ))
+                }
               </select>
             </div>
 
@@ -301,7 +316,7 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
                   <div className="w-full h-2 bg-gray-200 rounded-full">
                     <div
                       className={`h-2 rounded-full transition-all duration-200 ${getStrengthColor(newRelationship.relationship_strength)}`}
-                      style={{ width: `${(newRelationship.relationship_strength / 10) * 100}%` }}
+                      style={{ width: `${((newRelationship.relationship_strength || 5) / 10) * 100}%` }}
                     />
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem]">
@@ -422,12 +437,14 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
 
           <div className="flex justify-end space-x-2">
             <button
+              type="button"
               onClick={() => setShowAddForm(false)}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleCreateRelationship}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
@@ -493,6 +510,7 @@ export const RelationshipManager: React.FC<RelationshipManagerProps> = ({
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => handleDeleteRelationship(relationship)}
                   className="ml-4 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm"
                 >

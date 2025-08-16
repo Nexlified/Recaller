@@ -68,11 +68,15 @@ class ContactRelationshipService {
   }
 
   // Get available relationship type options
-  async getRelationshipOptions(includeBaseTypes: boolean = true): Promise<RelationshipTypeOption[]> {
-    const response = await api.get(`${this.basePath}/options`, {
-      params: { include_base_types: includeBaseTypes }
-    });
-    return response.data;
+  async getRelationshipOptions(includeBaseTypes: boolean = true): Promise<RelationshipTypeOption[]> {    
+    try {
+      const response = await api.get(`${this.basePath}/options`, {
+        params: { include_base_types: includeBaseTypes }
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Get available relationship categories
