@@ -178,7 +178,12 @@ export default function ContactsPage() {
                   </div>
                   <div className="ml-4">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {contact.first_name} {contact.last_name}
+                      <Link
+                        href={`/contacts/${contact.id}`}
+                        className="hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        {contact.first_name} {contact.last_name}
+                      </Link>
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       {contact.email && <span>{contact.email}</span>}
