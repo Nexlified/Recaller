@@ -1,0 +1,82 @@
+---
+# Development Environment Configuration
+version: "1.0.0"
+category: "environment"
+type: "development"
+name: "Development Environment Settings"
+description: "Development-specific configuration settings"
+author: "Recaller Team"
+last_updated: "2025-08-15"
+deprecated: false
+
+# Database Configuration
+database:
+  host: "${POSTGRES_SERVER:localhost}"
+  port: "${POSTGRES_PORT:5432}"
+  user: "${POSTGRES_USER:postgres}"
+  password: "${POSTGRES_PASSWORD:postgres}"
+  name: "${POSTGRES_DB:recaller}"
+  pool_size: "${DB_POOL_SIZE:5}"
+  max_overflow: "${DB_MAX_OVERFLOW:10}"
+  pool_timeout: "${DB_POOL_TIMEOUT:30}"
+
+# Security Configuration
+security:
+  secret_key: "${SECRET_KEY:_FZtjmrehpEpICV9lVqTP6v2E4UNO9XBSn21rX6e7sI}"
+  access_token_expire_minutes: "${ACCESS_TOKEN_EXPIRE_MINUTES:30}"
+  jwt_algorithm: "${JWT_ALGORITHM:HS256}"
+
+# Redis Configuration
+redis:
+  url: "${REDIS_URL:redis://localhost:6379/0}"
+  cache_ttl: "${REDIS_CACHE_TTL:3600}"
+  max_connections: "${REDIS_MAX_CONNECTIONS:10}"
+
+# Celery Configuration
+celery:
+  broker_url: "${CELERY_BROKER_URL:redis://localhost:6379/0}"
+  result_backend: "${CELERY_RESULT_BACKEND:redis://localhost:6379/0}"
+  task_always_eager: "${CELERY_TASK_ALWAYS_EAGER:false}"
+
+# CORS Configuration
+cors:
+  allowed_origins: "${CORS_ALLOWED_ORIGINS:http://localhost:3000}"
+  allowed_methods: "${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}"
+  allowed_headers: "${CORS_ALLOWED_HEADERS:Content-Type,Authorization,X-Tenant-ID}"
+  allow_credentials: "${CORS_ALLOW_CREDENTIALS:true}"
+
+# Email Configuration
+email:
+  smtp_host: "${SMTP_HOST:}"
+  smtp_port: "${SMTP_PORT:587}"
+  smtp_username: "${SMTP_USERNAME:}"
+  smtp_password: "${SMTP_PASSWORD:}"
+  smtp_tls: "${SMTP_TLS:true}"
+  from_email: "${SMTP_FROM_EMAIL:noreply@recaller.com}"
+
+# Application Configuration
+application:
+  project_name: "${PROJECT_NAME:Recaller}"
+  version: "${VERSION:1.0.0}"
+  api_v1_str: "${API_V1_STR:/api/v1}"
+  debug_mode: "${DEBUG:false}"
+  log_level: "${LOG_LEVEL:INFO}"
+
+# Feature Flags
+features:
+  hot_reload: "${ENABLE_HOT_RELOAD:true}"
+  debug_toolbar: "${DEBUG_TOOLBAR:false}"
+  metrics_enabled: "${METRICS_ENABLED:true}"
+  rate_limiting: "${RATE_LIMITING:true}"
+
+# File Storage Configuration
+storage:
+  upload_dir: "${UPLOAD_DIR:./uploads}"
+  max_file_size: "${MAX_FILE_SIZE:10485760}"  # 10MB
+  allowed_extensions: "${ALLOWED_EXTENSIONS:jpg,jpeg,png,pdf,txt}"
+
+# External Services
+external_services:
+  maps_provider: "${MAPS_PROVIDER:openstreetmap}"
+  weather_provider: "${WEATHER_PROVIDER:openweather}"
+  currency_provider: "${CURRENCY_PROVIDER:exchangerate}"

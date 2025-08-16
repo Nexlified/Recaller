@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 
-from app.core.config import settings
+from app.core.enhanced_settings import get_settings
 from app.core.redis import redis_client
 from app.db.session import SessionLocal
 from app.api.v1.api import api_router
@@ -10,11 +10,15 @@ from app.services.task_scheduler import task_scheduler_service
 from app.api.middleware.rate_limit import rate_limit_middleware
 from app.api.middleware.request_validation import request_validation_middleware
 
+# Get settings using enhanced settings
+settings = get_settings()
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url="/docs"
+    docs_url="/docs",
+    debug=settings.DEBUG
 )
 
 # Set CORS enabled origins with secure defaults
@@ -62,7 +66,10 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 async def startup_event():
-    """Start services when the application starts."""
+    """Initialize services on startup"""
+    print(f"🚀 Starting {settings.PROJECT_NAME} v{settings.VERSION}")
+    print(f"🌍 Environment: {settings.ENVIRONMENT}")
+    
     try:
         # Initialize Redis connection
         redis_client.connect()
@@ -75,11 +82,18 @@ async def startup_event():
         task_scheduler_service.start()
     except Exception as e:
         print(f"Warning: Could not start task scheduler: {e}")
+    
+    # Start hot reload service if enabled
+    if settings.ENABLE_HOT_RELOAD:
+        from app.services.hot_reload_service import hot_reload_service
+        hot_reload_service.start()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Stop services when the application shuts down."""
+    """Cleanup on shutdown"""
+    print("🛑 Shutting down application")
+    
     try:
         # Disconnect Redis
         redis_client.disconnect()
@@ -92,6 +106,14 @@ async def shutdown_event():
         task_scheduler_service.stop()
     except Exception as e:
         print(f"Warning: Could not stop task scheduler: {e}")
+    
+    # Stop hot reload service
+    try:
+        from app.services.hot_reload_service import hot_reload_service
+        if hot_reload_service.is_running:
+            hot_reload_service.stop()
+    except Exception as e:
+        print(f"Warning: Could not stop hot reload service: {e}")
 
 
 @app.get("/")

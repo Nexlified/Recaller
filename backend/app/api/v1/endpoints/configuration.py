@@ -1,6 +1,7 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from app.api import deps
 from app.api.deps import get_tenant_context
@@ -1066,4 +1067,116 @@ def get_configuration_statistics(
 ) -> Any:
     """Get configuration statistics for tenant"""
     tenant_id = get_tenant_context(request)
+    
+    # Get counts for various configuration entities
+    categories_count = len(config_crud.get_categories(db=db, tenant_id=tenant_id))
+    types_count = len(config_crud.get_types(db=db, tenant_id=tenant_id))
+    values_count = len(config_crud.get_values(db=db, tenant_id=tenant_id))
+    
+    return {
+        "tenant_id": tenant_id,
+        "categories": categories_count,
+        "types": types_count,
+        "values": values_count,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+# Hot Reload Configuration Endpoints
+@router.post("/configs/hot-reload/start")
+def start_hot_reload(current_user: User = Depends(deps.get_current_active_user)) -> Dict[str, Any]:
+    """Start configuration hot reload service"""
+    from app.services.hot_reload_service import hot_reload_service
+    from app.core.enhanced_settings import get_settings
+    
+    settings = get_settings()
+    
+    if not settings.ENABLE_HOT_RELOAD:
+        raise HTTPException(
+            status_code=400, 
+            detail="Hot reload is disabled. Set ENABLE_HOT_RELOAD=true to enable."
+        )
+    
+    if hot_reload_service.is_running:
+        return {"message": "Hot reload is already running", "status": "running"}
+    
+    hot_reload_service.start()
+    return {
+        "message": "Hot reload started successfully",
+        "status": "started",
+        "watched_paths": list(hot_reload_service.watched_paths)
+    }
+
+@router.post("/configs/hot-reload/stop")
+def stop_hot_reload(current_user: User = Depends(deps.get_current_active_user)) -> Dict[str, str]:
+    """Stop configuration hot reload service"""
+    from app.services.hot_reload_service import hot_reload_service
+    
+    if not hot_reload_service.is_running:
+        return {"message": "Hot reload is not running", "status": "stopped"}
+    
+    hot_reload_service.stop()
+    return {"message": "Hot reload stopped successfully", "status": "stopped"}
+
+@router.get("/configs/hot-reload/status")
+def get_hot_reload_status(current_user: User = Depends(deps.get_current_active_user)) -> Dict[str, Any]:
+    """Get hot reload service status"""
+    from app.services.hot_reload_service import hot_reload_service
+    from app.core.enhanced_settings import get_settings
+    
+    settings = get_settings()
+    
+    return {
+        "enabled": settings.ENABLE_HOT_RELOAD,
+        "running": hot_reload_service.is_running,
+        "watched_paths": list(hot_reload_service.watched_paths),
+        "environment": settings.ENVIRONMENT
+    }
+
+@router.post("/configs/environment/reload")
+def reload_environment_config(current_user: User = Depends(deps.get_current_active_user)) -> Dict[str, Any]:
+    """Manually reload environment configuration"""
+    from app.core.enhanced_settings import get_settings
+    
+    try:
+        old_env = get_settings().ENVIRONMENT
+        new_settings = get_settings(reload=True)
+        
+        return {
+            "message": "Environment configuration reloaded",
+            "environment": new_settings.ENVIRONMENT,
+            "reloaded_from": old_env,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reload environment config: {str(e)}")
+
+@router.get("/configs/environment")
+def get_environment_config(current_user: User = Depends(deps.get_current_active_user)) -> Dict[str, Any]:
+    """Get current environment configuration (non-sensitive values only)"""
+    from app.core.enhanced_settings import get_settings
+    
+    settings = get_settings()
+    
+    # Return non-sensitive configuration only
+    return {
+        "environment": settings.ENVIRONMENT,
+        "project_name": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "api_v1_str": settings.API_V1_STR,
+        "debug": settings.DEBUG,
+        "log_level": settings.LOG_LEVEL,
+        "cors_origins": settings.get_cors_origins(),
+        "features": {
+            "hot_reload": settings.ENABLE_HOT_RELOAD,
+            "debug_toolbar": settings.DEBUG_TOOLBAR,
+            "metrics_enabled": settings.METRICS_ENABLED,
+            "rate_limiting": settings.RATE_LIMITING
+        },
+        "database": {
+            "host": settings.POSTGRES_SERVER,
+            "port": settings.POSTGRES_PORT,
+            "name": settings.POSTGRES_DB
+        }
+    }
     return config_crud.get_config_statistics(db, tenant_id)
