@@ -1,65 +1,56 @@
-"""
-Relationship mapping service for gender-specific relationship resolution.
-
-This service handles automatic mapping of base relationship types (like 'sibling')
-to specific types (like 'brother', 'sister') based on contact genders.
-"""
-
-import yaml
-from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
+from app.core.configuration_manager import config_manager
+from typing import Dict, Any, Optional, List, Tuple
 from app.schemas.contact_relationship import RelationshipMappingResult, RelationshipTypeOption
 
-
 class RelationshipMappingService:
-    """
-    Service for handling gender-specific relationship mapping and validation.
-    """
+    """Service for managing contact relationship mappings"""
     
     def __init__(self):
-        self.relationship_config = self._load_yaml_config()
-        self.gender_mappings = self.relationship_config.get('gender_specific_relationships', {})
-        self.relationship_types = self.relationship_config.get('relationship_types', [])
-        self.categories = self.relationship_config.get('categories', [])
+        self.manager = config_manager
+        self._relationship_config = None
     
-    def _load_yaml_config(self) -> Dict[str, Any]:
-        """Load relationship mappings from YAML configuration file."""
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "relationship_mappings.yaml"
+    @property
+    def relationship_config(self) -> Dict[str, Any]:
+        """Lazy load relationship configuration"""
+        if self._relationship_config is None:
+            self._relationship_config = self.manager.get_config('relationship_mappings')
+        return self._relationship_config
+    
+    def get_gender_specific_mapping(self, relationship: str, from_gender: str, to_gender: str) -> Tuple[str, str]:
+        """Get gender-specific relationship mapping"""
+        gender_mappings = self.relationship_config.get('gender_specific_relationships', {})
         
-        try:
-            with open(config_path, 'r', encoding='utf-8') as file:
-                return yaml.safe_load(file)
-        except FileNotFoundError:
-            # Fallback configuration if file is missing
-            return self._get_fallback_config()
-        except yaml.YAMLError as e:
-            raise ValueError(f"Error parsing relationship mappings YAML: {e}")
+        if relationship not in gender_mappings:
+            return relationship, relationship
+        
+        mapping_key = f"{from_gender}_{to_gender}"
+        mappings = gender_mappings[relationship].get('mappings', {})
+        
+        if mapping_key in mappings:
+            return tuple(mappings[mapping_key])
+        
+        # Return fallback
+        fallback = gender_mappings[relationship].get('fallback', [relationship, relationship])
+        return tuple(fallback)
     
-    def _get_fallback_config(self) -> Dict[str, Any]:
-        """Fallback configuration if YAML file is not available."""
-        return {
-            'gender_specific_relationships': {
-                'sibling': {
-                    'mappings': {
-                        'male_male': ['brother', 'brother'],
-                        'male_female': ['brother', 'sister'],
-                        'female_male': ['sister', 'brother'],
-                        'female_female': ['sister', 'sister'],
-                    },
-                    'fallback': ['sibling', 'sibling']
-                }
-            },
-            'relationship_types': [
-                {'key': 'sibling', 'display_name': 'Sibling', 'category': 'family', 'is_gender_specific': True},
-                {'key': 'brother', 'display_name': 'Brother', 'category': 'family', 'is_gender_specific': False},
-                {'key': 'sister', 'display_name': 'Sister', 'category': 'family', 'is_gender_specific': False},
-                {'key': 'friend', 'display_name': 'Friend', 'category': 'social', 'is_gender_specific': False},
-            ],
-            'categories': [
-                {'key': 'family', 'display_name': 'Family'},
-                {'key': 'social', 'display_name': 'Social'},
-            ]
-        }
+    def get_bidirectional_relationship(self, relationship_type: str) -> str:
+        """Get the reverse relationship type"""
+        relationships = self.relationship_config.get('relationship_types', [])
+        
+        for rel in relationships:
+            if rel.get('key') == relationship_type:
+                return rel.get('reverse', relationship_type)
+        
+        return relationship_type
+    
+    def get_relationship_categories(self) -> List[Dict[str, Any]]:
+        """Get all relationship categories"""
+        return self.relationship_config.get('categories', [])
+    
+    def validate_relationship_type(self, relationship_type: str) -> bool:
+        """Validate if relationship type exists"""
+        relationships = self.relationship_config.get('relationship_types', [])
+        return any(rel.get('key') == relationship_type for rel in relationships)
     
     def determine_gender_specific_relationship(
         self, 
@@ -79,7 +70,8 @@ class RelationshipMappingService:
             RelationshipMappingResult with resolved relationship types
         """
         # Check if this is a gender-specific relationship
-        if base_relationship not in self.gender_mappings:
+        gender_mappings = self.relationship_config.get('gender_specific_relationships', {})
+        if base_relationship not in gender_mappings:
             # Not a gender-specific relationship, return as-is
             category = self._get_relationship_category(base_relationship)
             return RelationshipMappingResult(
@@ -90,7 +82,7 @@ class RelationshipMappingService:
                 is_gender_resolved=False
             )
         
-        mapping_config = self.gender_mappings[base_relationship]
+        mapping_config = gender_mappings[base_relationship]
         
         # If either gender is missing or non-binary/prefer_not_to_say, use fallback
         if not self._can_resolve_gender(contact_a_gender, contact_b_gender):
@@ -148,14 +140,16 @@ class RelationshipMappingService:
     
     def _get_relationship_category(self, relationship_type: str) -> str:
         """Get the category for a relationship type."""
-        for rel_type in self.relationship_types:
+        relationships = self.relationship_config.get('relationship_types', [])
+        for rel_type in relationships:
             if rel_type.get('key') == relationship_type:
                 return rel_type.get('category', 'unknown')
         return 'unknown'
     
     def _get_reverse_relationship(self, relationship_type: str) -> str:
         """Get the reverse relationship type."""
-        for rel_type in self.relationship_types:
+        relationships = self.relationship_config.get('relationship_types', [])
+        for rel_type in relationships:
             if rel_type.get('key') == relationship_type:
                 return rel_type.get('reverse', relationship_type)
         return relationship_type
@@ -172,8 +166,9 @@ class RelationshipMappingService:
             List of relationship type options
         """
         options = []
+        relationships = self.relationship_config.get('relationship_types', [])
         
-        for rel_type in self.relationship_types:
+        for rel_type in relationships:
             # Skip gender-specific variants if we're including base types
             if include_gender_specific_base and rel_type.get('gender_specific_of'):
                 continue
@@ -204,8 +199,9 @@ class RelationshipMappingService:
         This can be used to warn users about potential mismatches.
         """
         # Find relationship type info
+        relationships = self.relationship_config.get('relationship_types', [])
         rel_info = None
-        for rel_type in self.relationship_types:
+        for rel_type in relationships:
             if rel_type.get('key') == relationship_type:
                 rel_info = rel_type
                 break
@@ -239,7 +235,7 @@ class RelationshipMappingService:
     
     def get_categories(self) -> List[Dict[str, str]]:
         """Get available relationship categories."""
-        return self.categories
+        return self.relationship_config.get('categories', [])
 
 
 # Global service instance

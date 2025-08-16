@@ -1,34 +1,31 @@
-import yaml
-from pathlib import Path
+from app.core.configuration_manager import config_manager
 from typing import Dict, Any, Optional
-from functools import lru_cache
 
 class ActivityConfigService:
-    def __init__(self):
-        self.config_path = Path(__file__).parent.parent.parent.parent / "config"
+    """Activity-specific configuration service using centralized manager"""
     
-    @lru_cache(maxsize=10)
+    def __init__(self):
+        self.manager = config_manager
+    
     def load_config(self, config_name: str) -> Dict[str, Any]:
-        """Load configuration from YAML file"""
-        config_file = self.config_path / f"{config_name}.yml"
-        with open(config_file, 'r') as file:
-            return yaml.safe_load(file)
+        """Load configuration from YAML file using centralized manager"""
+        return self.manager.get_config(config_name)
     
     def get_activity_types(self) -> Dict[str, Any]:
         """Get activity types configuration"""
-        return self.load_config('activity_types')
+        return self.manager.get_config('activity_types')
     
     def get_activity_templates(self) -> Dict[str, Any]:
         """Get activity templates configuration"""
-        return self.load_config('activity_templates')
+        return self.manager.get_config('activity_templates')
     
     def get_recommendations_config(self) -> Dict[str, Any]:
         """Get recommendation engine configuration"""
-        return self.load_config('activity_recommendations')
+        return self.manager.get_config('activity_recommendations')
     
     def get_system_config(self) -> Dict[str, Any]:
         """Get system configuration"""
-        return self.load_config('activity_system')
+        return self.manager.get_config('activity_system')
     
     def get_activity_type_info(self, activity_type: str) -> Optional[Dict[str, Any]]:
         """Get specific activity type information"""

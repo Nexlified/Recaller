@@ -1,3 +1,14 @@
+---
+# Configuration Metadata
+version: "1.0.0"
+category: "social"
+type: "activity_types"
+name: "Activity Types Configuration"
+description: "Defines available activity types, icons, default settings, and templates for social activities"
+author: "Recaller Team"
+last_updated: "2025-01-15"
+deprecated: false
+
 # Activity Types Configuration for Shared Activities System
 # Defines available activity types, icons, default settings, and templates
 

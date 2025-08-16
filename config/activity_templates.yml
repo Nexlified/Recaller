@@ -1,3 +1,14 @@
+---
+# Configuration Metadata
+version: "1.0.0"
+category: "social"
+type: "activity_templates"
+name: "Activity Templates Configuration"
+description: "Pre-defined activity templates for quick activity creation"
+author: "Recaller Team"
+last_updated: "2025-01-15"
+deprecated: false
+
 # Pre-defined activity templates for quick creation
 activity_templates:
   quick_dinner:
