@@ -282,17 +282,6 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
                         </div>
                       )}
                       
-                      {contact.company && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Company
-                          </label>
-                          <div className="mt-1 text-sm text-gray-900 dark:text-white">
-                            {contact.company}
-                          </div>
-                        </div>
-                      )}
-                      
                       {contact.notes && (
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -329,18 +318,21 @@ export default function ContactDetailPage({ params }: ContactDetailPageProps) {
                   </div>
                 )}
 
+                {/* Relationship Management */}
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                  <div className="px-6 py-4">
+                    <RelationshipManager
+                      contactId={contactId}
+                      onRelationshipChange={handleRelationshipChange}
+                    />
+                  </div>
+                </div>
+
                 {/* Quick Actions */}
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
                   <div className="px-6 py-4">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                     <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={() => setActiveTab('relationships')}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <span className="mr-2">👥</span>
-                        Manage Relationships
-                      </button>
                       <button
                         onClick={() => setActiveTab('visualizations')}
                         className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
