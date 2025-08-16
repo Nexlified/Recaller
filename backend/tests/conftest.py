@@ -43,6 +43,15 @@ class TestContact(TestBase):
     last_name = Column(String(255), nullable=True)
     email = Column(String(255), index=True)
     phone = Column(String(50))
+    job_title = Column(String(255))
+    organization_id = Column(Integer, nullable=True)
+    notes = Column(Text)
+    gender = Column(String(20), nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    anniversary_date = Column(Date, nullable=True)
+    maiden_name = Column(String(255), nullable=True)
+    family_nickname = Column(String(100), nullable=True)
+    is_emergency_contact = Column(Boolean, default=False, index=True)
     visibility = Column(String(10), nullable=False, default='private', index=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -217,6 +226,25 @@ class TestJournalAttachment(TestBase):
     description = Column(Text)
     is_encrypted = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class TestPersonalReminder(TestBase):
+    __tablename__ = "personal_reminders"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text)
+    reminder_type = Column(String(50), nullable=False, default='custom', index=True)
+    contact_id = Column(Integer, ForeignKey("contacts.id"), nullable=True, index=True)
+    event_date = Column(Date, nullable=False, index=True)
+    is_recurring = Column(Boolean, nullable=False, default=True)
+    reminder_preferences = Column(JSON, nullable=False, default=dict)
+    notification_methods = Column(JSON, nullable=False, default=dict)
+    importance_level = Column(Integer, nullable=False, default=3)
+    last_celebrated_year = Column(Integer, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 # Test database configuration
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_simple.db"

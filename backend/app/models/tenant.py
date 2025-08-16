@@ -21,3 +21,4 @@ class Tenant(Base):
     tasks = relationship("Task", back_populates="tenant")
     task_categories = relationship("TaskCategory", back_populates="tenant")
     journal_entries = relationship("JournalEntry", back_populates="tenant")
+    personal_reminders = relationship("PersonalReminder", back_populates="tenant")
