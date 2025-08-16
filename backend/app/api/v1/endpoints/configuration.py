@@ -904,3 +904,166 @@ def get_configuration_health(
         inactive_values=len(all_values) - len(active_values),
         issues=issues
     )
+
+
+# Configuration Import Endpoints (Phase 2)
+@router.post("/configs/{config_type}/import")
+def import_configuration(
+    config_type: str,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    force_update: bool = Query(False)
+) -> Any:
+    """Import YAML configuration into database"""
+    from app.core.configuration_manager import config_manager
+    
+    tenant_id = get_tenant_context(request)
+    
+    from app.services.database_config_service import db_config_service
+    result = db_config_service.import_yaml_to_database(
+        db, config_type, tenant_id, force_update
+    )
+    
+    # Invalidate cache
+    config_manager.invalidate_cache(config_type, tenant_id)
+    
+    return result
+
+
+@router.get("/configs/{config_type}/database")
+def get_database_configuration(
+    config_type: str,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    include_inactive: bool = Query(False)
+) -> Any:
+    """Get configuration from database"""
+    tenant_id = get_tenant_context(request)
+    
+    from app.services.database_config_service import db_config_service
+    return db_config_service.get_database_config(
+        db, config_type, tenant_id, include_inactive
+    )
+
+
+@router.get("/configs/{config_type}/compare")
+def compare_yaml_database(
+    config_type: str,
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """Compare YAML and database configurations"""
+    from app.core.configuration_manager import config_manager
+    
+    tenant_id = get_tenant_context(request)
+    
+    try:
+        yaml_config = config_manager.get_config(config_type)
+        yaml_metadata = config_manager.get_config_metadata(config_type)
+    except FileNotFoundError:
+        yaml_config = None
+        yaml_metadata = None
+    
+    from app.services.database_config_service import db_config_service
+    db_config = db_config_service.get_database_config(db, config_type, tenant_id)
+    
+    return {
+        "config_type": config_type,
+        "yaml_exists": yaml_config is not None,
+        "database_exists": bool(db_config),
+        "yaml_version": yaml_metadata.version if yaml_metadata else None,
+        "database_records": db_config.get('metadata', {}).get('total_values', 0),
+        "needs_import": yaml_config is not None and not db_config
+    }
+
+
+@router.get("/imports")
+def list_configuration_imports(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    status: Optional[str] = Query(None)
+) -> List[Any]:
+    """List configuration import history"""
+    from app.models.configuration import ConfigurationImport
+    
+    tenant_id = get_tenant_context(request)
+    
+    query = db.query(ConfigurationImport).filter(
+        ConfigurationImport.tenant_id == tenant_id
+    )
+    
+    if status:
+        query = query.filter(ConfigurationImport.import_status == status)
+    
+    imports = query.order_by(ConfigurationImport.import_date.desc()).offset(skip).limit(limit).all()
+    
+    return [
+        {
+            "id": imp.id,
+            "config_type": imp.config_type,
+            "config_version": imp.config_version,
+            "source_file": imp.source_file,
+            "import_status": imp.import_status,
+            "import_date": imp.import_date,
+            "records_imported": imp.records_imported,
+            "error_message": imp.error_message
+        }
+        for imp in imports
+    ]
+
+
+@router.post("/configs/import-all")
+def import_all_configurations(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    force_update: bool = Query(False)
+) -> Any:
+    """Import all available YAML configurations into database"""
+    from app.core.configuration_manager import config_manager
+    
+    tenant_id = get_tenant_context(request)
+    results = []
+    
+    from app.services.database_config_service import db_config_service
+    available_configs = config_manager.list_available_configs()
+    
+    for config_info in available_configs:
+        if config_info['source'] == 'main':  # Only import main configs
+            config_name = config_info['name']
+            try:
+                result = db_config_service.import_yaml_to_database(
+                    db, config_name, tenant_id, force_update
+                )
+                results.append(result)
+                config_manager.invalidate_cache(config_name, tenant_id)
+            except Exception as e:
+                results.append({
+                    "status": "error",
+                    "config_type": config_name,
+                    "error": str(e)
+                })
+    
+    return {
+        "total_processed": len(results),
+        "successful": len([r for r in results if r['status'] == 'success']),
+        "failed": len([r for r in results if r['status'] == 'error']),
+        "results": results
+    }
+
+
+@router.get("/statistics")
+def get_configuration_statistics(
+    request: Request,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """Get configuration statistics for tenant"""
+    tenant_id = get_tenant_context(request)
+    return config_crud.get_config_statistics(db, tenant_id)
