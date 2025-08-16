@@ -48,6 +48,12 @@ const ChartBarIcon = ({ className = '' }: { className?: string }) => (
   </svg>
 );
 
+const ActivityIcon = ({ className = '' }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+);
+
 // Navigation Item Component
 const NavigationItem: React.FC<NavigationItem> = ({ name, href, icon: Icon, badge }) => {
   const pathname = usePathname();
@@ -90,16 +96,19 @@ export const Navigation: React.FC<{
   contactCount?: number;
   eventCount?: number;
   organizationCount?: number;
+  activityCount?: number;
 }> = ({ 
   className = '',
   taskCount,
   contactCount,
   eventCount,
-  organizationCount
+  organizationCount,
+  activityCount
 }) => {
   const mainNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'Contacts', href: '/contacts', icon: UsersIcon, badge: contactCount },
+    { name: 'Activities', href: '/activities', icon: ActivityIcon, badge: activityCount },
     { name: 'Events', href: '/events', icon: CalendarIcon, badge: eventCount },
     { name: 'Tasks', href: '/tasks', icon: CheckSquareIcon, badge: taskCount },
     { name: 'Organizations', href: '/organizations', icon: BuildingOfficeIcon, badge: organizationCount },
@@ -122,12 +131,14 @@ export const SidebarNavigation: React.FC<{
   contactCount?: number;
   eventCount?: number;
   organizationCount?: number;
+  activityCount?: number;
 }> = ({ 
   className = '',
   taskCount,
   contactCount,
   eventCount,
-  organizationCount
+  organizationCount,
+  activityCount
 }) => {
   const pathname = usePathname();
   const isTasksSection = pathname?.startsWith('/tasks');
@@ -154,6 +165,7 @@ export const SidebarNavigation: React.FC<{
             contactCount={contactCount}
             eventCount={eventCount}
             organizationCount={organizationCount}
+            activityCount={activityCount}
           />
         </div>
 
@@ -177,13 +189,15 @@ export const MobileNavigation: React.FC<{
   contactCount?: number;
   eventCount?: number;
   organizationCount?: number;
+  activityCount?: number;
 }> = ({ 
   isOpen, 
   onClose,
   taskCount,
   contactCount,
   eventCount,
-  organizationCount
+  organizationCount,
+  activityCount
 }) => {
   return (
     <>
@@ -223,6 +237,7 @@ export const MobileNavigation: React.FC<{
               contactCount={contactCount}
               eventCount={eventCount}
               organizationCount={organizationCount}
+              activityCount={activityCount}
             />
           </div>
         </div>

@@ -42,7 +42,7 @@ export interface ContactWorkExperience {
   salary_range?: string;
   currency: string;
   linkedin_profile?: string;
-  other_profiles?: Record<string, any>;
+  other_profiles?: Record<string, string | number | boolean | null>;
   manager_contact_id?: number;
   reporting_structure?: string;
   can_be_reference: boolean;
@@ -71,7 +71,7 @@ export interface ContactWorkExperienceCreate {
   salary_range?: string;
   currency?: string;
   linkedin_profile?: string;
-  other_profiles?: Record<string, any>;
+  other_profiles?: Record<string, string | number | boolean | null>;
   manager_contact_id?: number;
   reporting_structure?: string;
   can_be_reference?: boolean;
@@ -98,7 +98,7 @@ export interface ContactWorkExperienceUpdate {
   salary_range?: string;
   currency?: string;
   linkedin_profile?: string;
-  other_profiles?: Record<string, any>;
+  other_profiles?: Record<string, string | number | boolean | null>;
   manager_contact_id?: number;
   reporting_structure?: string;
   can_be_reference?: boolean;

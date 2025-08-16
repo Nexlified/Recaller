@@ -516,3 +516,92 @@ def move_value(
     # Update the value with new parent
     update_data = {'parent_id': new_parent_id}
     return update_value(db, value, update_data)
+
+
+# Enhanced CRUD operations for Phase 2
+def get_config_values_hierarchical(
+    db: Session,
+    config_type_id: int,
+    tenant_id: int,
+    parent_id: Optional[int] = None,
+    include_inactive: bool = False
+) -> List[ConfigurationValue]:
+    """Get configuration values in hierarchical structure"""
+    query = db.query(ConfigurationValue).filter(
+        and_(
+            ConfigurationValue.type_id == config_type_id,
+            ConfigurationValue.tenant_id == tenant_id,
+            ConfigurationValue.parent_id == parent_id
+        )
+    )
+    
+    if not include_inactive:
+        query = query.filter(ConfigurationValue.is_active == True)
+    
+    return query.order_by(ConfigurationValue.sort_order, ConfigurationValue.display_name).all()
+
+
+def update_config_value_bulk(
+    db: Session,
+    config_type_id: int,
+    tenant_id: int,
+    updates: List[Dict[str, Any]]
+) -> int:
+    """Bulk update configuration values"""
+    updated_count = 0
+    
+    for update_data in updates:
+        value_id = update_data.get('id')
+        if not value_id:
+            continue
+            
+        value = db.query(ConfigurationValue).filter(
+            and_(
+                ConfigurationValue.id == value_id,
+                ConfigurationValue.type_id == config_type_id,
+                ConfigurationValue.tenant_id == tenant_id
+            )
+        ).first()
+        
+        if value:
+            for field, new_value in update_data.items():
+                if field != 'id' and hasattr(value, field):
+                    setattr(value, field, new_value)
+            updated_count += 1
+    
+    db.commit()
+    return updated_count
+
+
+def get_config_statistics(db: Session, tenant_id: int) -> Dict[str, Any]:
+    """Get configuration statistics for tenant"""
+    from app.models.configuration import ConfigurationImport
+    
+    stats = {
+        'categories': db.query(ConfigurationCategory).filter(
+            ConfigurationCategory.tenant_id == tenant_id
+        ).count(),
+        'types': db.query(ConfigurationType).filter(
+            ConfigurationType.tenant_id == tenant_id
+        ).count(),
+        'values': db.query(ConfigurationValue).filter(
+            ConfigurationValue.tenant_id == tenant_id
+        ).count(),
+        'active_values': db.query(ConfigurationValue).filter(
+            and_(
+                ConfigurationValue.tenant_id == tenant_id,
+                ConfigurationValue.is_active == True
+            )
+        ).count(),
+        'imports': db.query(ConfigurationImport).filter(
+            ConfigurationImport.tenant_id == tenant_id
+        ).count(),
+        'successful_imports': db.query(ConfigurationImport).filter(
+            and_(
+                ConfigurationImport.tenant_id == tenant_id,
+                ConfigurationImport.import_status == 'success'
+            )
+        ).count()
+    }
+    
+    return stats
