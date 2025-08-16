@@ -1,7 +1,8 @@
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, validator
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, date
+from decimal import Decimal
 
 class GiftPrivacyMode(str, Enum):
     PERSONAL = "personal"
@@ -12,6 +13,22 @@ class GiftSuggestionEngine(str, Enum):
     BASIC = "basic"
     ENHANCED = "enhanced"
     AI_POWERED = "ai_powered"
+
+
+class GiftStatus(str, Enum):
+    IDEA = "idea"
+    PLANNED = "planned"
+    PURCHASED = "purchased"
+    WRAPPED = "wrapped"
+    GIVEN = "given"
+    RETURNED = "returned"
+
+
+class GiftPriority(int, Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    URGENT = 4
 
 class GiftSystemConfigBase(BaseModel):
     """Base schema for gift system configuration"""
@@ -136,3 +153,141 @@ class GiftSystemStatus(BaseModel):
     total_gift_categories: Optional[int] = None
     total_gift_occasions: Optional[int] = None
     total_budget_ranges: Optional[int] = None
+
+
+# Gift Database Models Schemas
+
+class GiftBase(BaseModel):
+    """Base schema for gift"""
+    title: str = Field(..., max_length=255, description="Gift title")
+    description: Optional[str] = Field(None, description="Gift description")
+    category: Optional[str] = Field(None, max_length=100, description="Gift category")
+    recipient_name: Optional[str] = Field(None, max_length=255, description="Recipient name if not a contact")
+    occasion: Optional[str] = Field(None, max_length=100, description="Occasion for the gift")
+    occasion_date: Optional[date] = Field(None, description="Date of the occasion")
+    budget_amount: Optional[Decimal] = Field(None, description="Budget amount for the gift")
+    actual_amount: Optional[Decimal] = Field(None, description="Actual amount spent")
+    currency: str = Field(default="USD", max_length=3, description="Currency code")
+    status: GiftStatus = Field(default=GiftStatus.IDEA, description="Gift status")
+    priority: GiftPriority = Field(default=GiftPriority.MEDIUM, description="Gift priority")
+    store_name: Optional[str] = Field(None, max_length=255, description="Store name")
+    purchase_url: Optional[str] = Field(None, description="Purchase URL")
+    purchase_date: Optional[date] = Field(None, description="Purchase date")
+    gift_details: Dict[str, Any] = Field(default_factory=dict, description="Additional gift details")
+    tracking_number: Optional[str] = Field(None, max_length=255, description="Tracking number")
+    delivery_date: Optional[date] = Field(None, description="Delivery date")
+    notes: Optional[str] = Field(None, description="Additional notes")
+    image_url: Optional[str] = Field(None, description="Gift image URL")
+    reminder_dates: Dict[str, Any] = Field(default_factory=dict, description="Reminder dates")
+    task_id: Optional[int] = Field(None, description="Associated task ID")
+    transaction_id: Optional[int] = Field(None, description="Associated transaction ID")
+    is_surprise: bool = Field(default=False, description="Whether this is a surprise gift")
+
+
+class GiftCreate(GiftBase):
+    """Schema for creating a gift"""
+    recipient_contact_id: Optional[int] = Field(None, description="ID of recipient contact")
+
+
+class GiftUpdate(BaseModel):
+    """Schema for updating a gift"""
+    title: Optional[str] = Field(None, max_length=255, description="Gift title")
+    description: Optional[str] = Field(None, description="Gift description")
+    category: Optional[str] = Field(None, max_length=100, description="Gift category")
+    recipient_contact_id: Optional[int] = Field(None, description="ID of recipient contact")
+    recipient_name: Optional[str] = Field(None, max_length=255, description="Recipient name")
+    occasion: Optional[str] = Field(None, max_length=100, description="Occasion")
+    occasion_date: Optional[date] = Field(None, description="Occasion date")
+    budget_amount: Optional[Decimal] = Field(None, description="Budget amount")
+    actual_amount: Optional[Decimal] = Field(None, description="Actual amount")
+    currency: Optional[str] = Field(None, max_length=3, description="Currency code")
+    status: Optional[GiftStatus] = Field(None, description="Gift status")
+    priority: Optional[GiftPriority] = Field(None, description="Gift priority")
+    store_name: Optional[str] = Field(None, max_length=255, description="Store name")
+    purchase_url: Optional[str] = Field(None, description="Purchase URL")
+    purchase_date: Optional[date] = Field(None, description="Purchase date")
+    gift_details: Optional[Dict[str, Any]] = Field(None, description="Gift details")
+    tracking_number: Optional[str] = Field(None, max_length=255, description="Tracking number")
+    delivery_date: Optional[date] = Field(None, description="Delivery date")
+    notes: Optional[str] = Field(None, description="Notes")
+    image_url: Optional[str] = Field(None, description="Image URL")
+    reminder_dates: Optional[Dict[str, Any]] = Field(None, description="Reminder dates")
+    task_id: Optional[int] = Field(None, description="Task ID")
+    transaction_id: Optional[int] = Field(None, description="Transaction ID")
+    is_surprise: Optional[bool] = Field(None, description="Is surprise gift")
+
+
+class Gift(GiftBase):
+    """Schema for gift with database fields"""
+    id: int
+    tenant_id: int
+    user_id: int
+    recipient_contact_id: Optional[int] = None
+    is_active: bool = True
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class GiftIdeaBase(BaseModel):
+    """Base schema for gift idea"""
+    title: str = Field(..., max_length=255, description="Gift idea title")
+    description: Optional[str] = Field(None, description="Gift idea description")
+    category: Optional[str] = Field(None, max_length=100, description="Gift category")
+    target_demographic: Optional[str] = Field(None, max_length=100, description="Target demographic")
+    suitable_occasions: List[str] = Field(default_factory=list, description="Suitable occasions")
+    price_range_min: Optional[Decimal] = Field(None, description="Minimum price range")
+    price_range_max: Optional[Decimal] = Field(None, description="Maximum price range")
+    currency: str = Field(default="USD", max_length=3, description="Currency code")
+    idea_details: Dict[str, Any] = Field(default_factory=dict, description="Idea details")
+    source_url: Optional[str] = Field(None, description="Source URL")
+    source_description: Optional[str] = Field(None, description="Source description")
+    image_url: Optional[str] = Field(None, description="Image URL")
+    rating: Optional[int] = Field(None, ge=1, le=5, description="Rating (1-5 stars)")
+    notes: Optional[str] = Field(None, description="Additional notes")
+    tags: List[str] = Field(default_factory=list, description="Searchable tags")
+    is_favorite: bool = Field(default=False, description="Is favorite idea")
+
+
+class GiftIdeaCreate(GiftIdeaBase):
+    """Schema for creating a gift idea"""
+    target_contact_id: Optional[int] = Field(None, description="ID of target contact")
+
+
+class GiftIdeaUpdate(BaseModel):
+    """Schema for updating a gift idea"""
+    title: Optional[str] = Field(None, max_length=255, description="Gift idea title")
+    description: Optional[str] = Field(None, description="Description")
+    category: Optional[str] = Field(None, max_length=100, description="Category")
+    target_contact_id: Optional[int] = Field(None, description="Target contact ID")
+    target_demographic: Optional[str] = Field(None, max_length=100, description="Target demographic")
+    suitable_occasions: Optional[List[str]] = Field(None, description="Suitable occasions")
+    price_range_min: Optional[Decimal] = Field(None, description="Min price range")
+    price_range_max: Optional[Decimal] = Field(None, description="Max price range")
+    currency: Optional[str] = Field(None, max_length=3, description="Currency code")
+    idea_details: Optional[Dict[str, Any]] = Field(None, description="Idea details")
+    source_url: Optional[str] = Field(None, description="Source URL")
+    source_description: Optional[str] = Field(None, description="Source description")
+    image_url: Optional[str] = Field(None, description="Image URL")
+    rating: Optional[int] = Field(None, ge=1, le=5, description="Rating (1-5)")
+    notes: Optional[str] = Field(None, description="Notes")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    is_favorite: Optional[bool] = Field(None, description="Is favorite")
+
+
+class GiftIdea(GiftIdeaBase):
+    """Schema for gift idea with database fields"""
+    id: int
+    tenant_id: int
+    user_id: int
+    target_contact_id: Optional[int] = None
+    times_gifted: int = 0
+    last_gifted_date: Optional[date] = None
+    is_active: bool = True
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
