@@ -24,6 +24,7 @@ from .budget import Budget
 from .journal import JournalEntry, JournalTag, JournalAttachment
 from .personal_debt import PersonalDebt, DebtPayment
 from .personal_reminder import PersonalReminder
+from .gift import Gift, GiftIdea
 
 __all__ = [
     "Tenant",
@@ -64,5 +65,7 @@ __all__ = [
     "JournalAttachment",
     "PersonalDebt",
     "DebtPayment",
-    "PersonalReminder"
+    "PersonalReminder",
+    "Gift",
+    "GiftIdea"
 ]

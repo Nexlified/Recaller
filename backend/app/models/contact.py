@@ -58,6 +58,8 @@ class Contact(Base):
     task_contacts = relationship(lambda: TaskContact, back_populates="contact")
     work_experiences = relationship("ContactWorkExperience", foreign_keys="ContactWorkExperience.contact_id", back_populates="contact", cascade="all, delete-orphan")
     personal_reminders = relationship(lambda: PersonalReminder, back_populates="contact")
+    gifts_received = relationship(lambda: Gift, back_populates="recipient_contact")
+    gift_ideas_for_them = relationship(lambda: GiftIdea, back_populates="target_contact")
     
     # Helper properties for work experience
     @property
@@ -77,6 +79,7 @@ from app.models.organization import Organization
 from app.models.social_group import ContactSocialGroupMembership
 from app.models.task import TaskContact
 from app.models.personal_reminder import PersonalReminder
+from app.models.gift import Gift, GiftIdea
 
 class ContactInteraction(Base):
     __tablename__ = "contact_interactions"
