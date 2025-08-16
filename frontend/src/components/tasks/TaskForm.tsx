@@ -133,18 +133,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       };
 
       if (isEditing) {
-        // For updates, only send changed fields
-        const updateData: TaskUpdate = {};
-        if (submitData.title !== task.title) updateData.title = submitData.title;
-        if (submitData.description !== task.description) updateData.description = submitData.description;
-        if (submitData.status !== task.status) updateData.status = submitData.status;
-        if (submitData.priority !== task.priority) updateData.priority = submitData.priority;
-        if (submitData.start_date !== (task.start_date ? formatDateForInput(task.start_date) : '')) {
-          updateData.start_date = submitData.start_date;
-        }
-        if (submitData.due_date !== (task.due_date ? formatDateForInput(task.due_date) : '')) {
-          updateData.due_date = submitData.due_date;
-        }
+        // For updates, send core fields only
+        const updateData: TaskUpdate = {
+          title: submitData.title,
+          description: submitData.description,
+          status: submitData.status,
+          priority: submitData.priority,
+          start_date: submitData.start_date || undefined,
+          due_date: submitData.due_date || undefined,
+        };
 
         onSubmit(updateData);
       } else {
