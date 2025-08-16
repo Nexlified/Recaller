@@ -93,7 +93,7 @@ body:
       description: What version of the browser are you using?
       placeholder: e.g., Chrome 120.0.6099.109
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: device
