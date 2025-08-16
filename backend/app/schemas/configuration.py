@@ -94,6 +94,9 @@ class ConfigurationValueBase(BaseModel):
 
 class ConfigurationValueCreate(ConfigurationValueBase):
     is_system: bool = Field(default=False)
+    source: Optional[str] = Field(default="manual")
+    source_version: Optional[str] = None
+    import_id: Optional[int] = None
 
 
 class ConfigurationValueUpdate(BaseModel):
@@ -113,6 +116,9 @@ class ConfigurationValue(ConfigurationValueBase):
     level: int
     path: Optional[str]
     is_system: bool
+    source: Optional[str] = None
+    source_version: Optional[str] = None
+    import_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime]
     type: Optional[ConfigurationType] = None

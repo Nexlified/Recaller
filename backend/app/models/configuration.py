@@ -77,6 +77,11 @@ class ConfigurationValue(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
+    # Import tracking
+    source = Column(String(50), default="manual")  # manual, yaml_import
+    source_version = Column(String(50), nullable=True)
+    import_id = Column(Integer, ForeignKey("configuration_imports.id"), nullable=True)
+    
     # Multi-tenant support
     tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
     tenant = relationship("Tenant")
@@ -109,3 +114,20 @@ class ConfigurationTranslation(Base):
     __table_args__ = (
         {'schema': None}  # This will be added by SQLAlchemy automatically
     )
+
+
+class ConfigurationImport(Base):
+    __tablename__ = "configuration_imports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    config_type = Column(String(100), nullable=False, index=True)
+    config_version = Column(String(50), nullable=False)
+    source_file = Column(String(255), nullable=False)
+    import_status = Column(String(50), nullable=False)  # pending, success, failed
+    import_date = Column(DateTime(timezone=True), server_default=func.now())
+    error_message = Column(Text, nullable=True)
+    records_imported = Column(Integer, default=0)
+    
+    # Multi-tenant support
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=False, index=True)
+    tenant = relationship("Tenant")

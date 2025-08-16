@@ -94,6 +94,49 @@ class ConfigurationManager:
         # This will be implemented in Phase 2
         return {}
     
+    def get_config_with_db_fallback(
+        self, 
+        config_type: str, 
+        db: Session = None, 
+        tenant_id: int = None
+    ) -> Dict[str, Any]:
+        """Get configuration with database fallback and caching"""
+        cache_key = f"{config_type}_{tenant_id}" if tenant_id else config_type
+        
+        # Check cache first
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+        
+        try:
+            # Try YAML first
+            config_data = self.load_yaml_config(config_type)
+            self._cache[cache_key] = config_data
+            return config_data
+        except FileNotFoundError:
+            # Fallback to database
+            if db and tenant_id:
+                from app.services.database_config_service import db_config_service
+                config_data = db_config_service.get_database_config(db, config_type, tenant_id)
+                if config_data:
+                    self._cache[cache_key] = config_data
+                    return config_data
+            
+            raise FileNotFoundError(f"Configuration '{config_type}' not found in YAML or database")
+
+    def invalidate_cache(self, config_type: str = None, tenant_id: int = None):
+        """Invalidate specific cache entries"""
+        if config_type and tenant_id:
+            cache_key = f"{config_type}_{tenant_id}"
+            self._cache.pop(cache_key, None)
+        elif config_type:
+            # Remove all entries for this config type
+            keys_to_remove = [k for k in self._cache.keys() if k.startswith(f"{config_type}_")]
+            for key in keys_to_remove:
+                self._cache.pop(key, None)
+        else:
+            # Clear all cache
+            self.clear_cache()
+    
     def get_config_metadata(self, config_type: str) -> Optional[ConfigMetadata]:
         """Get configuration metadata"""
         if config_type not in self._metadata_cache:
