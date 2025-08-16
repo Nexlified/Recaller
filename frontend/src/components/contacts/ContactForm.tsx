@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { ContactCreate, Contact, ContactVisibility } from '../../services/contacts';
 import contactsService from '../../services/contacts';
+import { RelationshipManager } from './RelationshipManager';
 
 interface ContactFormProps {
   onSuccess?: (contact: Contact) => void;
   onCancel?: () => void;
   demoMode?: boolean;
   editingContact?: Contact | null;
+  onRelationshipChange?: () => void;
 }
 
 interface FormErrors {
@@ -19,7 +21,7 @@ interface FormErrors {
   general?: string;
 }
 
-export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, demoMode = false, editingContact = null }) => {
+export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, demoMode = false, editingContact = null, onRelationshipChange }) => {
   const isEditing = !!editingContact;
   
   const [formData, setFormData] = useState<ContactCreate>({
@@ -359,6 +361,21 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSuccess, onCancel, d
                   disabled={isSubmitting}
                 />
               </div>
+
+              {/* Relationship Management - Only show when editing existing contact */}
+              {isEditing && editingContact && (
+                <div>
+                  <h4 className="block text-sm font-medium text-gray-700 mb-3">
+                    Relationship Management
+                  </h4>
+                  <div className="border border-gray-200 rounded-md">
+                    <RelationshipManager
+                      contactId={editingContact.id}
+                      onRelationshipChange={onRelationshipChange}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

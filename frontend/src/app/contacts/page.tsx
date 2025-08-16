@@ -289,6 +289,7 @@ export default function ContactsPage() {
               onSuccess={handleContactCreated}
               onCancel={handleFormCancel}
               editingContact={editingContact}
+              onRelationshipChange={() => loadContacts(user)}
             />
           ) : (
             <div>
