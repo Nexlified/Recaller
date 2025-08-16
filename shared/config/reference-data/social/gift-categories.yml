@@ -1,0 +1,141 @@
+---
+version: "1.0.0"
+category: "social"
+type: "gift_categories"
+name: "Gift Categories"
+description: "Common gift categories for gift ideas and tracking"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2025-01-16"
+  deprecated: false
+
+values:
+  - key: "electronics"
+    display_name: "Electronics"
+    description: "Electronic devices and gadgets"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "device"
+      color: "#2196F3"
+      price_range: "medium_to_high"
+    tags: ["electronics", "gadgets", "technology"]
+    children:
+      - key: "smartphones"
+        display_name: "Smartphones"
+        description: "Mobile phones and accessories"
+        level: 2
+        parent_key: "electronics"
+        sort_order: 0
+        metadata:
+          icon: "phone"
+          price_range: "high"
+        tags: ["mobile", "communication"]
+      
+      - key: "headphones"
+        display_name: "Headphones & Audio"
+        description: "Audio equipment and accessories"
+        level: 2
+        parent_key: "electronics"
+        sort_order: 1
+        metadata:
+          icon: "headphones"
+          price_range: "medium"
+        tags: ["audio", "music"]
+
+  - key: "clothing"
+    display_name: "Clothing & Accessories"
+    description: "Fashion items and accessories"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "shirt"
+      color: "#E91E63"
+      price_range: "low_to_high"
+    tags: ["fashion", "clothing", "style"]
+    children:
+      - key: "jewelry"
+        display_name: "Jewelry"
+        description: "Rings, necklaces, and precious accessories"
+        level: 2
+        parent_key: "clothing"
+        sort_order: 0
+        metadata:
+          icon: "jewelry"
+          price_range: "medium_to_high"
+        tags: ["luxury", "precious"]
+
+  - key: "books"
+    display_name: "Books & Media"
+    description: "Books, magazines, and educational materials"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "book"
+      color: "#795548"
+      price_range: "low_to_medium"
+    tags: ["books", "education", "entertainment"]
+
+  - key: "home"
+    display_name: "Home & Garden"
+    description: "Home decoration and garden items"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "home"
+      color: "#4CAF50"
+      price_range: "medium"
+    tags: ["home", "decoration", "lifestyle"]
+
+  - key: "experiences"
+    display_name: "Experiences"
+    description: "Tickets, vouchers, and experience gifts"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "ticket"
+      color: "#FF9800"
+      price_range: "medium_to_high"
+    tags: ["experiences", "memories", "activities"]
+
+  - key: "food"
+    display_name: "Food & Beverages"
+    description: "Gourmet food, wines, and specialty items"
+    sort_order: 5
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "food"
+      color: "#FF5722"
+      price_range: "low_to_medium"
+    tags: ["food", "gourmet", "consumables"]
+
+  - key: "health"
+    display_name: "Health & Beauty"
+    description: "Wellness, skincare, and beauty products"
+    sort_order: 6
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "health"
+      color: "#9C27B0"
+      price_range: "medium"
+    tags: ["wellness", "beauty", "self-care"]
+
+  - key: "hobbies"
+    display_name: "Hobbies & Sports"
+    description: "Sporting goods and hobby-related items"
+    sort_order: 7
+    is_system: true
+    is_active: true
+    metadata:
+      icon: "sports"
+      color: "#607D8B"
+      price_range: "medium"
+    tags: ["sports", "hobbies", "activities"]

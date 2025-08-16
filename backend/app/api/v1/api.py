@@ -3,7 +3,7 @@ from app.api.v1.endpoints import (
     auth, users, contacts, contact_relationships, family_information, events, analytics, organizations, social_groups, 
     social_group_activities, configuration, tasks, task_scheduler, contact_work_experience, shared_activities,
     transactions_simple, background_tasks, journal, currencies, personal_debts, activity_config, config_manager,
-    personal_reminders
+    personal_reminders, gift_system
 )
 
 api_router = APIRouter()
@@ -26,6 +26,7 @@ api_router.include_router(journal.router, prefix="/journal", tags=["Journal"])
 api_router.include_router(configuration.router, prefix="/config", tags=["Configuration"])
 api_router.include_router(config_manager.router, prefix="/config-manager", tags=["Configuration Manager"])
 api_router.include_router(activity_config.router, prefix="/activity-config", tags=["Activity Configuration"])
+api_router.include_router(gift_system.router, prefix="/config", tags=["Gift System Configuration"])
 api_router.include_router(events.router, prefix="/events", tags=["Events"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 

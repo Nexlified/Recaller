@@ -138,6 +138,17 @@ class EnhancedSettings(BaseSettings):
     MAX_FILE_SIZE: int = 10485760  # 10MB
     ALLOWED_EXTENSIONS: str = "jpg,jpeg,png,pdf,txt"
     
+    # Gift System Configuration
+    GIFT_SYSTEM_ENABLED: bool = True
+    GIFT_DEFAULT_CURRENCY: str = "USD"
+    GIFT_MAX_BUDGET: int = 10000
+    GIFT_SUGGESTION_ENGINE: str = "basic"
+    GIFT_REMINDER_DAYS: str = "7,3,1"
+    GIFT_AUTO_CREATE_TASKS: bool = True
+    GIFT_PRIVACY_MODE: str = "personal"
+    GIFT_IMAGE_STORAGE: bool = True
+    GIFT_EXTERNAL_LINKS: bool = True
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._load_yaml_config()
@@ -206,6 +217,17 @@ class EnhancedSettings(BaseSettings):
             ('storage', 'upload_dir'): 'UPLOAD_DIR',
             ('storage', 'max_file_size'): 'MAX_FILE_SIZE',
             ('storage', 'allowed_extensions'): 'ALLOWED_EXTENSIONS',
+            
+            # Gift System mappings
+            ('gift_system', 'enabled'): 'GIFT_SYSTEM_ENABLED',
+            ('gift_system', 'default_budget_currency'): 'GIFT_DEFAULT_CURRENCY',
+            ('gift_system', 'max_budget_amount'): 'GIFT_MAX_BUDGET',
+            ('gift_system', 'suggestion_engine'): 'GIFT_SUGGESTION_ENGINE',
+            ('gift_system', 'reminder_advance_days'): 'GIFT_REMINDER_DAYS',
+            ('gift_system', 'auto_create_tasks'): 'GIFT_AUTO_CREATE_TASKS',
+            ('gift_system', 'privacy_mode'): 'GIFT_PRIVACY_MODE',
+            ('gift_system', 'image_storage_enabled'): 'GIFT_IMAGE_STORAGE',
+            ('gift_system', 'external_links_enabled'): 'GIFT_EXTERNAL_LINKS',
         }
         
         for (section, key), attr_name in mappings.items():
@@ -274,6 +296,28 @@ class EnhancedSettings(BaseSettings):
         if self.CORS_ALLOWED_HEADERS:
             return [header.strip() for header in self.CORS_ALLOWED_HEADERS.split(",") if header.strip()]
         return ["Content-Type", "Authorization", "X-Tenant-ID"]
+    
+    def get_gift_reminder_days(self) -> List[int]:
+        """Parse gift reminder advance days from comma-separated string"""
+        if self.GIFT_REMINDER_DAYS:
+            try:
+                return [int(day.strip()) for day in self.GIFT_REMINDER_DAYS.split(",") if day.strip().isdigit()]
+            except ValueError:
+                return [7, 3, 1]  # Default fallback
+        return [7, 3, 1]
+    
+    def is_gift_system_enabled(self) -> bool:
+        """Check if gift system is enabled"""
+        return self.GIFT_SYSTEM_ENABLED
+    
+    def get_gift_allowed_extensions(self) -> List[str]:
+        """Get allowed extensions for gift images based on general file settings"""
+        if self.GIFT_IMAGE_STORAGE:
+            extensions = self.ALLOWED_EXTENSIONS.split(",")
+            # Filter to image types only for gifts
+            image_extensions = [ext.strip() for ext in extensions if ext.strip().lower() in ['jpg', 'jpeg', 'png', 'gif', 'webp']]
+            return image_extensions if image_extensions else ['jpg', 'jpeg', 'png']
+        return []
     
     def reload_config(self):
         """Reload configuration from YAML (for hot reload)"""

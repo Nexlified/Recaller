@@ -1,0 +1,110 @@
+---
+version: "1.0.0"
+category: "financial"
+type: "gift_budget_ranges"
+name: "Gift Budget Ranges"
+description: "Common budget ranges for gift planning"
+
+metadata:
+  author: "Recaller Team"
+  last_updated: "2025-01-16"
+  deprecated: false
+
+values:
+  - key: "under_25"
+    display_name: "Under $25"
+    description: "Small thoughtful gifts and tokens"
+    sort_order: 0
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 0
+      max_amount: 25
+      currency: "USD"
+      color: "#4CAF50"
+      suggested_categories: ["books", "food", "small_accessories"]
+    tags: ["budget", "small", "thoughtful"]
+
+  - key: "25_to_50"
+    display_name: "$25 - $50"
+    description: "Moderate gifts for acquaintances and colleagues"
+    sort_order: 1
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 25
+      max_amount: 50
+      currency: "USD"
+      color: "#FF9800"
+      suggested_categories: ["books", "accessories", "experiences"]
+    tags: ["budget", "moderate", "colleagues"]
+
+  - key: "50_to_100"
+    display_name: "$50 - $100"
+    description: "Nice gifts for friends and family"
+    sort_order: 2
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 50
+      max_amount: 100
+      currency: "USD"
+      color: "#2196F3"
+      suggested_categories: ["electronics", "clothing", "hobbies"]
+    tags: ["budget", "friends", "family"]
+
+  - key: "100_to_250"
+    display_name: "$100 - $250"
+    description: "Meaningful gifts for close relationships"
+    sort_order: 3
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 100
+      max_amount: 250
+      currency: "USD"
+      color: "#9C27B0"
+      suggested_categories: ["electronics", "jewelry", "experiences"]
+    tags: ["budget", "meaningful", "close_relationships"]
+
+  - key: "250_to_500"
+    display_name: "$250 - $500"
+    description: "Special occasion gifts for very close people"
+    sort_order: 4
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 250
+      max_amount: 500
+      currency: "USD"
+      color: "#E91E63"
+      suggested_categories: ["electronics", "jewelry", "experiences"]
+    tags: ["budget", "special", "very_close"]
+
+  - key: "500_to_1000"
+    display_name: "$500 - $1000"
+    description: "Luxury gifts for milestone occasions"
+    sort_order: 5
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 500
+      max_amount: 1000
+      currency: "USD"
+      color: "#795548"
+      suggested_categories: ["electronics", "jewelry", "luxury_experiences"]
+    tags: ["budget", "luxury", "milestone"]
+
+  - key: "over_1000"
+    display_name: "Over $1000"
+    description: "Premium gifts for extraordinary occasions"
+    sort_order: 6
+    is_system: true
+    is_active: true
+    metadata:
+      min_amount: 1000
+      max_amount: null
+      currency: "USD"
+      color: "#607D8B"
+      suggested_categories: ["luxury_electronics", "fine_jewelry", "premium_experiences"]
+    tags: ["budget", "premium", "extraordinary"]
