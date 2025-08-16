@@ -365,12 +365,18 @@ export default function TaskBoardPage() {
   const handleTaskDelete = async (taskId: number) => {
     if (!confirm('Are you sure you want to delete this task?')) return;
     
+    // Optimistic update: remove from UI immediately
+    const originalTasks = tasks;
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+    
     try {
       await tasksService.deleteTask(taskId);
-      setTasks(prev => prev.filter(task => task.id !== taskId));
+      // Success - task already removed from UI
     } catch (err) {
       console.error('Error deleting task:', err);
       setError('Failed to delete task');
+      // Revert optimistic update on error
+      setTasks(originalTasks);
     }
   };
 

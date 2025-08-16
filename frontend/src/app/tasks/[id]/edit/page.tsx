@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
-import { TaskForm } from '@/components/tasks/TaskForm';
+import { TaskForm, TaskFormData } from '@/components/tasks/TaskForm';
 import authService from '@/services/auth';
 import tasksService from '@/services/tasks';
 import { Task, TaskCategory, TaskUpdate } from '@/types/Task';
@@ -60,13 +60,48 @@ export default function EditTaskPage() {
     router.push('/login');
   };
 
-  const handleTaskUpdate = async (taskData: TaskUpdate) => {
+  const handleTaskUpdate = async (data: TaskFormData) => {
     if (!task) return;
     
     try {
       setError(null);
       
-      const updatedTask = await tasksService.updateTask(task.id, taskData);
+      // Update the core task fields
+      const updatedTask = await tasksService.updateTask(task.id, data.core as TaskUpdate);
+      
+      // Handle category associations if they changed
+      if (data.associations) {
+        const currentCategoryIds = task.categories.map(c => c.id);
+        const newCategoryIds = data.associations.category_ids;
+        
+        // Remove categories that are no longer selected
+        const categoriesToRemove = currentCategoryIds.filter(id => !newCategoryIds.includes(id));
+        for (const categoryId of categoriesToRemove) {
+          await tasksService.removeCategoryFromTask(task.id, categoryId);
+        }
+        
+        // Add new categories
+        const categoriesToAdd = newCategoryIds.filter(id => !currentCategoryIds.includes(id));
+        for (const categoryId of categoriesToAdd) {
+          await tasksService.assignCategoryToTask(task.id, { category_id: categoryId });
+        }
+        
+        // Handle contact associations if they changed
+        const currentContactIds = task.contacts.map(c => c.id);
+        const newContactIds = data.associations.contact_ids;
+        
+        // Remove contacts that are no longer selected
+        const contactsToRemove = currentContactIds.filter(id => !newContactIds.includes(id));
+        for (const contactId of contactsToRemove) {
+          await tasksService.removeContactFromTask(task.id, contactId);
+        }
+        
+        // Add new contacts
+        const contactsToAdd = newContactIds.filter(id => !currentContactIds.includes(id));
+        for (const contactId of contactsToAdd) {
+          await tasksService.addContactToTask(task.id, contactId);
+        }
+      }
       
       // Redirect to task detail page after successful update
       router.push(`/tasks/${updatedTask.id}`);
