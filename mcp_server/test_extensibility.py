@@ -49,7 +49,7 @@ async def test_backend_extensibility():
         hf_config = {
             "model_name": "microsoft/DialoGPT-medium",
             "device": "cpu",
-            "cache_dir": "./models/test"
+            "cache_dir": "./model_configs/test"
         }
         
         hf_backend = HuggingFaceBackend("test-hf", hf_config)

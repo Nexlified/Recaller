@@ -97,7 +97,7 @@ The MCP server accepts the following environment variables:
 - `MODEL_CONFIG_PATH`: Path to models configuration file (default: ./config/models.json)
 - `MODEL_CONFIG_WATCH`: Watch configuration file for changes (default: true)
 - `DEFAULT_OLLAMA_URL`: Default Ollama server URL (default: http://localhost:11434)
-- `DEFAULT_HUGGINGFACE_CACHE`: Default HuggingFace cache directory (default: ./models/huggingface)
+- `DEFAULT_HUGGINGFACE_CACHE`: Default HuggingFace cache directory (default: ./model_configs/huggingface)
 - `DEFAULT_OPENAI_API_URL`: Default OpenAI compatible API URL (default: http://localhost:8080/v1)
 
 #### Privacy & Logging

@@ -99,7 +99,7 @@ mcp_server/
 ├── core/                      # Core MCP protocol
 │   └── protocol.py            # Protocol implementation
 │
-├── models/                    # Model management
+├── model_configs/             # Model configuration files
 │   └── registry.py           # Model registry and backends
 │
 ├── services/                  # Business logic

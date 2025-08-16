@@ -39,7 +39,7 @@
         "model_name": "sentence-transformers/all-MiniLM-L6-v2",
         "device": "cpu",
         "dtype": "float32",
-        "cache_dir": "./models/huggingface",
+        "cache_dir": "./model_configs/huggingface",
         "trust_remote_code": false
       },
       "description": "BERT-based embeddings model",
@@ -51,7 +51,7 @@
       "config": {
         "model_name": "microsoft/DialoGPT-medium",
         "device": "cpu",
-        "cache_dir": "./models/huggingface",
+        "cache_dir": "./model_configs/huggingface",
         "max_length": 1024,
         "temperature": 0.8,
         "do_sample": true
@@ -95,7 +95,7 @@
       "max_retries": 3
     },
     "huggingface": {
-      "cache_dir": "./models/huggingface",
+      "cache_dir": "./model_configs/huggingface",
       "device": "cpu",
       "trust_remote_code": false
     },

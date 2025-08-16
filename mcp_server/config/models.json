@@ -44,7 +44,7 @@
       "max_retries": 3
     },
     "huggingface": {
-      "cache_dir": "/app/models/huggingface",
+      "cache_dir": "/app/model_configs/huggingface",
       "device": "cpu",
       "trust_remote_code": false
     },

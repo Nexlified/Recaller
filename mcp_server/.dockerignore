@@ -42,7 +42,7 @@ temp/
 Thumbs.db
 
 # Model files (these should be mounted as volumes)
-models/
+model_configs/
 *.bin
 *.safetensors
 *.gguf

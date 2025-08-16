@@ -27,7 +27,7 @@ class HuggingFaceBackend(ModelBackend):
         "model_name": "microsoft/DialoGPT-medium",
         "device": "cpu",
         "dtype": "float32",
-        "cache_dir": "./models/huggingface",
+        "cache_dir": "./model_configs/huggingface",
         "trust_remote_code": false,
         "max_length": 1024,
         "temperature": 0.7,
@@ -42,7 +42,7 @@ class HuggingFaceBackend(ModelBackend):
         self.model_name = config.get("model_name", model_id)
         self.device = config.get("device", "cpu")
         self.dtype = config.get("dtype", "float32")
-        self.cache_dir = config.get("cache_dir", "./models/huggingface")
+        self.cache_dir = config.get("cache_dir", "./model_configs/huggingface")
         self.trust_remote_code = config.get("trust_remote_code", False)
         
         # Generation parameters
