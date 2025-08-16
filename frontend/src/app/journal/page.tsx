@@ -2,11 +2,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import authService from '@/services/auth';
+import { Header } from '@/components/layout/Header';
 import { JournalEntryList } from '../../components/journal/JournalEntryList';
 import { JournalEntrySummary, JournalEntryMood, JournalEntryListResponse } from '../../types/Journal';
 import journalService from '../../services/journal';
+import type { User } from '@/services/auth';
 
 export default function JournalPage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [entries, setEntries] = useState<JournalEntrySummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +21,26 @@ export default function JournalPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  useEffect(() => {
+    // Check if user is authenticated
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+    setIsAuthLoading(false);
+
+    // Load entries if user is authenticated
+    if (currentUser) {
+      loadEntries(1, true);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    await authService.logout();
+    setUser(null);
+  };
+
   const loadEntries = useCallback(async (page = 1, reset = false) => {
+    if (!user) return; // Don't load if no user is authenticated
+    
     try {
       setIsLoading(true);
       const filters = {
@@ -44,11 +68,13 @@ export default function JournalPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, moodFilter, includeArchived]);
+  }, [searchQuery, moodFilter, includeArchived, user]);
 
   useEffect(() => {
-    loadEntries(1, true);
-  }, [searchQuery, moodFilter, includeArchived, loadEntries]);
+    if (user) {
+      loadEntries(1, true);
+    }
+  }, [searchQuery, moodFilter, includeArchived, loadEntries, user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,157 +101,194 @@ export default function JournalPage() {
     { value: JournalEntryMood.GRATEFUL, label: '🙏 Grateful' },
   ];
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Journal</h1>
-              <p className="mt-2 text-gray-600">
-                Document your thoughts, experiences, and reflections
-              </p>
-            </div>
-            <Link
-              href="/journal/new"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Entry
-            </Link>
-          </div>
-        </div>
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading...</div>
+      </div>
+    );
+  }
 
-        {/* Filters */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <form onSubmit={handleSearch} className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-4">
-            <div className="sm:col-span-5">
-              <label htmlFor="search" className="sr-only">
-                Search entries
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  if (!user) {
+    // User not authenticated - redirect to login
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
+              Access Denied
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Please sign in to access your journal
+            </p>
+          </div>
+          <Link
+            href="/login"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header user={user} title="Journal" onLogout={handleLogout} />
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Page Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Journal</h1>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                  Document your thoughts, experiences, and reflections
+                </p>
+              </div>
+              <Link
+                href="/journal/new"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Entry
+              </Link>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+            <form onSubmit={handleSearch} className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-4">
+              <div className="sm:col-span-5">
+                <label htmlFor="search" className="sr-only">
+                  Search entries
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="search"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search your entries..."
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="sm:col-span-3">
+                <label htmlFor="mood" className="sr-only">
+                  Filter by mood
+                </label>
+                <select
+                  id="mood"
+                  value={moodFilter}
+                  onChange={(e) => setMoodFilter(e.target.value as JournalEntryMood | '')}
+                  className="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:text-white"
+                >
+                  {moodOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="sm:col-span-3 flex items-center">
+                <div className="flex items-center h-5">
+                  <input
+                    id="includeArchived"
+                    type="checkbox"
+                    checked={includeArchived}
+                    onChange={(e) => setIncludeArchived(e.target.checked)}
+                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="includeArchived" className="font-medium text-gray-700 dark:text-gray-300">
+                    Include archived
+                  </label>
+                </div>
+              </div>
+
+              <div className="sm:col-span-1">
+                <button
+                  type="submit"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <input
-                  id="search"
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search your entries..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+                  <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                    <p>{error}</p>
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      onClick={() => loadEntries(1, true)}
+                      className="text-sm bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-900/60 px-3 py-1 rounded-md"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="sm:col-span-3">
-              <label htmlFor="mood" className="sr-only">
-                Filter by mood
-              </label>
-              <select
-                id="mood"
-                value={moodFilter}
-                onChange={(e) => setMoodFilter(e.target.value as JournalEntryMood | '')}
-                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                {moodOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Journal Entries */}
+          <div className="mb-6">
+            <JournalEntryList entries={entries} isLoading={isLoading && currentPage === 1} />
+          </div>
 
-            <div className="sm:col-span-3 flex items-center">
-              <div className="flex items-center h-5">
-                <input
-                  id="includeArchived"
-                  type="checkbox"
-                  checked={includeArchived}
-                  onChange={(e) => setIncludeArchived(e.target.checked)}
-                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="includeArchived" className="font-medium text-gray-700">
-                  Include archived
-                </label>
-              </div>
-            </div>
-
-            <div className="sm:col-span-1">
+          {/* Load More */}
+          {!isLoading && currentPage < totalPages && (
+            <div className="text-center">
               <button
-                type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={loadMore}
+                className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Search
+                Load more entries
               </button>
             </div>
-          </form>
-        </div>
+          )}
 
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          {/* Loading More */}
+          {isLoading && currentPage > 1 && (
+            <div className="text-center">
+              <div className="inline-flex items-center px-6 py-3 text-base font-medium text-gray-500 dark:text-gray-400">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{error}</p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    onClick={() => loadEntries(1, true)}
-                    className="text-sm bg-red-100 text-red-800 hover:bg-red-200 px-3 py-1 rounded-md"
-                  >
-                    Try again
-                  </button>
-                </div>
+                Loading more entries...
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Journal Entries */}
-        <div className="mb-6">
-          <JournalEntryList entries={entries} isLoading={isLoading && currentPage === 1} />
+          )}
         </div>
-
-        {/* Load More */}
-        {!isLoading && currentPage < totalPages && (
-          <div className="text-center">
-            <button
-              onClick={loadMore}
-              className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Load more entries
-            </button>
-          </div>
-        )}
-
-        {/* Loading More */}
-        {isLoading && currentPage > 1 && (
-          <div className="text-center">
-            <div className="inline-flex items-center px-6 py-3 text-base font-medium text-gray-500">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Loading more entries...
-            </div>
-          </div>
-        )}
-      </div>
+      </main>
     </div>
   );
 }
