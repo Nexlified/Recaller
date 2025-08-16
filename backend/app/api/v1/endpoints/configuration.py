@@ -910,10 +910,10 @@ def get_configuration_health(
 @router.post("/configs/{config_type}/import")
 def import_configuration(
     config_type: str,
-    force_update: bool = Query(False),
     request: Request,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: User = Depends(deps.get_current_active_user),
+    force_update: bool = Query(False)
 ) -> Any:
     """Import YAML configuration into database"""
     from app.core.configuration_manager import config_manager
@@ -934,10 +934,10 @@ def import_configuration(
 @router.get("/configs/{config_type}/database")
 def get_database_configuration(
     config_type: str,
-    include_inactive: bool = Query(False),
     request: Request,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: User = Depends(deps.get_current_active_user),
+    include_inactive: bool = Query(False)
 ) -> Any:
     """Get configuration from database"""
     tenant_id = get_tenant_context(request)
@@ -982,12 +982,12 @@ def compare_yaml_database(
 
 @router.get("/imports")
 def list_configuration_imports(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
-    status: Optional[str] = Query(None),
     request: Request,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: User = Depends(deps.get_current_active_user),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    status: Optional[str] = Query(None)
 ) -> List[Any]:
     """List configuration import history"""
     from app.models.configuration import ConfigurationImport
@@ -1020,10 +1020,10 @@ def list_configuration_imports(
 
 @router.post("/configs/import-all")
 def import_all_configurations(
-    force_update: bool = Query(False),
     request: Request,
     db: Session = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: User = Depends(deps.get_current_active_user),
+    force_update: bool = Query(False)
 ) -> Any:
     """Import all available YAML configurations into database"""
     from app.core.configuration_manager import config_manager
