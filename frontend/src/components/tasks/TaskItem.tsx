@@ -38,6 +38,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       onDelete(task.id);
     } catch (error) {
       console.error('Failed to delete task:', error);
+    } finally {
       setIsUpdating(false);
     }
   };
