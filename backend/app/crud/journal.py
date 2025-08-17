@@ -396,9 +396,27 @@ def get_entries_with_pagination(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None
 ) -> tuple[List[JournalEntry], int]:
-    """Get journal entries with pagination metadata."""
-    # Build the base query
-    query = db.query(JournalEntry).filter(
+    """Get journal entries with pagination metadata, showing only latest versions."""
+    
+    # Create a subquery to find the latest version of each entry group
+    # For entries with versions, we want the highest version number
+    # For entries without versions (parent_entry_id is NULL), we want the entry itself
+    latest_versions_subquery = db.query(
+        func.coalesce(JournalEntry.parent_entry_id, JournalEntry.id).label('entry_group'),
+        func.max(JournalEntry.entry_version).label('max_version')
+    ).filter(
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id
+    ).group_by(func.coalesce(JournalEntry.parent_entry_id, JournalEntry.id)).subquery()
+    
+    # Build the main query that joins with the subquery to get only latest versions
+    query = db.query(JournalEntry).join(
+        latest_versions_subquery,
+        and_(
+            func.coalesce(JournalEntry.parent_entry_id, JournalEntry.id) == latest_versions_subquery.c.entry_group,
+            JournalEntry.entry_version == latest_versions_subquery.c.max_version
+        )
+    ).filter(
         JournalEntry.user_id == user_id,
         JournalEntry.tenant_id == tenant_id
     )
@@ -446,11 +464,25 @@ def search_entries_optimized(
     per_page: int = 20,
     include_archived: bool = False
 ) -> tuple[List[JournalEntry], int]:
-    """Optimized search for journal entries with pagination."""
-    # For PostgreSQL, we could use full-text search here
-    # For now, using optimized ILIKE with proper indexing
+    """Optimized search for journal entries with pagination, showing only latest versions."""
     
-    base_query = db.query(JournalEntry).filter(
+    # Create a subquery to find the latest version of each entry group
+    latest_versions_subquery = db.query(
+        func.coalesce(JournalEntry.parent_entry_id, JournalEntry.id).label('entry_group'),
+        func.max(JournalEntry.entry_version).label('max_version')
+    ).filter(
+        JournalEntry.user_id == user_id,
+        JournalEntry.tenant_id == tenant_id
+    ).group_by(func.coalesce(JournalEntry.parent_entry_id, JournalEntry.id)).subquery()
+    
+    # Build the main query with latest version filtering and search
+    base_query = db.query(JournalEntry).join(
+        latest_versions_subquery,
+        and_(
+            func.coalesce(JournalEntry.parent_entry_id, JournalEntry.id) == latest_versions_subquery.c.entry_group,
+            JournalEntry.entry_version == latest_versions_subquery.c.max_version
+        )
+    ).filter(
         JournalEntry.user_id == user_id,
         JournalEntry.tenant_id == tenant_id,
         or_(

@@ -57,6 +57,40 @@ export const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState('#3B82F6');
 
+  // Track changes to enable/disable save button
+  const hasChanges = React.useMemo(() => {
+    if (!entry) {
+      // For new entries, enable save when there's content
+      return content.trim().length > 0;
+    }
+    
+    // For existing entries, check if any field has changed
+    const originalTags = entry.tags?.map(tag => ({ tag_name: tag.tag_name, tag_color: tag.tag_color })) || [];
+    const currentTags = tags;
+    
+    // Helper function to compare tag arrays
+    const tagsEqual = (a: JournalTagCreate[], b: JournalTagCreate[]) => {
+      if (a.length !== b.length) return false;
+      const sortedA = [...a].sort((x, y) => x.tag_name.localeCompare(y.tag_name));
+      const sortedB = [...b].sort((x, y) => x.tag_name.localeCompare(y.tag_name));
+      return sortedA.every((tagA, index) => {
+        const tagB = sortedB[index];
+        return tagA.tag_name === tagB.tag_name && tagA.tag_color === tagB.tag_color;
+      });
+    };
+    
+    return (
+      (title || '') !== (entry.title || '') ||
+      content !== (entry.content || '') ||
+      entryDate !== entry.entry_date ||
+      mood !== entry.mood ||
+      (location || '') !== (entry.location || '') ||
+      (weather || '') !== (entry.weather || '') ||
+      isPrivate !== entry.is_private ||
+      !tagsEqual(currentTags, originalTags)
+    );
+  }, [title, content, entryDate, mood, location, weather, isPrivate, tags, entry]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -115,7 +149,7 @@ export const JournalEntryForm: React.FC<JournalEntryFormProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isLoading || !content.trim()}
+              disabled={isLoading || !content.trim() || !hasChanges}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Saving...' : 'Save Entry'}
