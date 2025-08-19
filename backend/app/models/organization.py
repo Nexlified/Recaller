@@ -52,6 +52,9 @@ class Organization(Base):
     created_by = relationship(lambda: User)
     aliases = relationship("OrganizationAlias", back_populates="organization", cascade="all, delete-orphan")
     locations = relationship("OrganizationLocation", back_populates="organization", cascade="all, delete-orphan")
+    
+    # New person professional info relationships
+    person_professional_info = relationship("PersonProfessionalInfo", back_populates="organization")
 
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant

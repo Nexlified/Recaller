@@ -31,6 +31,9 @@ class User(Base):
     personal_reminders = relationship(lambda: PersonalReminder, back_populates="user")
     gifts = relationship(lambda: Gift, back_populates="user")
     gift_ideas = relationship(lambda: GiftIdea, back_populates="user")
+    
+    # New person relationships
+    person_profiles = relationship(lambda: PersonProfile, back_populates="created_by")
 
 # Import after class definition to avoid circular imports
 from app.models.tenant import Tenant
@@ -41,3 +44,4 @@ from app.models.financial_account import FinancialAccount
 from app.models.journal import JournalEntry
 from app.models.personal_reminder import PersonalReminder
 from app.models.gift import Gift, GiftIdea
+from app.models.person import PersonProfile
