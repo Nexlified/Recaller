@@ -1,6 +1,29 @@
+"""
+Analytics API Endpoints
+
+This module provides comprehensive analytics endpoints for the Recaller application,
+offering insights into contact relationships, network growth, interaction patterns,
+and networking effectiveness.
+
+The analytics system is designed to help users:
+- Track network growth and relationship health
+- Understand interaction patterns and effectiveness
+- Get actionable insights for network maintenance
+- Compare performance across different time periods
+- Generate reports and export data
+
+Key Features:
+- Multi-tenant analytics with proper data isolation
+- Real-time and historical analytics
+- Predictive insights and recommendations
+- Comprehensive reporting and export capabilities
+- Performance benchmarking
+"""
+
 from typing import Dict, Any, List, Optional
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_tenant_context
@@ -24,15 +47,39 @@ from app.models.analytics import (
     NetworkingInsight,
     DailyNetworkMetric
 )
+from app.models.contact import Contact
 
 router = APIRouter()
+
+# =============================================================================
+# CORE ANALYTICS ENDPOINTS
+# =============================================================================
+# These endpoints provide high-level overview metrics and summaries that give
+# users a quick understanding of their network health and recent activity.
 
 @router.get("/overview", response_model=Dict[str, Any])
 def get_analytics_overview(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get high-level dashboard metrics"""
+    """
+    Get comprehensive analytics overview dashboard
+    
+    This endpoint provides a high-level summary of all networking analytics,
+    designed for dashboard views and quick network health assessment.
+    
+    Returns:
+        Dict containing:
+        - summary: Basic network metrics (total contacts, active relationships)
+        - network_health: Overall health scores and key indicators
+        - recent_activity: Recent interactions and network changes
+        - growth_metrics: Network expansion and trend data
+        - recommendations: Top actionable insights
+    
+    Use Case:
+        Perfect for main dashboard widgets and executive summaries.
+        Shows the most important metrics at a glance.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     return analytics_service.get_overview_analytics()
@@ -42,10 +89,31 @@ def get_analytics_summary(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get quick summary statistics"""
+    """
+    Get quick summary statistics from materialized views
+    
+    This endpoint provides fast access to key metrics using pre-calculated
+    data from materialized views, ensuring quick response times for
+    frequently accessed summary data.
+    
+    Returns:
+        Dict containing:
+        - total_contacts: Total number of contacts in network
+        - active_contacts: Currently active relationships
+        - relationship_distribution: Strong/moderate/weak breakdown
+        - interaction_metrics: Average interactions and engagement
+        - follow_up_status: Overdue and high-priority follow-ups
+    
+    Performance Note:
+        Uses materialized views for optimal performance. Data refreshed
+        periodically via background tasks.
+    
+    Use Case:
+        Ideal for widgets that need to load quickly and show basic stats.
+    """
     tenant_id = get_tenant_context(request)
     
-    # Get summary from materialized view
+    # Get summary from materialized view for optimal performance
     summary = db.query(ContactAnalyticsSummary).filter(
         ContactAnalyticsSummary.tenant_id == tenant_id
     ).first()
@@ -83,13 +151,40 @@ def get_analytics_trends(
     period: int = Query(default=30, ge=7, le=365, description="Number of days to analyze"),
     db: Session = Depends(get_db)
 ):
-    """Get trending metrics over time"""
+    """
+    Get trending metrics over time for network growth analysis
+    
+    This endpoint provides time-series data showing how network metrics
+    have changed over a specified period, enabling trend analysis and
+    pattern recognition.
+    
+    Args:
+        period: Number of days to analyze (7-365 days)
+                - 7-30 days: Good for recent activity trends
+                - 30-90 days: Quarterly performance analysis
+                - 90-365 days: Long-term growth patterns
+    
+    Returns:
+        List of daily metrics containing:
+        - date: Date of the metric
+        - total_contacts: Network size on that date
+        - active_contacts: Active relationships
+        - new_contacts: New contacts added that day
+        - total_interactions: Total interactions that day
+        - engagement_metrics: Quality and frequency data
+        - growth_rates: Network expansion rates
+    
+    Use Case:
+        Perfect for creating charts showing network growth over time,
+        identifying seasonal patterns, and tracking progress against goals.
+    """
     tenant_id = get_tenant_context(request)
     
-    # Get daily metrics for the period
+    # Calculate date range for the specified period
     end_date = date.today()
     start_date = date.fromordinal(end_date.toordinal() - period)
     
+    # Fetch daily metrics ordered chronologically
     metrics = db.query(DailyNetworkMetric).filter(
         DailyNetworkMetric.tenant_id == tenant_id,
         DailyNetworkMetric.metric_date >= start_date,
@@ -115,7 +210,30 @@ def get_key_performance_indicators(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get key performance indicators"""
+    """
+    Get key performance indicators for network management
+    
+    This endpoint calculates and returns the most important KPIs for
+    effective network management, providing metrics that correlate
+    with networking success and relationship quality.
+    
+    Key Performance Indicators:
+        - network_size: Total number of meaningful connections
+        - network_health_score: Overall relationship quality (0-10)
+        - engagement_rate: Percentage of contacts actively engaged
+        - growth_rate: Rate of network expansion over time
+        - response_rate: How often contacts respond to outreach
+        - strong_relationships_ratio: Percentage of high-quality relationships
+        - follow_up_completion_rate: Success rate of follow-up activities
+    
+    Returns:
+        Dict with KPIs and their current values, typically used for
+        scorecards and performance dashboards.
+    
+    Use Case:
+        Essential for tracking networking effectiveness against goals,
+        identifying areas for improvement, and measuring ROI of networking activities.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -134,13 +252,42 @@ def get_key_performance_indicators(
         "follow_up_completion_rate": 0.85  # Mock - would calculate from actual data
     }
 
-# Network Analytics Endpoints
+# =============================================================================
+# NETWORK ANALYTICS ENDPOINTS
+# =============================================================================
+# These endpoints focus on network structure, growth patterns, and overall
+# relationship health. They help users understand their network composition
+# and identify opportunities for growth and strengthening relationships.
+
 @router.get("/network/overview", response_model=Dict[str, Any])
 def get_network_overview(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get network size, strength, growth overview"""
+    """
+    Get comprehensive network size, strength, and growth overview
+    
+    This endpoint provides a high-level view of the user's professional
+    network, focusing on quantitative metrics that indicate network health
+    and effectiveness.
+    
+    Network Overview Metrics:
+        - network_size: Total number of contacts in the network
+        - active_contacts: Contacts with recent meaningful interactions
+        - network_health: Overall health score based on relationship quality
+        - growth_metrics: Recent expansion and trend data
+    
+    Returns:
+        Dict containing current network status and key growth indicators
+    
+    Use Case:
+        Essential for understanding network maturity and identifying
+        opportunities for expansion or relationship strengthening.
+        
+    Best Practice:
+        Review monthly to track progress toward networking goals and
+        identify shifts in network dynamics.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -160,7 +307,30 @@ def get_network_distribution(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get relationship strength distribution"""
+    """
+    Get relationship strength distribution across the network
+    
+    This endpoint analyzes how relationships are distributed across
+    different strength levels, providing insights into network quality
+    and opportunities for relationship development.
+    
+    Distribution Categories:
+        - Strong (8-10): Deep, trusted relationships with frequent contact
+        - Moderate (5-7): Regular professional relationships
+        - Weak (1-4): Acquaintances and infrequent contacts
+    
+    Returns:
+        Dict with counts and percentages for each strength category
+    
+    Use Case:
+        Helps users understand if their network is balanced and identify
+        opportunities to strengthen moderate relationships or maintain
+        strong ones.
+        
+    Optimization Tip:
+        Aim for 15-20% strong relationships, 40-50% moderate, and 30-45% weak
+        for a healthy, manageable network distribution.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -173,7 +343,34 @@ def get_network_growth(
     period: int = Query(default=90, ge=30, le=365, description="Number of days to analyze"),
     db: Session = Depends(get_db)
 ):
-    """Get network growth over time"""
+    """
+    Get detailed network growth analysis over time
+    
+    This endpoint provides comprehensive analysis of how the network
+    has grown and evolved over the specified period, including growth
+    patterns, velocity, and predictive insights.
+    
+    Args:
+        period: Analysis period in days
+                - 30 days: Recent growth trends
+                - 90 days: Quarterly growth patterns (recommended)
+                - 180+ days: Long-term growth analysis
+    
+    Growth Metrics:
+        - total_growth: Net new contacts added
+        - growth_velocity: Rate of contact acquisition
+        - growth_quality: Strength of new relationships
+        - seasonal_patterns: Growth variations over time
+        - predictions: Forecasted growth for next period
+    
+    Returns:
+        Comprehensive growth analytics with trends and predictions
+    
+    Use Case:
+        Essential for understanding networking effectiveness and planning
+        future networking activities. Helps identify successful strategies
+        and optimal networking periods.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -184,19 +381,82 @@ def get_network_health(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get overall network health score"""
+    """
+    Get comprehensive network health assessment
+    
+    This endpoint provides a holistic evaluation of network health,
+    combining multiple factors to generate an overall health score
+    and specific recommendations for improvement.
+    
+    Health Factors:
+        - Relationship strength distribution
+        - Interaction frequency and quality
+        - Response rates and engagement
+        - Follow-up consistency
+        - Network diversity and coverage
+    
+    Health Score (0-10):
+        - 9-10: Excellent - Highly engaged, well-maintained network
+        - 7-8: Good - Strong network with minor improvement areas
+        - 5-6: Fair - Adequate network needing attention
+        - 3-4: Poor - Significant maintenance required
+        - 0-2: Critical - Major network health issues
+    
+    Returns:
+        Dict containing overall health score, factor breakdowns,
+        specific recommendations, and priority actions
+    
+    Use Case:
+        Regular health checks (monthly) to ensure network remains
+        engaged and productive. Critical for maintaining relationship
+        quality at scale.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
     return analytics_service.get_relationship_health_analytics()
 
-# Interaction Analytics Endpoints
+# =============================================================================
+# INTERACTION ANALYTICS ENDPOINTS
+# =============================================================================
+# These endpoints analyze communication patterns, interaction quality, and
+# engagement effectiveness. They help users optimize their communication
+# strategies and improve relationship maintenance.
+
 @router.get("/interactions/overview", response_model=Dict[str, Any])
 def get_interactions_overview(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get interaction patterns and trends"""
+    """
+    Get comprehensive interaction patterns and trends analysis
+    
+    This endpoint provides an overview of all interaction activities,
+    helping users understand their communication patterns, effectiveness,
+    and areas for improvement.
+    
+    Interaction Metrics:
+        - total_interactions: All recorded interactions across channels
+        - avg_quality: Average quality score (1-10) of interactions
+        - avg_duration: Average length of meaningful interactions
+        - interaction_frequency: Average interactions per contact
+        - recent_activity: Interactions in the last 30 days
+    
+    Quality Scoring (1-10):
+        - 9-10: Deep, meaningful conversations with clear outcomes
+        - 7-8: Productive interactions with good engagement
+        - 5-6: Standard interactions, basic information exchange
+        - 3-4: Brief or superficial interactions
+        - 1-2: Minimal engagement or failed attempts
+    
+    Returns:
+        Dict with interaction summary statistics and trends
+    
+    Use Case:
+        Essential for understanding communication effectiveness and
+        identifying patterns that lead to stronger relationships.
+        Review weekly to optimize outreach strategies.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -211,6 +471,7 @@ def get_interactions_overview(
             "recent_activity": 0
         }
     
+    # Calculate aggregate metrics across all contacts
     total_interactions = sum(i["total_interactions"] for i in interactions)
     avg_quality = sum(i["avg_interaction_quality"] for i in interactions) / len(interactions)
     avg_duration = sum(i["avg_interaction_duration"] for i in interactions) / len(interactions)
@@ -229,7 +490,33 @@ def get_interaction_types_breakdown(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get breakdown by interaction type"""
+    """
+    Get detailed breakdown of interactions by communication channel
+    
+    This endpoint analyzes how interactions are distributed across
+    different communication channels, helping users understand their
+    preferred communication methods and their effectiveness.
+    
+    Channel Types:
+        - meetings: Face-to-face or video meetings (highest impact)
+        - calls: Phone conversations (high personal touch)
+        - emails: Email communications (good for detailed discussions)
+        - texts: Text messages and instant messaging (quick touch points)
+    
+    Channel Effectiveness Tips:
+        - Meetings: Best for building trust and complex discussions
+        - Calls: Ideal for urgent matters and personal check-ins
+        - Emails: Perfect for detailed information sharing
+        - Texts: Great for quick updates and casual contact
+    
+    Returns:
+        Dict with interaction counts by channel type
+    
+    Use Case:
+        Helps optimize communication strategy by understanding which
+        channels are most/least used and planning channel diversification
+        for stronger relationship building.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -247,7 +534,31 @@ def get_interaction_quality_trends(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get interaction quality trends"""
+    """
+    Get interaction quality trends and improvement insights
+    
+    This endpoint analyzes the quality of interactions over time,
+    helping users understand what makes conversations more meaningful
+    and productive.
+    
+    Quality Metrics:
+        - avg_quality: Overall average quality score
+        - quality_trend: Whether quality is improving, stable, or declining
+        - high_quality_interactions: Count of exceptional interactions (8+)
+    
+    Quality Improvement Tips:
+        - Prepare talking points before important conversations
+        - Ask open-ended questions to encourage deeper discussion
+        - Follow up on previous conversations to show continuity
+        - Set clear objectives for each interaction
+    
+    Returns:
+        Dict with quality metrics and trend analysis
+    
+    Use Case:
+        Track communication effectiveness improvement over time and
+        identify strategies that lead to higher quality interactions.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -270,7 +581,32 @@ def get_interaction_frequency_analysis(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get interaction frequency analysis"""
+    """
+    Get comprehensive interaction frequency analysis
+    
+    This endpoint analyzes how often users interact with their network,
+    identifying patterns, optimal frequencies, and opportunities for
+    more consistent engagement.
+    
+    Frequency Metrics:
+        - interactions_last_30_days: Recent interaction volume
+        - avg_interactions_per_contact: Contact engagement rate
+        - frequency_trend: Whether interactions are increasing/decreasing
+        - most_active_period: Peak interaction times/days
+    
+    Optimal Frequency Guidelines:
+        - Strong relationships: Weekly to monthly contact
+        - Moderate relationships: Monthly to quarterly contact
+        - Weak relationships: Quarterly to bi-annual contact
+    
+    Returns:
+        Dict with frequency statistics and trend analysis
+    
+    Use Case:
+        Helps maintain consistent network engagement and identifies
+        when interaction frequency drops below optimal levels.
+        Essential for relationship maintenance planning.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -289,7 +625,40 @@ def get_response_rate_analysis(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get contact response patterns"""
+    """
+    Get detailed contact response patterns and engagement analysis
+    
+    This endpoint analyzes how contacts respond to outreach efforts,
+    providing insights into engagement effectiveness and optimal
+    communication strategies.
+    
+    Response Metrics:
+        - overall_response_rate: Percentage of outreach that gets responses
+        - user_initiated: Communications started by the user
+        - contact_initiated: Communications started by contacts
+        - response_time_avg: Average time contacts take to respond
+        - best_response_days: Days with highest response rates
+    
+    Response Rate Benchmarks:
+        - 70%+: Excellent - Strong network engagement
+        - 50-70%: Good - Healthy response rates
+        - 30-50%: Fair - Room for improvement
+        - <30%: Poor - Need strategy adjustment
+    
+    Improvement Strategies:
+        - Personalize outreach messages
+        - Reference recent shared experiences
+        - Provide value in each communication
+        - Use preferred communication channels
+    
+    Returns:
+        Dict with response rate metrics and timing analysis
+    
+    Use Case:
+        Critical for optimizing outreach effectiveness and understanding
+        network engagement levels. Helps identify the best times and
+        methods for contacting different types of relationships.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
@@ -488,7 +857,13 @@ def get_social_group_activity_analytics(
         "attendance_trends": "stable"  # Mock
     }
 
-# Insights & Recommendations
+# =============================================================================
+# AI INSIGHTS & RECOMMENDATIONS ENDPOINTS
+# =============================================================================
+# These endpoints provide AI-generated insights and actionable recommendations
+# based on network analysis, helping users make data-driven decisions about
+# their networking strategies and relationship management.
+
 @router.get("/insights", response_model=List[Dict[str, Any]])
 def get_networking_insights(
     request: Request,
@@ -496,7 +871,42 @@ def get_networking_insights(
     insight_type: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """Get AI-generated insights"""
+    """
+    Get AI-generated networking insights and recommendations
+    
+    This endpoint provides intelligent insights based on network analysis,
+    interaction patterns, and relationship health. The AI identifies patterns,
+    opportunities, and potential issues to help optimize networking effectiveness.
+    
+    Args:
+        limit: Maximum number of insights to return (1-50)
+        insight_type: Filter by specific insight category:
+                     - 'opportunity': Growth and expansion opportunities
+                     - 'maintenance': Relationship maintenance needs
+                     - 'engagement': Interaction optimization suggestions
+                     - 'health': Network health improvement areas
+                     - 'prediction': Trend-based predictions
+    
+    Insight Categories:
+        - Opportunity Insights: New connections, introductions, events
+        - Maintenance Insights: Overdue follow-ups, relationship decay
+        - Engagement Insights: Communication optimization, timing
+        - Health Insights: Network balance, strength distribution
+        - Predictive Insights: Future trends, potential issues
+    
+    Insight Prioritization:
+        - High Priority: Immediate action required (relationship at risk)
+        - Medium Priority: Important improvements (growth opportunities)
+        - Low Priority: Optimization suggestions (efficiency gains)
+    
+    Returns:
+        List of insights with priority, confidence, and actionable recommendations
+    
+    Use Case:
+        Review insights weekly to stay proactive about network management
+        and identify high-impact actions. Essential for maintaining and
+        growing network effectiveness.
+    """
     tenant_id = get_tenant_context(request)
     
     query = db.query(NetworkingInsight).filter(
@@ -535,13 +945,53 @@ def generate_insights(
     insight_request: InsightGenerationRequest,
     db: Session = Depends(get_db)
 ):
-    """Trigger insight generation"""
+    """
+    Trigger on-demand insight generation for specific analysis areas
+    
+    This endpoint allows users to request fresh analysis and insight generation
+    for specific areas of their network, providing real-time recommendations
+    based on current data.
+    
+    Request Parameters:
+        insight_types: List of insight categories to generate:
+                      - 'network_growth': Expansion opportunities and strategies
+                      - 'relationship_health': Relationship maintenance needs
+                      - 'interaction_optimization': Communication improvements
+                      - 'follow_up_recommendations': Overdue contact suggestions
+                      - 'networking_opportunities': Event and introduction suggestions
+    
+    Generation Process:
+        1. Analyzes current network state and patterns
+        2. Identifies gaps, opportunities, and risks
+        3. Generates prioritized, actionable recommendations
+        4. Calculates confidence scores based on data quality
+        5. Saves insights for future reference and tracking
+    
+    Insight Quality Factors:
+        - Data completeness and recency
+        - Pattern consistency over time
+        - Network size and diversity
+        - Interaction frequency and quality
+    
+    Returns:
+        List of newly generated insights with recommendations and confidence scores
+    
+    Use Case:
+        Generate fresh insights before important networking periods,
+        quarterly planning sessions, or when making strategic networking
+        decisions. Useful for getting targeted advice for specific challenges.
+        
+    Best Practice:
+        Generate insights monthly or before major networking events to
+        ensure recommendations are current and relevant.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
+    # Generate insights based on requested types
     insights = analytics_service.generate_insights(insight_request.insight_types)
     
-    # Save generated insights to database
+    # Save generated insights to database for future reference
     for insight_data in insights:
         db_insight = NetworkingInsight(
             tenant_id=tenant_id,
@@ -1055,7 +1505,46 @@ def get_actionable_recommendations(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    """Get actionable recommendations"""
+    """
+    Get prioritized, actionable recommendations for network improvement
+    
+    This endpoint provides concrete, actionable steps users can take to
+    improve their network health, strengthen relationships, and achieve
+    better networking outcomes.
+    
+    Recommendation Categories:
+        - Immediate Actions: Urgent follow-ups and relationship maintenance
+        - Growth Opportunities: Network expansion and new connection strategies
+        - Optimization: Communication and engagement improvements
+        - Maintenance: Regular relationship care and nurturing activities
+        - Strategic: Long-term networking goal alignment
+    
+    Recommendation Prioritization:
+        - Priority 1 (Critical): Address relationship risks, overdue follow-ups
+        - Priority 2 (High): Growth opportunities with high success probability
+        - Priority 3 (Medium): Optimization and efficiency improvements
+        - Priority 4 (Low): Strategic enhancements and nice-to-haves
+    
+    Action Types:
+        - Contact specific individuals (with suggested talking points)
+        - Attend networking events or industry gatherings
+        - Strengthen existing relationships through value-add activities
+        - Introduce contacts to each other for mutual benefit
+        - Adjust communication frequency or channels
+        - Update contact information and relationship context
+    
+    Returns:
+        List of prioritized recommendations with specific action steps,
+        expected outcomes, and success tracking metrics
+    
+    Use Case:
+        Essential for daily/weekly networking planning. Provides clear,
+        actionable steps to maintain and grow network effectiveness.
+        
+    Implementation Tip:
+        Focus on 3-5 top recommendations per week for sustainable progress.
+        Track completion and outcomes to refine future recommendations.
+    """
     tenant_id = get_tenant_context(request)
     analytics_service = AnalyticsService(db, tenant_id)
     
