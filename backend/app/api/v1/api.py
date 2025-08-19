@@ -3,7 +3,7 @@ from app.api.v1.endpoints import (
     auth, users, contacts, contact_relationships, family_information, events, analytics, organizations, social_groups, 
     social_group_activities, configuration, tasks, task_scheduler, contact_work_experience, shared_activities,
     transactions_simple, background_tasks, journal, currencies, personal_debts, activity_config, config_manager,
-    personal_reminders, gift_system
+    personal_reminders, gift_system, relationship_management
 )
 
 api_router = APIRouter()
@@ -11,6 +11,7 @@ api_router.include_router(auth.router, tags=["Authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["User Management"])
 api_router.include_router(contacts.router, prefix="/contacts", tags=["Contacts"])
 api_router.include_router(contact_relationships.router, prefix="/relationships", tags=["Contact Relationships"])
+api_router.include_router(relationship_management.router, prefix="/relationship-management", tags=["Relationship Management"])
 api_router.include_router(contact_work_experience.router, prefix="/work-experience", tags=["Work Experience"])
 api_router.include_router(family_information.router, prefix="/family", tags=["Family Information"])
 api_router.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])

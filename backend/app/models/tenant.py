@@ -24,3 +24,6 @@ class Tenant(Base):
     personal_reminders = relationship("PersonalReminder", back_populates="tenant")
     gifts = relationship("Gift", back_populates="tenant")
     gift_ideas = relationship("GiftIdea", back_populates="tenant")
+    
+    # New relationship management models
+    person_profiles = relationship("PersonProfile", back_populates="tenant")
